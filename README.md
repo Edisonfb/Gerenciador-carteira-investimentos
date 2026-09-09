@@ -1,58 +1,201 @@
 # Gerenciador de Carteiras de Investimento
 
-Projeto academico para gerenciamento de carteiras de investimento.
+Projeto academico para gerenciamento de carteiras de investimento, desenvolvido como parte do Projeto Final do IFRS.
 
-O sistema sera desenvolvido como um monolito modular: uma unica aplicacao, mas organizada por areas e responsabilidades para facilitar o trabalho em equipe.
+O sistema tem como objetivo permitir o cadastro e acompanhamento de investidores, carteiras, ativos financeiros e transacoes, centralizando informacoes importantes para consulta e organizacao dos investimentos.
 
-## Objetivo
+## Status do projeto
 
-Criar uma aplicacao para cadastrar investidores, carteiras, ativos financeiros e transacoes, permitindo consultar informacoes consolidadas sobre os investimentos.
+Em desenvolvimento.
+
+A estrutura inicial do repositorio, a base do backend, a base do frontend e os documentos tecnicos principais ja foram criados. As funcionalidades do sistema ainda serao implementadas de forma incremental.
+
+## Funcionalidades planejadas
+
+- Cadastro e autenticacao de usuarios.
+- Gerenciamento de investidores.
+- Gerenciamento de carteiras de investimento.
+- Gerenciamento de ativos financeiros.
+- Registro de transacoes.
+- Consulta do historico de transacoes.
+- Consulta de resumo consolidado da carteira.
+- Validacoes de regras de negocio relacionadas a investimentos.
 
 ## Tecnologias
 
-- Frontend: React com TypeScript.
+- Frontend: React com TypeScript e Vite.
 - Backend: Python com FastAPI.
 - Banco de dados: MySQL.
-- Testes: Python com pytest.
-- Documentacao: Markdown.
+- ORM / banco: SQLAlchemy e PyMySQL.
+- Testes: pytest, httpx e pytest-asyncio.
+- Ambiente local: Docker Compose para MySQL.
 
-## Estrutura principal
+## Arquitetura
+
+O projeto segue uma arquitetura de monolito modular. A aplicacao fica em um unico repositorio, mas separada por responsabilidades para facilitar manutencao, organizacao e trabalho em equipe.
+
+Fluxo principal esperado:
 
 ```text
-investment-portfolio-manager/
-├── frontend/
-├── backend/
-├── database/
-├── tests/
-└── docs/
+Frontend -> Router -> Service -> Repository -> Banco de dados
 ```
 
-Responsabilidades:
+Principios importantes:
 
-- `frontend/`: interface da aplicacao.
-- `backend/`: API, regras de negocio e acesso ao banco.
-- `database/`: scripts, migrations, seeds e diagramas do banco.
-- `tests/`: testes unitarios, integracao e e2e.
-- `docs/`: documentacao tecnica do projeto.
+- o frontend consome a API e nao redefine regras de negocio;
+- as rotas do backend recebem requisicoes HTTP e delegam regras para services;
+- services concentram regras de negocio;
+- repositories concentram acesso ao banco de dados;
+- alteracoes no banco devem ser documentadas e organizadas em scripts ou migrations.
 
-## Documentos principais
+## Estrutura do repositorio
 
-Para entender ou retomar o projeto em outro chat, leia nesta ordem:
+```text
+Gerenciador-carteira-investimentos/
+├── backend/
+│   └── app/
+│       ├── core/
+│       ├── db/
+│       ├── modules/
+│       └── shared/
+├── database/
+│   ├── diagrams/
+│   ├── init/
+│   ├── migrations/
+│   └── seeds/
+├── docs/
+├── frontend/
+│   └── src/
+│       ├── components/
+│       ├── hooks/
+│       ├── pages/
+│       ├── routes/
+│       ├── services/
+│       ├── styles/
+│       └── types/
+└── tests/
+    ├── backend/
+    ├── e2e/
+    └── frontend/
+```
 
-1. `docs/architecture.md`: arquitetura e separacao de responsabilidades.
-2. `docs/requirements.md`: requisitos iniciais do sistema.
-3. `docs/api-contract.md`: contrato inicial da API.
-4. `docs/database.md`: modelo inicial do banco MySQL.
-5. `docs/ai-guide.md`: regras para uso de IA no projeto, quando disponivel localmente.
+## Como executar localmente
 
-## Uso de IA no projeto
+### Pre-requisitos
 
-Antes de pedir alteracoes para uma IA, informe o escopo da tarefa: backend, frontend, banco de dados, testes, documentacao ou configuracao.
+- Git.
+- Node.js.
+- Python.
+- Docker Desktop ou Docker Compose.
 
-A IA deve seguir a arquitetura definida em `docs/architecture.md` e respeitar o limite do pedido. Se o problema estiver fora do escopo, ela deve apenas registrar o problema e indicar a area responsavel.
+### 1. Clonar o repositorio
 
-O guia local para padronizacao do uso de IA fica em `docs/ai-guide.md`.
+```powershell
+git clone <url-do-repositorio>
+cd Gerenciador-carteira-investimentos
+```
 
-## Observacao
+### 2. Configurar variaveis de ambiente
 
-Os documentos deste projeto sao vivos. Eles comecam como uma base inicial e devem ser atualizados conforme o codigo, os testes e as decisoes do grupo evoluirem.
+Copie o arquivo de exemplo:
+
+```powershell
+copy .env.example .env
+```
+
+Depois ajuste os valores conforme o ambiente local, se necessario.
+
+### 3. Subir o banco de dados
+
+Na raiz do projeto:
+
+```powershell
+docker compose up -d
+```
+
+Esse comando inicia o MySQL usando as configuracoes do `docker-compose.yml`.
+
+### 4. Executar o backend
+
+Entre na pasta do backend:
+
+```powershell
+cd backend
+```
+
+Crie e ative o ambiente virtual:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+Instale as dependencias:
+
+```powershell
+pip install -r requirements.txt
+```
+
+Inicie a API:
+
+```powershell
+uvicorn app.main:app --reload
+```
+
+Por padrao, a API ficara disponivel em:
+
+```text
+http://localhost:8000
+```
+
+A documentacao interativa do FastAPI pode ser acessada em:
+
+```text
+http://localhost:8000/docs
+```
+
+### 5. Executar o frontend
+
+Em outro terminal, entre na pasta do frontend:
+
+```powershell
+cd frontend
+```
+
+Instale as dependencias:
+
+```powershell
+npm install
+```
+
+Inicie o servidor de desenvolvimento:
+
+```powershell
+npm run dev
+```
+
+Por padrao, o frontend ficara disponivel em:
+
+```text
+http://localhost:5173
+```
+
+## Testes
+
+Os testes ficam na pasta `tests/`.
+
+Quando os testes estiverem implementados, eles poderao ser executados a partir da configuracao definida para cada area do projeto.
+
+Para testes Python:
+
+```powershell
+pytest
+```
+
+Para verificacao do frontend:
+
+```powershell
+cd frontend
+npm run lint
+npm run build
+```
