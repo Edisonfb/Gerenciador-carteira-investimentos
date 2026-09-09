@@ -1,0 +1,37 @@
+# Ambiente
+.env
+.env.*
+!.env.example
+
+# Documentos locais para uso com IA
+docs/ai-guide.md
+docs/ai-*.md
+docs/*-ai.md
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Node / React
+node_modules/
+dist/
+build/
+.vite/
+
+# Banco de dados e arquivos locais
+*.sqlite
+*.db
+*.log
+
+# IDEs e sistema operacional
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
