@@ -3,24 +3,35 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
-const links = [
+const analystLinks = [
   { to: '/', label: 'Inicio', end: true },
-  { to: '/investors', label: 'Investidores' },
-  { to: '/portfolios', label: 'Carteiras' },
-  { to: '/assets', label: 'Ativos' },
-  { to: '/transactions', label: 'Transacoes' },
+  { to: '/investors', label: 'Clientes', end: false },
+  { to: '/portfolios', label: 'Carteiras', end: false },
+  { to: '/assets', label: 'Ativos', end: false },
+  { to: '/transactions', label: 'Transacoes', end: false },
+]
+
+const clientLinks = [
+  { to: '/', label: 'Inicio', end: true },
+  { to: '/portfolios', label: 'Minhas carteiras', end: false },
+  { to: '/assets', label: 'Ativos', end: false },
+  { to: '/transactions', label: 'Transacoes', end: false },
 ]
 
 /** Barra de navegacao e area de conteudo das telas autenticadas. */
 export function AppLayout() {
   const { user, logout } = useAuth()
+  const links = user?.role === 'client' ? clientLinks : analystLinks
+  const roleLabel = user?.role === 'client' ? 'Cliente' : 'Analista'
 
   return (
     <div className="app-shell">
       <header className="topbar">
         <div>
           <p className="brand">Carteiras</p>
-          <p className="muted">{user?.name}</p>
+          <p className="muted">
+            {user?.name} · {roleLabel}
+          </p>
         </div>
         <nav className="nav">
           {links.map((link) => (

@@ -23,7 +23,7 @@ def _build_service() -> TransactionService:
 
 def test_create_transaction_bloqueia_venda_acima_do_saldo() -> None:
     service = _build_service()
-    user = SimpleNamespace(id=1)
+    user = SimpleNamespace(id=1, role="analyst")
     service.portfolio_repository.get_by_id.return_value = SimpleNamespace(
         id=10,
         investor_id=2,
@@ -32,6 +32,7 @@ def test_create_transaction_bloqueia_venda_acima_do_saldo() -> None:
     service.investor_repository.get_by_id.return_value = SimpleNamespace(
         id=2,
         user_id=1,
+        account_user_id=None,
     )
     service.asset_repository.get_by_id.return_value = SimpleNamespace(
         id=5,
@@ -55,7 +56,7 @@ def test_create_transaction_bloqueia_venda_acima_do_saldo() -> None:
 
 def test_create_transaction_exige_ativo_em_compra() -> None:
     service = _build_service()
-    user = SimpleNamespace(id=1)
+    user = SimpleNamespace(id=1, role="analyst")
     service.portfolio_repository.get_by_id.return_value = SimpleNamespace(
         id=10,
         investor_id=2,
@@ -64,6 +65,7 @@ def test_create_transaction_exige_ativo_em_compra() -> None:
     service.investor_repository.get_by_id.return_value = SimpleNamespace(
         id=2,
         user_id=1,
+        account_user_id=None,
     )
 
     payload = TransactionCreate(

@@ -58,7 +58,7 @@ Prefixo:
 
 ### POST /auth/register
 
-Publico. Cadastra usuario.
+Publico. Cadastra um **analista** (`role = analyst`).
 
 Request:
 
@@ -77,6 +77,8 @@ Response `201`:
   "id": 1,
   "name": "Maria Silva",
   "email": "maria@example.com",
+  "role": "analyst",
+  "must_change_password": false,
   "created_at": "2026-01-10T10:00:00",
   "updated_at": "2026-01-10T10:00:00"
 }
@@ -86,7 +88,7 @@ Erros comuns: `409` email ja cadastrado; `422` dados invalidos.
 
 ### POST /auth/login
 
-Publico. Autentica com email e senha (JSON).
+Publico. Autentica analista ou cliente com email e senha (JSON).
 
 Request:
 
@@ -110,11 +112,22 @@ Erros comuns: `401` email ou senha invalidos.
 
 ### GET /auth/me
 
-Protegido. Retorna o usuario autenticado.
+Protegido. Retorna o usuario autenticado (mesmo formato do register, incluindo `role` e `must_change_password`).
 
-Response `200`: mesmo formato de usuario do register.
+### POST /auth/change-password
 
-## 4. Investidores
+Protegido. Troca a senha do usuario autenticado e zera `must_change_password`.
+
+Request:
+
+```json
+{
+  "current_password": "senhaTemp",
+  "new_password": "novaSenha1"
+}
+```
+
+## 4. Investidores (clientes)
 
 Prefixo protegido:
 
@@ -126,36 +139,61 @@ Prefixo protegido:
 GET    /investors
 GET    /investors/{investor_id}
 POST   /investors
+POST   /investors/{investor_id}/regenerate-access
 PUT    /investors/{investor_id}
 DELETE /investors/{investor_id}
 ```
 
+Regras de perfil:
+
+- `POST`, `PUT`, `DELETE` e `regenerate-access` exigem analista;
+- cliente autenticado pode listar/consultar apenas o proprio cadastro.
+
 ### POST /investors
+
+Pre-cadastra cliente e gera senha temporaria (exibida uma vez).
 
 ```json
 {
-  "name": "Investidor Exemplo",
+  "first_name": "Joao",
+  "last_name": "Souza",
+  "rg": "1234567",
   "document": "12345678901",
-  "email": "investidor@example.com"
+  "email": "joao@example.com",
+  "phone": "51999999999",
+  "address": "Rua Exemplo, 100 - Feliz/RS"
 }
 ```
 
-`email` e opcional.
-
-### Response de investidor
+Response `201` (inclui `temporary_password`):
 
 ```json
 {
   "id": 1,
   "user_id": 1,
-  "name": "Investidor Exemplo",
+  "account_user_id": 2,
+  "first_name": "Joao",
+  "last_name": "Souza",
+  "name": "Joao Souza",
+  "rg": "1234567",
   "document": "12345678901",
-  "email": "investidor@example.com",
+  "email": "joao@example.com",
+  "phone": "51999999999",
+  "address": "Rua Exemplo, 100 - Feliz/RS",
   "is_active": true,
   "created_at": "2026-01-10T10:00:00",
-  "updated_at": "2026-01-10T10:00:00"
+  "updated_at": "2026-01-10T10:00:00",
+  "temporary_password": "aB3xY9kLm2Pq"
 }
 ```
+
+### POST /investors/{investor_id}/regenerate-access
+
+Reemite senha temporaria e marca `must_change_password = true` na conta do cliente.
+
+### Response de investidor (sem senha)
+
+Mesmo corpo do create, sem `temporary_password`.
 
 `DELETE` desativa o investidor (`is_active = false`) e devolve o registro atualizado.
 

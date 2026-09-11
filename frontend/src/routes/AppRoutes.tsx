@@ -1,9 +1,11 @@
 /** Configuracao de rotas do frontend. */
 
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { AnalystRoute } from '../components/AnalystRoute'
 import { AppLayout } from '../components/AppLayout'
 import { ProtectedRoute } from '../components/ProtectedRoute'
 import { AssetsPage } from '../pages/AssetsPage'
+import { ChangePasswordPage } from '../pages/ChangePasswordPage'
 import { HomePage } from '../pages/HomePage'
 import { InvestorsPage } from '../pages/InvestorsPage'
 import { LoginPage } from '../pages/LoginPage'
@@ -19,9 +21,12 @@ export function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route element={<ProtectedRoute />}>
+        <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route element={<AppLayout />}>
           <Route path="/" element={<HomePage />} />
-          <Route path="/investors" element={<InvestorsPage />} />
+          <Route element={<AnalystRoute />}>
+            <Route path="/investors" element={<InvestorsPage />} />
+          </Route>
           <Route path="/portfolios" element={<PortfoliosPage />} />
           <Route
             path="/portfolios/:portfolioId/summary"

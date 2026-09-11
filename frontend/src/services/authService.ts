@@ -14,7 +14,12 @@ export type LoginPayload = {
   password: string
 }
 
-/** Cadastra um novo usuario. */
+export type ChangePasswordPayload = {
+  current_password: string
+  new_password: string
+}
+
+/** Cadastra um novo analista. */
 export function registerUser(payload: RegisterPayload): Promise<User> {
   return apiRequest<User>('/auth/register', {
     method: 'POST',
@@ -37,6 +42,14 @@ export async function loginUser(payload: LoginPayload): Promise<TokenResponse> {
 /** Retorna o usuario autenticado. */
 export function getCurrentUser(): Promise<User> {
   return apiRequest<User>('/auth/me')
+}
+
+/** Troca a senha do usuario autenticado. */
+export function changePassword(payload: ChangePasswordPayload): Promise<User> {
+  return apiRequest<User>('/auth/change-password', {
+    method: 'POST',
+    body: payload,
+  })
 }
 
 /** Remove o token local e encerra a sessao no frontend. */

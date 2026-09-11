@@ -31,6 +31,8 @@ def test_register_cria_usuario_quando_email_livre() -> None:
     kwargs = service.repository.create.call_args.kwargs
     assert kwargs["email"] == "ana@example.com"
     assert kwargs["name"] == "Ana"
+    assert kwargs["role"] == "analyst"
+    assert kwargs["must_change_password"] is False
 
 
 def test_register_rejeita_email_duplicado() -> None:

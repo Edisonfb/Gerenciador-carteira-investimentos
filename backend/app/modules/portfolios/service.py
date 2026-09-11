@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.exceptions import ForbiddenError, NotFoundError
 from app.modules.auth.models import User
 from app.modules.investors.repository import InvestorRepository
+from app.modules.investors.service import InvestorService
 from app.modules.portfolios.models import Portfolio
 from app.modules.portfolios.repository import PortfolioRepository
 from app.modules.portfolios.schemas import (
@@ -16,6 +17,7 @@ from app.modules.portfolios.schemas import (
     PortfolioUpdate,
 )
 from app.modules.transactions.repository import TransactionRepository
+from app.shared.access import user_can_access_investor
 
 
 class PortfolioService:
@@ -28,11 +30,11 @@ class PortfolioService:
         self.transaction_repository = TransactionRepository(db)
 
     def _owned_investor_ids(self, user: User) -> list[int]:
-        return [item.id for item in self.investor_repository.list_by_user(user.id)]
+        return [item.id for item in InvestorService(self.db).list_investors(user)]
 
     def _ensure_portfolio_access(self, user: User, portfolio: Portfolio) -> None:
         investor = self.investor_repository.get_by_id(portfolio.investor_id)
-        if investor is None or investor.user_id != user.id:
+        if investor is None or not user_can_access_investor(user, investor):
             raise ForbiddenError("Carteira nao pertence ao usuario autenticado.")
 
     def list_portfolios(self, user: User) -> list[Portfolio]:
@@ -49,7 +51,7 @@ class PortfolioService:
         investor = self.investor_repository.get_by_id(data.investor_id)
         if investor is None:
             raise NotFoundError("Investidor nao encontrado.")
-        if investor.user_id != user.id:
+        if not user_can_access_investor(user, investor):
             raise ForbiddenError("Investidor nao pertence ao usuario autenticado.")
         if not investor.is_active:
             raise ForbiddenError("Investidor inativo.")

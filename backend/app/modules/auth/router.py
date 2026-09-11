@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.deps import get_current_user, get_db
 from app.modules.auth.models import User
 from app.modules.auth.schemas import (
+    PasswordChange,
     TokenResponse,
     UserLogin,
     UserRegister,
@@ -19,7 +20,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=UserResponse, status_code=201)
 def register(payload: UserRegister, db: Session = Depends(get_db)) -> User:
-    """Cadastra um novo usuario."""
+    """Cadastra um novo analista."""
     return AuthService(db).register(payload)
 
 
@@ -44,3 +45,13 @@ def login_form(
 def me(current_user: User = Depends(get_current_user)) -> User:
     """Retorna os dados do usuario autenticado."""
     return current_user
+
+
+@router.post("/change-password", response_model=UserResponse)
+def change_password(
+    payload: PasswordChange,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Troca a senha do usuario autenticado."""
+    return AuthService(db).change_password(current_user, payload)

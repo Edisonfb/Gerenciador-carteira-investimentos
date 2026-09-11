@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class UserRegister(BaseModel):
-    """Dados para cadastro de usuario."""
+    """Dados para cadastro publico de analista."""
 
     name: str = Field(min_length=2, max_length=120)
     email: EmailStr
@@ -18,6 +18,13 @@ class UserLogin(BaseModel):
 
     email: EmailStr
     password: str = Field(min_length=6, max_length=128)
+
+
+class PasswordChange(BaseModel):
+    """Troca de senha do usuario autenticado."""
+
+    current_password: str = Field(min_length=6, max_length=128)
+    new_password: str = Field(min_length=6, max_length=128)
 
 
 class TokenResponse(BaseModel):
@@ -35,5 +42,7 @@ class UserResponse(BaseModel):
     id: int
     name: str
     email: EmailStr
+    role: str
+    must_change_password: bool
     created_at: datetime
     updated_at: datetime

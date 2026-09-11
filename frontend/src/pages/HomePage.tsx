@@ -3,20 +3,25 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
-/** Visao geral com atalhos para as areas principais. */
+/** Visao geral com atalhos conforme o perfil do usuario. */
 export function HomePage() {
   const { user } = useAuth()
+  const isAnalyst = user?.role === 'analyst'
 
   return (
     <section className="page">
       <h1>Ola, {user?.name}</h1>
       <p className="muted">
-        Gerencie investidores, carteiras, ativos e transacoes em um so lugar.
+        {isAnalyst
+          ? 'Pre-cadastre clientes e acompanhe carteiras, ativos e transacoes.'
+          : 'Gerencie suas carteiras, ativos e transacoes.'}
       </p>
       <div className="shortcut-grid">
-        <Link className="shortcut" to="/investors">
-          Investidores
-        </Link>
+        {isAnalyst && (
+          <Link className="shortcut" to="/investors">
+            Clientes
+          </Link>
+        )}
         <Link className="shortcut" to="/portfolios">
           Carteiras
         </Link>

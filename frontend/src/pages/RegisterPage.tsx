@@ -37,8 +37,11 @@ export function RegisterPage() {
   return (
     <div className="auth-page">
       <form className="auth-card" onSubmit={handleSubmit}>
-        <h1>Criar conta</h1>
-        <p className="muted">Cadastre-se para gerenciar carteiras.</p>
+        <h1>Criar conta de analista</h1>
+        <p className="muted">
+          Cadastro publico apenas para analistas. Clientes entram com a senha
+          temporaria gerada no pre-cadastro.
+        </p>
         <ErrorBanner message={error} />
         <label>
           Nome

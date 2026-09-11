@@ -10,6 +10,7 @@ from app.core.security import decode_access_token
 from app.db.session import SessionLocal
 from app.modules.auth.models import User
 from app.modules.auth.repository import AuthRepository
+from app.shared.roles import is_analyst
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login/form")
 
@@ -44,3 +45,13 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+
+def get_current_analyst(current_user: User = Depends(get_current_user)) -> User:
+    """Garante que o usuario autenticado seja um analista."""
+    if not is_analyst(current_user.role):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Apenas analistas podem executar esta operacao.",
+        )
+    return current_user

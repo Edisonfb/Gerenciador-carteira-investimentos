@@ -8,10 +8,12 @@ from app.core.exceptions import ForbiddenError, NotFoundError, ProjectException
 from app.modules.assets.repository import AssetRepository
 from app.modules.auth.models import User
 from app.modules.investors.repository import InvestorRepository
+from app.modules.investors.service import InvestorService
 from app.modules.portfolios.repository import PortfolioRepository
 from app.modules.transactions.models import Transaction
 from app.modules.transactions.repository import TransactionRepository
 from app.modules.transactions.schemas import TransactionCreate, TransactionUpdate
+from app.shared.access import user_can_access_investor
 from app.shared.validators import (
     ASSET_REQUIRED_TYPES,
     is_non_negative,
@@ -24,6 +26,7 @@ class TransactionService:
     """Regras de gerenciamento de transacoes."""
 
     def __init__(self, db: Session) -> None:
+        self.db = db
         self.repository = TransactionRepository(db)
         self.portfolio_repository = PortfolioRepository(db)
         self.investor_repository = InvestorRepository(db)
@@ -31,7 +34,7 @@ class TransactionService:
 
     def _owned_portfolio_ids(self, user: User) -> list[int]:
         investor_ids = [
-            item.id for item in self.investor_repository.list_by_user(user.id)
+            item.id for item in InvestorService(self.db).list_investors(user)
         ]
         portfolios = self.portfolio_repository.list_by_investor_ids(investor_ids)
         return [item.id for item in portfolios]
@@ -41,7 +44,7 @@ class TransactionService:
         if portfolio is None:
             raise NotFoundError("Carteira nao encontrada.")
         investor = self.investor_repository.get_by_id(portfolio.investor_id)
-        if investor is None or investor.user_id != user.id:
+        if investor is None or not user_can_access_investor(user, investor):
             raise ForbiddenError("Carteira nao pertence ao usuario autenticado.")
         if not portfolio.is_active:
             raise ForbiddenError("Carteira inativa.")

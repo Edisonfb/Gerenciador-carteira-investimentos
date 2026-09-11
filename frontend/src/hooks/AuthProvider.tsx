@@ -8,10 +8,12 @@ import {
   type ReactNode,
 } from 'react'
 import {
+  changePassword as changePasswordRequest,
   getCurrentUser,
   loginUser,
   logoutUser,
   registerUser,
+  type ChangePasswordPayload,
   type LoginPayload,
   type RegisterPayload,
 } from '../services/authService'
@@ -72,14 +74,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(current)
   }, [])
 
+  const changePassword = useCallback(async (payload: ChangePasswordPayload) => {
+    const updated = await changePasswordRequest(payload)
+    setUser(updated)
+  }, [])
+
   const logout = useCallback(() => {
     logoutUser()
     setUser(null)
   }, [])
 
   const value = useMemo(
-    () => ({ user, loading, login, register, logout }),
-    [user, loading, login, register, logout],
+    () => ({ user, loading, login, register, changePassword, logout }),
+    [user, loading, login, register, changePassword, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

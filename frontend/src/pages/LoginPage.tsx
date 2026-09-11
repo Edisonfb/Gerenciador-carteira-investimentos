@@ -37,7 +37,9 @@ export function LoginPage() {
     <div className="auth-page">
       <form className="auth-card" onSubmit={handleSubmit}>
         <h1>Entrar</h1>
-        <p className="muted">Acesse o gerenciador de carteiras.</p>
+        <p className="muted">
+          Analistas e clientes acessam com email e senha.
+        </p>
         <ErrorBanner message={error} />
         <label>
           Email

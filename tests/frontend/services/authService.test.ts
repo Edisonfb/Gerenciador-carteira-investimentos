@@ -22,6 +22,8 @@ describe('authService', () => {
           id: 1,
           name: 'Maria',
           email: 'maria@example.com',
+          role: 'analyst',
+          must_change_password: false,
           created_at: '2026-01-10T10:00:00',
           updated_at: '2026-01-10T10:00:00',
         }),

@@ -1,5 +1,7 @@
 """Testes e2e do fluxo de transacoes."""
 
+from tests.helpers import make_investor_payload
+
 
 def test_transactions_flow(auth_client) -> None:
     client, headers = auth_client
@@ -7,7 +9,12 @@ def test_transactions_flow(auth_client) -> None:
     investor = client.post(
         "/investors",
         headers=headers,
-        json={"name": "Trader", "document": "55566677788", "email": None},
+        json=make_investor_payload(
+            first_name="Trader",
+            last_name="Ops",
+            document="55566677788",
+            email="trader@example.com",
+        ),
     ).json()
 
     portfolio = client.post(

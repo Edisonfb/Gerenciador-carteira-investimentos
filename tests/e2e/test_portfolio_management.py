@@ -1,5 +1,7 @@
 """Testes e2e do fluxo de gerenciamento de carteiras."""
 
+from tests.helpers import make_investor_payload
+
 
 def test_portfolio_management_flow(auth_client) -> None:
     client, headers = auth_client
@@ -7,11 +9,12 @@ def test_portfolio_management_flow(auth_client) -> None:
     investor = client.post(
         "/investors",
         headers=headers,
-        json={
-            "name": "Dono Carteira",
-            "document": "11122233344",
-            "email": None,
-        },
+        json=make_investor_payload(
+            first_name="Dono",
+            last_name="Carteira",
+            document="11122233344",
+            email="dono-carteira@example.com",
+        ),
     ).json()
 
     portfolio = client.post(

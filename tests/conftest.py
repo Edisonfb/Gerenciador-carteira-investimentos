@@ -64,7 +64,7 @@ def client(db: Session) -> TestClient:
 
 @pytest.fixture()
 def auth_client(client: TestClient) -> tuple[TestClient, dict[str, str]]:
-    """Registra um usuario e devolve o client com header Authorization."""
+    """Registra um analista e devolve o client com header Authorization."""
     email = "e2e@example.com"
     password = "senha123"
     client.post(

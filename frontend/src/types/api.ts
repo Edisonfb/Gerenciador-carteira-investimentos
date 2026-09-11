@@ -1,9 +1,13 @@
 /** Tipos compartilhados alinhados ao contrato da API. */
 
+export type UserRole = 'analyst' | 'client'
+
 export type User = {
   id: number
   name: string
   email: string
+  role: UserRole
+  must_change_password: boolean
   created_at: string
   updated_at: string
 }
@@ -16,12 +20,22 @@ export type TokenResponse = {
 export type Investor = {
   id: number
   user_id: number
+  account_user_id: number | null
+  first_name: string
+  last_name: string
   name: string
+  rg: string
   document: string
-  email: string | null
+  email: string
+  phone: string
+  address: string
   is_active: boolean
   created_at: string
   updated_at: string
+}
+
+export type InvestorAccess = Investor & {
+  temporary_password: string
 }
 
 export type Portfolio = {

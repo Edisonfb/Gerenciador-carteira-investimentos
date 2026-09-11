@@ -126,10 +126,18 @@ Arquivo: `docker-compose.yml`
 
 - Sobe MySQL 8 na porta `3306`
 - Monta `database/init/` em `/docker-entrypoint-initdb.d`
-- Scripts de init criam o schema na primeira subida do volume
-- Migrations oficiais ficam em `database/migrations/` (registro versionado da estrutura)
+- Scripts de init criam o schema **completo** na primeira subida do volume
+- Migrations oficiais ficam em `database/migrations/` (historico versionado)
 
 Backend e frontend **nao** rodam dentro do Docker na v1: so o MySQL.
+
+Se o volume MySQL **ja existir** (banco antigo), o `init/` **nao** roda de novo. Aplique a migration manualmente no PowerShell:
+
+```powershell
+Get-Content database\migrations\002_roles_and_client_access.sql | docker exec -i investment_portfolio_mysql mysql -u portfolio_user -pportfolio_password investment_portfolio_manager
+```
+
+(Alternativa sem dados: `docker compose down -v` e depois `docker compose up -d`.)
 
 ### 4.3 Backend
 
@@ -215,10 +223,12 @@ Infra compartilhada:
 |---------|-------|
 | `backend/app/core/config.py` | Settings a partir do `.env` |
 | `backend/app/core/security.py` | Hash de senha e JWT |
-| `backend/app/core/deps.py` | `get_db`, `get_current_user` |
+| `backend/app/core/deps.py` | `get_db`, `get_current_user`, `get_current_analyst` |
 | `backend/app/core/exceptions.py` | Excecoes de negocio (`ProjectException` e derivadas) |
 | `backend/app/db/session.py` | Engine e `SessionLocal` |
 | `backend/app/shared/validators.py` | Validadores reutilizaveis (ex.: tipos de transacao) |
+| `backend/app/shared/roles.py` | Constantes de perfil (`analyst` / `client`) |
+| `backend/app/shared/access.py` | Ownership compartilhado (analista dono ou cliente vinculado) |
 
 ### 5.3 Pipeline de uma requisicao protegida
 
@@ -251,13 +261,14 @@ com o status HTTP adequado.
 
 Endpoints publicos de auth:
 
-- `POST /auth/register`
+- `POST /auth/register` (cria analista)
 - `POST /auth/login`
 - `POST /auth/login/form` (OAuth2 form, usado pelo Swagger; fora do schema publico)
 
-Endpoint protegido:
+Endpoints protegidos:
 
 - `GET /auth/me`
+- `POST /auth/change-password`
 
 Fluxo de login:
 
@@ -269,32 +280,39 @@ email/senha
   -> retorna { access_token, token_type: "bearer" }
 ```
 
-Fluxo de registro:
+Fluxo de registro (analista):
 
 ```text
 name/email/password
   -> valida email unico
   -> gera password_hash
-  -> cria User
+  -> cria User com role=analyst
   -> retorna UserResponse (sem senha)
 ```
 
-Dependencia padrao das rotas protegidas:
+Fluxo de pre-cadastro de cliente:
 
 ```text
-Depends(get_current_user)
+analista autenticado
+  -> POST /investors com dados regulatorios
+  -> cria User role=client + senha temporaria (must_change_password=true)
+  -> cria Investor ligado ao analista e a conta do cliente
+  -> retorna InvestorAccessResponse com temporary_password (uma vez)
 ```
 
-implementada em `backend/app/core/deps.py`.
+Dependencias:
+
+- `Depends(get_current_user)` para qualquer autenticado
+- `Depends(get_current_analyst)` para operacoes exclusivas do analista
 
 ### 5.5 Ownership e isolamento de dados
 
-Regra transversal da v1:
+Regra transversal:
 
-- investidores pertencem a um `user_id`
-- carteiras pertencem a um investidor
-- transacoes pertencem a uma carteira
-- services verificam se o recurso pertence ao usuario autenticado antes de ler/alterar
+- investidores do analista: `investor.user_id == analyst.id`
+- investidor do cliente: `investor.account_user_id == client.id`
+- carteiras/transacoes: acesso se o usuario pode acessar o investidor dono
+- services verificam ownership antes de ler/alterar (`shared/access.py`)
 
 Exemplo tipico no service:
 
@@ -348,24 +366,26 @@ Arquivos-chave:
 ### 6.2 Pipeline de autenticacao (frontend)
 
 ```text
-LoginPage / RegisterPage
+LoginPage / RegisterPage (analista)
   -> authService.loginUser / registerUser
   -> apiRequest('/auth/login' | '/auth/register')
   -> setAccessToken no localStorage
   -> getCurrentUser (/auth/me)
   -> AuthProvider.setUser
-  -> ProtectedRoute libera AppLayout + paginas
+  -> se must_change_password: ChangePasswordPage
+  -> ProtectedRoute libera AppLayout + paginas por perfil
 ```
 
 Componentes/hooks:
 
 | Arquivo | Papel |
 |---------|-------|
-| `hooks/AuthProvider.tsx` | Estado global de usuario, login, register, logout |
+| `hooks/AuthProvider.tsx` | Estado global de usuario, login, register, changePassword, logout |
 | `hooks/authContext.ts` | Contexto React |
 | `hooks/useAuth.ts` | Hook de consumo |
-| `components/ProtectedRoute.tsx` | Bloqueia rotas sem usuario |
-| `components/AppLayout.tsx` | Shell/navegacao autenticada |
+| `components/ProtectedRoute.tsx` | Bloqueia rotas sem usuario / exige troca de senha |
+| `components/AnalystRoute.tsx` | Bloqueia rotas exclusivas do analista |
+| `components/AppLayout.tsx` | Shell/navegacao por perfil |
 | `services/api.ts` | Cliente HTTP + token |
 | `services/authService.ts` | Chamadas de auth |
 
@@ -379,12 +399,13 @@ Token:
 Publicas:
 
 - `/login`
-- `/register`
+- `/register` (analista)
 
-Protegidas (dentro de `ProtectedRoute` + `AppLayout`):
+Protegidas:
 
+- `/change-password` (obrigatoria se `must_change_password`)
 - `/` — home
-- `/investors`
+- `/investors` — apenas analista
 - `/portfolios`
 - `/portfolios/:portfolioId/summary`
 - `/assets`
@@ -424,22 +445,29 @@ Regra: **nao** colocar `fetch` direto nas pages; passar por `services/`.
 ### 7.1 Modelo conceitual
 
 ```text
-users
-  └── investors (user_id)
+users (role: analyst | client)
+  ├── investors via user_id          (analista pre-cadastra o cliente)
+  └── investors via account_user_id  (conta de login do cliente)
         └── portfolios (investor_id)
               └── transactions (portfolio_id, asset_id opcional)
 
 assets (cadastro global de ativos financeiros)
 ```
 
-Detalhes de campos e relacionamentos: `docs/database.md` e scripts SQL.
+Campos relevantes de acesso:
+
+- `users.role`, `users.must_change_password`
+- `investors.account_user_id`, dados regulatorios (nome/sobrenome, RG, CPF, email, celular, endereco)
+
+Detalhes: `docs/database.md` e scripts SQL.
 
 ### 7.2 Scripts
 
 | Caminho | Uso |
 |---------|-----|
-| `database/init/` | Inicializacao automatica no primeiro `docker compose up` |
-| `database/migrations/` | Historico oficial de schema (ex.: `001_create_initial_tables.sql`) |
+| `database/init/` | Inicializacao automatica no primeiro `docker compose up` (schema atual) |
+| `database/migrations/001_create_initial_tables.sql` | Schema inicial |
+| `database/migrations/002_roles_and_client_access.sql` | Perfis + acesso do cliente |
 | `database/seeds/` | Dados de exemplo (quando houver) |
 | `database/diagrams/` | MER/DER |
 
@@ -524,7 +552,7 @@ Boas praticas:
 
 ## 10. Mapa mental: de uma acao do usuario ate o banco
 
-### Exemplo A — Login
+### Exemplo A — Login (analista ou cliente)
 
 ```text
 Usuario preenche email/senha
@@ -534,23 +562,24 @@ Usuario preenche email/senha
   -> AuthService autentica
   -> JWT gerado
   -> token salvo no localStorage
-  -> GET /auth/me
+  -> GET /auth/me (role + must_change_password)
   -> AuthProvider.user preenchido
-  -> redireciona para area autenticada
+  -> se must_change_password: ChangePasswordPage
+  -> senao: area autenticada (menu conforme o perfil)
 ```
 
-### Exemplo B — Criar investidor
+### Exemplo B — Pre-cadastro de cliente (analista)
 
 ```text
 InvestorsPage submit
-  -> investorService.create(...)
+  -> investorService.createInvestor(...)
   -> POST /investors + Bearer
-  -> get_current_user
-  -> InvestorService.create(user, payload)
-  -> InvestorRepository.create(user_id=user.id, ...)
-  -> INSERT investors
-  -> InvestorResponse
-  -> UI atualiza lista
+  -> get_current_analyst
+  -> InvestorService.create_investor
+  -> cria User role=client + senha temporaria
+  -> InvestorRepository.create (user_id=analista, account_user_id=cliente)
+  -> InvestorAccessResponse com temporary_password
+  -> UI exibe senha uma vez e atualiza lista
 ```
 
 ### Exemplo C — Registrar compra
@@ -612,19 +641,21 @@ Checklist minimo para uma IA implementar uma feature:
 
 Implementado de forma integrada:
 
-- autenticacao JWT (register/login/me)
-- CRUD de investidores, carteiras e ativos (com exclusao logica onde aplicavel)
+- autenticacao JWT com perfis (`analyst` / `client`): register (analista), login, me, change-password
+- pre-cadastro de clientes com senha temporaria e reemissao de acesso
+- menus/rotas por perfil no frontend (`AnalystRoute`, troca obrigatoria de senha)
+- CRUD de investidores/clientes, carteiras e ativos (com exclusao logica onde aplicavel)
 - registro/consulta/edicao/exclusao de transacoes
 - resumo de carteira
 - frontend com rotas protegidas e services por dominio
-- MySQL via Docker Compose + scripts iniciais/migration
+- MySQL via Docker Compose + init/migrations (`002_roles_and_client_access`)
 - base de testes unitarios, integracao e e2e da API
 
 Ainda incremental / sujeito a evolucao:
 
 - seeds ricos de demonstracao
 - refinamentos de UX
-- regras adicionais de negocio (ex.: bloquear venda acima da quantidade disponivel, se ainda nao estiver completa)
+- regras do estudo de caso ainda pendentes (objetivo %, cotacao, distancia, recomendacao de aporte, ticker B3)
 - endurecimento de CI e qualidade
 
 Consulte `docs/requirements.md` para o mapa de RFs.
@@ -638,7 +669,9 @@ Consulte `docs/requirements.md` para o mapa de RFs.
 | Pipeline | Caminho completo de uma acao ate a persistencia/resposta |
 | Modulo | Pasta de negocio em `backend/app/modules/*` |
 | Contrato | Acordo de endpoints/payloads em `api-contract.md` |
-| Ownership | Garantia de que o recurso pertence ao usuario autenticado |
+| Analista | Usuario `role=analyst`; pre-cadastra clientes |
+| Cliente | Usuario `role=client`; acesso gerado pelo analista |
+| Ownership | Garantia de que o recurso pertence ao analista dono ou ao cliente vinculado |
 | Exclusao logica | Marcar `is_active=false` sem apagar a linha |
 | Smoke test | Percorrer manualmente login → CRUD → resumo no browser |
 
