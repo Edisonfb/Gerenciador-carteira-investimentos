@@ -30,6 +30,13 @@ A estrutura inicial do repositorio, a base do backend, a base do frontend e os d
 - Testes: pytest, httpx e pytest-asyncio.
 - Ambiente local: Docker Compose para MySQL.
 
+## Documentacao
+
+Antes de explorar o codigo (pessoas ou IAs), leia:
+
+- `docs/pipeline.md`: fluxo completo do sistema (frontend, API, regras, banco, testes e Git).
+- `docs/README.md`: indice dos demais documentos tecnicos.
+
 ## Arquitetura
 
 O projeto segue uma arquitetura de monolito modular. A aplicacao fica em um unico repositorio, mas separada por responsabilidades para facilitar manutencao, organizacao e trabalho em equipe.
