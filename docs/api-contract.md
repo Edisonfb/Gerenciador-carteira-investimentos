@@ -1,6 +1,6 @@
 # Contrato da API
 
-Este documento registra o contrato inicial entre frontend e backend.
+Este documento registra o contrato entre frontend e backend.
 
 Ele deve ser atualizado sempre que um endpoint for criado, removido ou alterado.
 
@@ -18,11 +18,19 @@ Formato padrao de dados:
 JSON
 ```
 
+Autenticacao:
+
+- tipo: JWT Bearer;
+- apos o login, o frontend deve enviar o header `Authorization: Bearer <access_token>`;
+- endpoints protegidos exigem token valido;
+- endpoints publicos: `GET /health`, `POST /auth/register`, `POST /auth/login`.
+
 Regras gerais:
 
-- endpoints devem usar substantivos no plural quando representarem recursos;
-- respostas devem ser previsiveis para facilitar o consumo pelo frontend;
-- erros devem retornar codigo HTTP adequado e mensagem clara;
+- endpoints usam substantivos no plural;
+- erros retornam codigo HTTP adequado e mensagem em `detail`;
+- exclusao de investidores, carteiras e ativos e logica (`is_active = false`);
+- exclusao de transacoes e fisica (`204 No Content`);
 - alteracoes em endpoints usados pelo frontend devem ser combinadas antes.
 
 ## 2. Endpoint de saude
@@ -31,9 +39,7 @@ Regras gerais:
 GET /health
 ```
 
-Objetivo: verificar se a API esta disponivel.
-
-Resposta esperada:
+Publico. Verifica se a API esta disponivel.
 
 ```json
 {
@@ -50,57 +56,154 @@ Prefixo:
 /auth
 ```
 
-Endpoints planejados:
+### POST /auth/register
 
-```text
-POST /auth/register
-POST /auth/login
-GET  /auth/me
+Publico. Cadastra um **analista** (`role = analyst`).
+
+Request:
+
+```json
+{
+  "name": "Maria Silva",
+  "email": "maria@example.com",
+  "password": "senha123"
+}
 ```
 
-Responsabilidade:
+Response `201`:
 
-- cadastrar usuario;
-- autenticar usuario;
-- retornar dados do usuario logado.
+```json
+{
+  "id": 1,
+  "name": "Maria Silva",
+  "email": "maria@example.com",
+  "role": "analyst",
+  "must_change_password": false,
+  "created_at": "2026-01-10T10:00:00",
+  "updated_at": "2026-01-10T10:00:00"
+}
+```
 
-Observacao: o formato final de autenticacao ainda sera definido no backend.
+Erros comuns: `409` email ja cadastrado; `422` dados invalidos.
 
-## 4. Investidores
+### POST /auth/login
 
-Prefixo:
+Publico. Autentica analista ou cliente com email e senha (JSON).
+
+Request:
+
+```json
+{
+  "email": "maria@example.com",
+  "password": "senha123"
+}
+```
+
+Response `200`:
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
+}
+```
+
+Erros comuns: `401` email ou senha invalidos.
+
+### GET /auth/me
+
+Protegido. Retorna o usuario autenticado (mesmo formato do register, incluindo `role` e `must_change_password`).
+
+### POST /auth/change-password
+
+Protegido. Troca a senha do usuario autenticado e zera `must_change_password`.
+
+Request:
+
+```json
+{
+  "current_password": "senhaTemp",
+  "new_password": "novaSenha1"
+}
+```
+
+## 4. Investidores (clientes)
+
+Prefixo protegido:
 
 ```text
 /investors
 ```
 
-Endpoints planejados:
-
 ```text
 GET    /investors
 GET    /investors/{investor_id}
 POST   /investors
+POST   /investors/{investor_id}/regenerate-access
 PUT    /investors/{investor_id}
 DELETE /investors/{investor_id}
 ```
 
-Responsabilidade:
+Regras de perfil:
 
-- cadastrar investidores;
-- listar investidores;
-- consultar um investidor especifico;
-- atualizar dados de investidor;
-- remover ou desativar investidor.
+- `POST`, `PUT`, `DELETE` e `regenerate-access` exigem analista;
+- cliente autenticado pode listar/consultar apenas o proprio cadastro.
+
+### POST /investors
+
+Pre-cadastra cliente e gera senha temporaria (exibida uma vez).
+
+```json
+{
+  "first_name": "Joao",
+  "last_name": "Souza",
+  "rg": "1234567",
+  "document": "12345678901",
+  "email": "joao@example.com",
+  "phone": "51999999999",
+  "address": "Rua Exemplo, 100 - Feliz/RS"
+}
+```
+
+Response `201` (inclui `temporary_password`):
+
+```json
+{
+  "id": 1,
+  "user_id": 1,
+  "account_user_id": 2,
+  "first_name": "Joao",
+  "last_name": "Souza",
+  "name": "Joao Souza",
+  "rg": "1234567",
+  "document": "12345678901",
+  "email": "joao@example.com",
+  "phone": "51999999999",
+  "address": "Rua Exemplo, 100 - Feliz/RS",
+  "is_active": true,
+  "created_at": "2026-01-10T10:00:00",
+  "updated_at": "2026-01-10T10:00:00",
+  "temporary_password": "aB3xY9kLm2Pq"
+}
+```
+
+### POST /investors/{investor_id}/regenerate-access
+
+Reemite senha temporaria e marca `must_change_password = true` na conta do cliente.
+
+### Response de investidor (sem senha)
+
+Mesmo corpo do create, sem `temporary_password`.
+
+`DELETE` desativa o investidor (`is_active = false`) e devolve o registro atualizado.
 
 ## 5. Carteiras
 
-Prefixo:
+Prefixo protegido:
 
 ```text
 /portfolios
 ```
-
-Endpoints planejados:
 
 ```text
 GET    /portfolios
@@ -111,24 +214,62 @@ DELETE /portfolios/{portfolio_id}
 GET    /portfolios/{portfolio_id}/summary
 ```
 
-Responsabilidade:
+### POST /portfolios
 
-- criar carteiras;
-- listar carteiras;
-- consultar detalhes de uma carteira;
-- atualizar uma carteira;
-- remover ou desativar uma carteira;
-- consultar resumo consolidado da carteira.
+```json
+{
+  "investor_id": 1,
+  "name": "Carteira Principal",
+  "description": "Longo prazo"
+}
+```
+
+### Response de carteira
+
+```json
+{
+  "id": 1,
+  "investor_id": 1,
+  "name": "Carteira Principal",
+  "description": "Longo prazo",
+  "is_active": true,
+  "created_at": "2026-01-10T10:00:00",
+  "updated_at": "2026-01-10T10:00:00"
+}
+```
+
+### GET /portfolios/{portfolio_id}/summary
+
+```json
+{
+  "portfolio_id": 1,
+  "portfolio_name": "Carteira Principal",
+  "total_invested": "305.00000000",
+  "total_fees": "0.00000000",
+  "cash_flow": "-305.00000000",
+  "positions": [
+    {
+      "asset_id": 1,
+      "symbol": "PETR4",
+      "name": "Petrobras",
+      "quantity": "10.00000000",
+      "average_price": "30.50000000",
+      "total_invested": "305.00000000"
+    }
+  ],
+  "transactions_count": 1
+}
+```
+
+Valores monetarios/quantidade podem ser serializados como string decimal.
 
 ## 6. Ativos financeiros
 
-Prefixo:
+Prefixo protegido:
 
 ```text
 /assets
 ```
-
-Endpoints planejados:
 
 ```text
 GET    /assets
@@ -138,32 +279,34 @@ PUT    /assets/{asset_id}
 DELETE /assets/{asset_id}
 ```
 
-Responsabilidade:
+### POST /assets
 
-- cadastrar ativos financeiros;
-- listar ativos;
-- consultar ativo especifico;
-- atualizar dados de ativo;
-- remover ou desativar ativo.
+```json
+{
+  "symbol": "PETR4",
+  "name": "Petrobras",
+  "asset_type": "acao"
+}
+```
 
-Exemplos de ativos:
+Tipos aceitos de `asset_type`:
 
-- acao;
-- fundo imobiliario;
-- renda fixa;
-- criptoativo;
-- ETF;
-- outro.
+- `acao`
+- `fundo_imobiliario`
+- `renda_fixa`
+- `etf`
+- `cripto`
+- `outro`
+
+`DELETE` desativa o ativo (`is_active = false`).
 
 ## 7. Transacoes
 
-Prefixo:
+Prefixo protegido:
 
 ```text
 /transactions
 ```
-
-Endpoints planejados:
 
 ```text
 GET    /transactions
@@ -173,25 +316,38 @@ PUT    /transactions/{transaction_id}
 DELETE /transactions/{transaction_id}
 ```
 
-Responsabilidade:
+### POST /transactions
 
-- registrar compras;
-- registrar vendas;
-- consultar historico de transacoes;
-- corrigir ou remover registros, se permitido pela regra de negocio.
+```json
+{
+  "portfolio_id": 1,
+  "asset_id": 1,
+  "transaction_type": "compra",
+  "quantity": "10",
+  "unit_price": "30.5",
+  "transaction_date": "2026-01-10T10:00:00",
+  "fees": "0",
+  "notes": "compra inicial"
+}
+```
 
-Tipos iniciais de transacao:
+Tipos aceitos de `transaction_type`:
 
-- compra;
-- venda;
-- deposito;
-- retirada;
-- rendimento;
-- taxa.
+- `compra`
+- `venda`
+- `deposito`
+- `retirada`
+- `rendimento`
+- `taxa`
 
-## 8. Padrao inicial de erro
+Regras relevantes:
 
-Formato sugerido:
+- `compra`, `venda` e `rendimento` exigem `asset_id`;
+- valores negativos de quantidade, preco ou taxas nao sao permitidos;
+- `venda` nao pode superar a quantidade disponivel na carteira;
+- `DELETE` remove a transacao e retorna `204`.
+
+## 8. Padrao de erro
 
 ```json
 {
@@ -202,13 +358,15 @@ Formato sugerido:
 Codigos comuns:
 
 - `400`: dados invalidos ou regra de negocio violada;
-- `401`: usuario nao autenticado;
+- `401`: usuario nao autenticado ou credenciais invalidas;
 - `403`: usuario sem permissao;
 - `404`: recurso nao encontrado;
+- `409`: conflito (ex.: email ou documento duplicado);
+- `422`: validacao de schema;
 - `500`: erro inesperado no servidor.
 
 ## 9. Observacoes para o frontend
 
-O frontend deve consumir endpoints definidos neste documento.
-
-Se uma tela precisar de um campo ou endpoint que ainda nao existe, registrar a necessidade aqui antes de implementar alteracoes fora do escopo do frontend.
+- consumir apenas endpoints deste documento;
+- guardar o `access_token` apos o login e envia-lo nas requisicoes protegidas;
+- se uma tela precisar de campo ou endpoint inexistente, registrar a necessidade aqui antes de alterar o backend.

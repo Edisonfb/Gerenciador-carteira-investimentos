@@ -19,18 +19,31 @@ Perfis do grupo:
 
 Perfis do sistema:
 
-- usuario: pessoa que acessa a aplicacao;
-- investidor: pessoa ou entidade que possui carteiras de investimento.
+- analista (`analyst`): usuario que se cadastra publicamente, pre-cadastra clientes e libera acesso;
+- cliente (`client`): usuario criado no pre-cadastro do analista, com senha temporaria;
+- investidor: registro de dados do cliente (regulamentacao) vinculado ao analista e a conta de login.
 
 ## 3. Requisitos funcionais iniciais
 
 ### RF01 - Autenticacao de usuarios
 
-O sistema deve permitir cadastro, login e identificacao do usuario autenticado.
+O sistema deve permitir:
 
-### RF02 - Gerenciamento de investidores
+- cadastro publico de analistas;
+- login de analistas e clientes;
+- identificacao do usuario autenticado (`/auth/me`), incluindo perfil (`role`) e flag `must_change_password`;
+- troca de senha (`/auth/change-password`), obrigatoria no primeiro acesso do cliente.
 
-O sistema deve permitir cadastrar, listar, consultar, atualizar e remover ou desativar investidores.
+### RF02 - Gerenciamento de investidores (clientes)
+
+O sistema deve permitir que o analista:
+
+- pre-cadastrar clientes com nome, sobrenome, RG, CPF, e-mail, celular e endereco;
+- gerar senha temporaria de acesso no pre-cadastro;
+- reemitir senha temporaria;
+- listar, consultar, atualizar e desativar clientes.
+
+O cliente autenticado deve ver apenas o proprio cadastro e nao pode criar outros clientes.
 
 ### RF03 - Gerenciamento de carteiras
 

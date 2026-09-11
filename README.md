@@ -30,6 +30,13 @@ A estrutura inicial do repositorio, a base do backend, a base do frontend e os d
 - Testes: pytest, httpx e pytest-asyncio.
 - Ambiente local: Docker Compose para MySQL.
 
+## Documentacao
+
+Antes de explorar o codigo (pessoas ou IAs), leia:
+
+- `docs/pipeline.md`: fluxo completo do sistema (frontend, API, regras, banco, testes e Git).
+- `docs/README.md`: indice dos demais documentos tecnicos.
+
 ## Arquitetura
 
 O projeto segue uma arquitetura de monolito modular. A aplicacao fica em um unico repositorio, mas separada por responsabilidades para facilitar manutencao, organizacao e trabalho em equipe.
@@ -184,15 +191,20 @@ http://localhost:5173
 
 Os testes ficam na pasta `tests/`.
 
-Quando os testes estiverem implementados, eles poderao ser executados a partir da configuracao definida para cada area do projeto.
-
-Para testes Python:
+Para testes Python (unitarios, integracao e e2e da API):
 
 ```powershell
 pytest
 ```
 
-Para verificacao do frontend:
+Para testes do frontend:
+
+```powershell
+cd frontend
+npm test
+```
+
+Para verificacao adicional do frontend:
 
 ```powershell
 cd frontend

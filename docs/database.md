@@ -40,34 +40,44 @@ As entidades abaixo representam uma primeira versao do modelo. Elas podem ser aj
 
 ### users
 
-Representa usuarios que acessam o sistema.
+Representa usuarios que acessam o sistema (analista ou cliente).
 
-Campos iniciais:
+Campos:
 
 - `id`;
 - `name`;
 - `email`;
 - `password_hash`;
+- `role` (`analyst` ou `client`);
+- `must_change_password`;
 - `created_at`;
 - `updated_at`.
 
 ### investors
 
-Representa investidores gerenciados pela aplicacao.
+Representa clientes pre-cadastrados pelo analista.
 
-Campos iniciais:
+Campos:
 
 - `id`;
-- `user_id`;
-- `name`;
-- `document`;
+- `user_id` (analista responsavel);
+- `account_user_id` (conta de login do cliente, opcional ate o acesso ser gerado);
+- `first_name`;
+- `last_name`;
+- `name` (nome completo derivado);
+- `rg`;
+- `document` (CPF);
 - `email`;
+- `phone`;
+- `address`;
+- `is_active`;
 - `created_at`;
 - `updated_at`.
 
-Relacionamento:
+Relacionamentos:
 
-- um usuario pode cadastrar um ou mais investidores.
+- um analista (`users`) pode cadastrar um ou mais investidores;
+- um investidor pode ter uma conta de login de cliente (`account_user_id`).
 
 ### portfolios
 
@@ -144,7 +154,8 @@ Relacionamentos:
 ## 4. Relacionamentos principais
 
 ```text
-users 1:N investors
+users 1:N investors (como analista, via user_id)
+users 1:1 investors (como cliente, via account_user_id)
 investors 1:N portfolios
 portfolios 1:N transactions
 assets 1:N transactions
@@ -159,10 +170,10 @@ assets 1:N transactions
 - Documentar qualquer alteracao estrutural no banco.
 - A aplicacao deve acessar o banco atraves da camada `repository.py` do backend.
 
-## 6. Decisoes pendentes
+## 6. Decisoes
 
-- Definir se os IDs serao inteiros ou UUID.
-- Definir se investidores e usuarios serao sempre entidades separadas.
-- Definir como sera calculada a posicao atual da carteira.
-- Definir se cotacoes atuais serao cadastradas manualmente ou integradas futuramente.
-- Definir politica para exclusao fisica ou desativacao logica de registros.
+- IDs numericos autoincrementais.
+- Investidor e conta de login do cliente sao entidades ligadas (`account_user_id`), mantendo o cadastro regulatorio separado do usuario.
+- Analista e dono operacional do pre-cadastro (`user_id`).
+- Exclusao de investidores, carteiras e ativos e logica (`is_active = false`).
+- Migration `002_roles_and_client_access.sql` adiciona perfis e campos de cliente ao schema inicial.
