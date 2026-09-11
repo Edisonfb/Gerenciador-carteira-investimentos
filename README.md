@@ -184,15 +184,20 @@ http://localhost:5173
 
 Os testes ficam na pasta `tests/`.
 
-Quando os testes estiverem implementados, eles poderao ser executados a partir da configuracao definida para cada area do projeto.
-
-Para testes Python:
+Para testes Python (unitarios, integracao e e2e da API):
 
 ```powershell
 pytest
 ```
 
-Para verificacao do frontend:
+Para testes do frontend:
+
+```powershell
+cd frontend
+npm test
+```
+
+Para verificacao adicional do frontend:
 
 ```powershell
 cd frontend
