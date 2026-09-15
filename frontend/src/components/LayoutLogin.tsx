@@ -1,18 +1,14 @@
 // frontend/src/components/LayoutPadrao.tsx
 import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 
-export const Login: React.FC = () => {
+export const LayoutLogin: React.FC = () => {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
       {/* Cabeçalho de Navegação */}
       <header style={{ background: '#1e293b', color: '#fff', padding: '1rem 2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Meta Ações</h2>
-          <nav style={{ display: 'flex', gap: '1.5rem' }}>
-            <Link to="/LoginInvestidor" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Login Investidor</Link>
-            <Link to="/LoginAnalista" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Login Analista</Link>
-          </nav>
         </div>
       </header>
 

@@ -1,16 +1,23 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LayoutPadrao } from "../components/LayoutPadrao";
-import { Login } from "../components/Login";
+import { LayoutLogin } from "../components/LayoutLogin";
 import { Dashboard } from "../pages/Dashboard";
-import { LoginAnalista } from "../pages/LoginAnalista";
+import { Login } from "../pages/Login";
 
 export const Rotas = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />}>
-          <Route index element={<LoginAnalista />} />
+        <Route path="/" element={<LayoutPadrao />}>
+          <Route path="Dashboard" element={<Dashboard />} />   
+
         </Route>
+        
+        <Route path="/" element={<LayoutLogin/>}>
+          <Route index element={<Login />} />
+        </Route>
+
+        
 
         
        
