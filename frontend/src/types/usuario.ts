@@ -1,4 +1,4 @@
-export type PerfilUsuario = "analista" | "administrador";
+export type PerfilUsuario = "analista" | "administrador" | "investidor";
 
 export type StatusUsuario = "ativo" | "bloqueado";
 
