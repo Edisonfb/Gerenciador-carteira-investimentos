@@ -1,7 +1,7 @@
-import { RotasApp } from "./routes/RotasApp";
+import { Rotas } from './routes';
 
 function App() {
-  return <RotasApp />;
+  return <Rotas />;
 }
 
 export default App;
