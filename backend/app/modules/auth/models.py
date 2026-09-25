@@ -17,7 +17,6 @@ class Usuario(Base):
     data_cadastro: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     __mapper_args__ = {
-        "polymorphic_identity": "usuario",
         "polymorphic_on": tipo_usuario
     }
 
@@ -34,7 +33,7 @@ class Analista(Usuario):
     investidores: Mapped[List["Investidor"]] = relationship(back_populates="analista_responsavel")
 
     __mapper_args__ = {
-        "polymorphic_identity": "analista",
+        "polymorphic_identity": Tipo_Usuario.ANALISTA,
     }
 
     def __repr__(self) -> str:

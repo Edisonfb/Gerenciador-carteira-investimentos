@@ -3,12 +3,6 @@
 from pydantic import BaseModel
 
 
-class CadastroUsuarioEntrada(BaseModel):
-    nome: str
-    email: str
-    senha: str
-
-
 class LoginEntrada(BaseModel):
     email: str
     senha: str

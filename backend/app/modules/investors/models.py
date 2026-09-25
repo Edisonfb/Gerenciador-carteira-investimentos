@@ -5,6 +5,7 @@ from typing import Optional
 from sqlalchemy import ForeignKey, String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.modules.auth.models import Usuario
+from app.db.enums import Tipo_Usuario
 
 class Investidor(Usuario):
     __tablename__ = "investidor"
@@ -20,7 +21,7 @@ class Investidor(Usuario):
     cep: Mapped[str] = mapped_column(String(8))
     uf: Mapped[str] = mapped_column(String(2))
     cidade: Mapped[str] = mapped_column(String(32))
-    bairo: Mapped[str] = mapped_column(String(30))
+    bairro: Mapped[str] = mapped_column(String(30))
     logradouro: Mapped[str] = mapped_column(String(50))
     numero: Mapped[str] = mapped_column(String(5))
     token_acesso: Mapped[str] = mapped_column(String(255))
@@ -28,8 +29,8 @@ class Investidor(Usuario):
     analista_responsavel: Mapped["Analista"] = relationship(back_populates="investidores")
 
     __mapper_args__ = {
-        "polymorphic_identity": "investidor",
+        "polymorphic_identity": Tipo_Usuario.INVESTIDOR,
     }
     
     def __repr__(self) -> str:
-        return f"Investidor(id={self.id_investidor!r}, nome={self.nome!r}, sobrenome={self.sobrenome!r}, rg={self.rg!r}, cpf={self.cpf!r}, telefone={self.telefone!r}, cep={self.cep!r}, uf={self.uf!r}, cidade={self.cidade!r}, logradouro={self.logradouro!r}, numero={self.numero!r})"
+        return f"Investidor(id={self.id_investidor!r}, nome={self.nome!r}, sobrenome={self.sobrenome!r}, rg={self.rg!r}, cpf={self.cpf!r}, telefone={self.telefone!r}, cep={self.cep!r}, uf={self.uf!r}, cidade={self.cidade!r}, bairro={self.bairro!r}, logradouro={self.logradouro!r}, numero={self.numero!r})"
