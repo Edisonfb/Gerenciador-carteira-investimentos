@@ -16,3 +16,6 @@ class AnalistaRepository:
         self.db.commit()
         self.db.refresh(analista)
         return analista
+
+    def listar_todos(self) -> list[Analista]:
+        return self.db.query(Analista).all()

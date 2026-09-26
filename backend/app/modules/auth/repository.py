@@ -12,8 +12,12 @@ class AuthRepository:
     def buscar_por_id(self, id_usuario: int) -> Usuario | None:
         return self.db.query(Usuario).filter(Usuario.id_usuario == id_usuario).first()
 
+
     def salvar(self, usuario: Usuario) -> Usuario:
         self.db.add(usuario)
         self.db.commit()
         self.db.refresh(usuario)
         return usuario
+
+    def listar_todos(self) -> list[Usuario]:
+       return self.db.query(Usuario).all()
