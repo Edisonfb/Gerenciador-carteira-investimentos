@@ -8,6 +8,7 @@ from app.modules.auth.router import router as auth_router
 from app.modules.investors.router import router as investors_router
 from app.modules.portfolios.router import router as portfolios_router
 from app.modules.transactions.router import router as transactions_router
+from app.modules.analysts.router import router as analysts_router
 
 
 app = FastAPI(title=settings.app_name)
@@ -17,6 +18,7 @@ app.include_router(investors_router)
 app.include_router(portfolios_router)
 app.include_router(assets_router)
 app.include_router(transactions_router)
+app.include_router(analysts_router)
 
 
 @app.get("/health", tags=["health"])
