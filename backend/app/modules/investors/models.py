@@ -26,7 +26,9 @@ class Investidor(Usuario):
     numero: Mapped[str] = mapped_column(String(5))
     token_acesso: Mapped[str] = mapped_column(String(255))
     
-    analista_responsavel: Mapped["Analista"] = relationship(back_populates="investidores")
+    analista_responsavel: Mapped["Analista"] = relationship(
+        back_populates="investidores",
+        foreign_keys="[Investidor.id_analista_responsavel]",)
 
     __mapper_args__ = {
         "polymorphic_identity": Tipo_Usuario.INVESTIDOR,
