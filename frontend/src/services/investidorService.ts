@@ -83,15 +83,46 @@ export function buscarInvestidorPorId(id: number): Investidor | undefined {
   return investidoresMock.find((investidor) => investidor.id === id);
 }
 
-export function criarInvestidor(
+export async function criarInvestidor(
   novoInvestidor: Omit<Investidor, "id">,
-): Investidor {
-  const investidorCriado: Investidor = {
+): Promise<Investidor> {
+  function somenteNumeros(valor: string){
+    return valor.replace(/\D/g, "");
+  }
+
+  const resposta = await fetch("http://127.0.0.1:8000/investors", {
+    method: "POST",
+    headers:{
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id_analista_responsavel: novoInvestidor.idAnalistaResponsavel,
+       nome: novoInvestidor.nome,
+      sobrenome: novoInvestidor.sobrenome,
+      email: novoInvestidor.email,
+      cpf: somenteNumeros(novoInvestidor.cpf),
+      telefone: somenteNumeros(novoInvestidor.celular),
+      cep: somenteNumeros(novoInvestidor.cep),
+      uf: novoInvestidor.uf,
+      cidade: novoInvestidor.cidade,
+      bairro: novoInvestidor.bairro,
+      logradouro: novoInvestidor.rua,
+      numero: novoInvestidor.numero,
+    })
+  });
+
+  if(!resposta.ok){
+    throw new Error("Não foi possível cadastrar o investidor.");
+  }
+
+  const investidorCriado = await resposta.json();
+
+  return{
     ...novoInvestidor,
-    id: Date.now(),
-  };
-  investidoresMock = [...investidoresMock, investidorCriado];
-  return investidorCriado;
+    id: investidorCriado.id_investidor,
+    cpf: investidorCriado.cpf,
+    celular: investidorCriado.telefone,
+  }
 }
 
 export function atualizarInvestidor(

@@ -30,19 +30,23 @@ export function CadastroInvestidorPage() {
     navigate("/investidores");
   }
 
-  function cadastrarInvestidor(dados: DadosFormularioInvestidor) {
-    criarInvestidor({
-      ...dados,
-      idAnalistaResponsavel: usuarioAutenticado.id,
-      perfil: "investidor",
-      status: "ativo",
-    });
+  async function cadastrarInvestidor(dados: DadosFormularioInvestidor) {
+    try{
+      await criarInvestidor({
+        ...dados,
+        idAnalistaResponsavel: usuarioAutenticado.id,
+        perfil: "investidor",
+        status: "ativo",
+      });
 
-    window.alert(
-      "Investidor cadastrado com sucesso. O acesso será enviado para o e-mail informado.",
-    );
+      window.alert(
+        "Investidor cadastrado com sucesso. O acesso será enviado para o e-mail informado.",
+      );
 
-    voltarParaLista();
+      voltarParaLista();
+    } catch(erro){
+    window.alert("Não foi possível cadastrar o investidor");
+    }
   }
 
   return (

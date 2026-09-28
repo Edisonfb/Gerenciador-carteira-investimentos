@@ -4,6 +4,7 @@ import { LayoutLogin } from "../components/LayoutLogin";
 import { Dashboard } from "../pages/Dashboard";
 import { Login } from "../pages/Login";
 import { CadastroUsuarioPage } from "../pages/CadastroUsuarioPage";
+import { CadastroInvestidorPage } from "../pages/CadastroInvestidorPage";
 
 export const Rotas = () => {
   return (
@@ -18,7 +19,7 @@ export const Rotas = () => {
         </Route>
 
         <Route path="/cadastrar" element={<LayoutPadrao />}>
-        <Route index element={<CadastroUsuarioPage />} />
+        <Route index element={<CadastroInvestidorPage />} />
         </Route>
        
       </Routes>
