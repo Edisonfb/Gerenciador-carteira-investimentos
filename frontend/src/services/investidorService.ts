@@ -93,3 +93,34 @@ export function criarInvestidor(
   investidoresMock = [...investidoresMock, investidorCriado];
   return investidorCriado;
 }
+
+export function atualizarInvestidor(
+  id: number,
+  dadosAtualizados: Partial<
+    Omit<Investidor, "id" | "idAnalistaResponsavel" | "perfil">
+  >,
+): Investidor | undefined {
+  const investidorEncontrado = buscarInvestidorPorId(id);
+
+  if (!investidorEncontrado) {
+    return undefined;
+  }
+  const investidorAtualizado: Investidor = {
+    ...investidorEncontrado,
+    ...dadosAtualizados,
+    id: investidorEncontrado.id,
+  };
+
+  investidoresMock = investidoresMock.map((investidor) =>
+    investidor.id === id ? investidorAtualizado : investidor,
+  );
+  return investidorAtualizado;
+}
+
+export function excluirInvestidor(id: number): boolean {
+  const quantidadeAnterior = investidoresMock.length;
+  investidoresMock = investidoresMock.filter(
+    (investidor) => investidor.id !== id,
+  );
+  return investidoresMock.length < quantidadeAnterior;
+}
