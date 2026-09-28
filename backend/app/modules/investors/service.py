@@ -1,10 +1,12 @@
 """Regras de negocio do modulo de investidores."""
 import secrets
 
+from app.core.security import hash_senha
 from app.db.enums import Tipo_Usuario
 from app.modules.investors.models import Investidor
 from app.modules.investors.repository import InvestidorRepository
 from app.modules.investors.schemas import CadastroInvestidorEntrada
+
 
 
 class InvestidorService:
@@ -26,7 +28,7 @@ class InvestidorService:
 
         investidor = Investidor(
             email=dados.email,
-            senha_hash=token_inicial,
+            senha_hash=hash_senha(token_inicial),
             tipo_usuario=Tipo_Usuario.INVESTIDOR,
             id_analista_responsavel=dados.id_analista_responsavel,
             nome=dados.nome,
