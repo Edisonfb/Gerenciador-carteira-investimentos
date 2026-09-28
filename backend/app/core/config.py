@@ -37,6 +37,13 @@ class Settings:
     )
     app_env: str = os.getenv("APP_ENV", "development")
     database_url: str = _build_database_url()
+    servidor_smtp: str = os.getenv("SMTP_HOST", "")
+    porta_smtp: int = int(os.getenv("SMTP_PORT") or "587")
+    usuario_smtp: str = os.getenv("SMTP_USER", "")
+    senha_smtp: str = os.getenv("SMTP_PASSWORD", "")
+    email_remetente: str = os.getenv("SMTP_FROM", "")
+    usar_tls: bool = (os.getenv("SMTP_USE_TLS") or "true").lower() == "true"
+    endereco_frontend: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 
 settings = Settings()
