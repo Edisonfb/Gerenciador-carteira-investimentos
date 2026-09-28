@@ -3,6 +3,7 @@ import secrets
 
 from app.core.security import hash_senha
 from app.db.enums import Tipo_Usuario
+from app.shared import email_service
 from app.modules.investors.models import Investidor
 from app.modules.investors.repository import InvestidorRepository
 from app.modules.investors.schemas import CadastroInvestidorEntrada
@@ -46,5 +47,7 @@ class InvestidorService:
         )
 
         investidor_salvo = self.repository.salvar(investidor)
+
+        email_service.enviar_token_acesso(dados.email, dados.nome, token_inicial)
 
         return investidor_salvo, None
