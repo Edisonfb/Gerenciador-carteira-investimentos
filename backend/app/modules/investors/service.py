@@ -45,9 +45,18 @@ class InvestidorService:
             numero=dados.numero,
             token_acesso=token_inicial,
         )
+        try:
+            investidor_salvo = self.repository.adicionar(investidor)
 
-        investidor_salvo = self.repository.salvar(investidor)
+            email_service.enviar_token_acesso(
+                dados.email,
+                dados.nome,
+                token_inicial,
+            )
+            self.repository.confirmar()
 
-        email_service.enviar_token_acesso(dados.email, dados.nome, token_inicial)
+        except Exception:
+            self.repository.desfazer()
+            raise
 
         return investidor_salvo, None
