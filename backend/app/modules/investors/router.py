@@ -1,6 +1,6 @@
 """Rotas HTTP do modulo de investidores."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -97,3 +97,16 @@ def cadastrar_investidor(
         "cpf": investidor.cpf,
         "telefone": investidor.telefone,
     }
+
+@router.delete("/{id_investidor}", status_code=status.HTTP_204_NO_CONTENT)
+def excluir_investidor( id_investidor:int, db: Session = Depends(get_db)):
+    repository = InvestidorRepository(db)
+    service = InvestidorService(repository)
+
+    investidor_excluido = service.excluir_investidor(id_investidor)
+
+    if not investidor_excluido:
+        raise HTTPException(
+            status_code=404,
+            detail= "Investidor não encontrado."
+        )

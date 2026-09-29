@@ -38,3 +38,14 @@ class InvestidorRepository:
         self.db.commit()
         self.db.refresh(investidor)
         return investidor
+
+    def buscar_por_id(self, id_investidor: int) -> Investidor | None:
+        return (
+            self.db.query(Investidor)
+            .filter(Investidor.id_investidor == id_investidor)
+            .first()
+        )
+
+    def excluir(self, investidor: Investidor) -> None:
+        self.db.delete(investidor)
+        self.db.commit()

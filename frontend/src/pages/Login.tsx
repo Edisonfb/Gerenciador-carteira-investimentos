@@ -30,7 +30,11 @@ export const Login = () => {
 
      if  (usuario.perfil === "investidor"){
         navigate("/minha-conta");
-     };
+     }
+
+     if (usuario.perfil === "analista"){
+      navigate("/dashboard");
+     }
     } catch (erro) {
       if (erro instanceof Error) {
         setMensagemErro(erro.message);

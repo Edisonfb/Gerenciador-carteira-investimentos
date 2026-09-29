@@ -26,15 +26,18 @@ export function CadastroInvestidorPage() {
       </main>
     );
   }
+
+  const idAnalistaResponsavel = usuarioAutenticado.id;
+
   function voltarParaLista() {
-    navigate("/investidores");
+    navigate("/dashboard");
   }
 
   async function cadastrarInvestidor(dados: DadosFormularioInvestidor) {
     try{
       await criarInvestidor({
         ...dados,
-        idAnalistaResponsavel: usuarioAutenticado.id,
+        idAnalistaResponsavel,
         perfil: "investidor",
         status: "ativo",
       });
