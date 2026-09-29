@@ -6,8 +6,11 @@ from app.core.config import settings
 
 
 def enviar_token_acesso(email: str, nome: str, token: str) -> None:
+    if not settings.servidor_smtp or not settings.email_remetente:
+        raise RuntimeError("Envio de e-mail não configurado. Defina SMTP_HOST e SMTP_FROM.")
+    
     mensagem = EmailMessage()
-
+    
     mensagem["Subject"] = "Seu token de acesso"
     mensagem["From"] = settings.email_remetente
     mensagem["To"] = email
@@ -20,6 +23,7 @@ def enviar_token_acesso(email: str, nome: str, token: str) -> None:
         "Utilize este token para acessar o sistema.\n"
         "Não compartilhe este token com outras pessoas."
     )
+
 
     with smtplib.SMTP(settings.servidor_smtp, settings.porta_smtp) as servidor:
         if settings.usar_tls:

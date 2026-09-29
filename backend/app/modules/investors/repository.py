@@ -14,8 +14,14 @@ class InvestidorRepository:
     def buscar_investidor_por_cpf(self, cpf: str) -> Investidor | None:
         return self.db.query(Investidor).filter(Investidor.cpf == cpf).first()
 
-    def salvar(self, investidor: Investidor) -> Investidor:
+    def adicionar(self, investidor: Investidor) -> Investidor:
         self.db.add(investidor)
-        self.db.commit()
+        self.db.flush()
         self.db.refresh(investidor)
         return investidor
+
+    def confirmar(self)-> None:
+        self.db.commit()
+
+    def desfazer(self) -> None:
+        self.db.rollback()
