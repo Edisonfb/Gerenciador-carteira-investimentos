@@ -5,7 +5,7 @@ interface HealthResponse {
   app: string;
 }
 
-export const Dashboard = () => {
+export const DashboardInvestidor = () => {
   const [mensagemApi, setMensagemApi] = useState("Carregando API...");
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export const Dashboard = () => {
 
   return (
     <div>
-      <h1>Dashboard/Home</h1>
+      <h1>Dashboard/Home do Investidor</h1>
       <p>{mensagemApi}</p>
     </div>
   );

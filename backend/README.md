@@ -12,6 +12,7 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 cd ..
+docker compose up -d mysql
 .\backend\.venv\Scripts\python.exe .\database\migrations\create_tables.py
 cd backend
 uvicorn app.main:app --reload

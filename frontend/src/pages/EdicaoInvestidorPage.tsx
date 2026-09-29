@@ -63,6 +63,7 @@ export function EdicaoInvestidorPage() {
   }
 
   if (
+    !usuarioAutenticado ||
     usuarioAutenticado.perfil !== "analista" ||
     investidor.idAnalistaResponsavel !== usuarioAutenticado.id
   ) {
