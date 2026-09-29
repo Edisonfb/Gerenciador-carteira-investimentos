@@ -1,5 +1,5 @@
 from app.modules.auth.repository import AuthRepository
-from app.core.security import verificar_senha
+from app.core.security import criar_token_acesso, verificar_senha
 from app.modules.auth.models import Usuario
 from app.modules.auth.schemas import UsuarioUpdate
 
@@ -23,7 +23,7 @@ class AuthService:
 
 
         return {
-            "access_token": str(usuario.id_usuario),
+            "access_token": criar_token_acesso(usuario.id_usuario),
             "token_type": "bearer"
         }
 

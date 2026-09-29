@@ -15,9 +15,9 @@ export function InvestidoresPage() {
   const usuarioAutenticado = buscarUsuarioAutenticado();
 
   const [investidores, setInvestidores] = useState<Investidor[]>(
-    buscarInvestidoresPorAnalista(usuarioAutenticado.id),
+    buscarInvestidoresPorAnalista(usuarioAutenticado?.id ?? 0),
   );
-  if (usuarioAutenticado.perfil !== "analista") {
+  if (!usuarioAutenticado || usuarioAutenticado.perfil !== "analista") {
     return (
       <main className="pagina-usuarios">
         <div className="conteudo-usuarios">
@@ -32,6 +32,9 @@ export function InvestidoresPage() {
       </main>
     );
   }
+
+  const idAnalistaResponsavel = usuarioAutenticado.id;
+
   function iniciarCadastro() {
     navigate("/investidores/novo");
   }
@@ -58,7 +61,7 @@ export function InvestidoresPage() {
     const investidorExcluido = excluirInvestidor(id);
 
     if (investidorExcluido) {
-      setInvestidores(buscarInvestidoresPorAnalista(usuarioAutenticado.id));
+      setInvestidores(buscarInvestidoresPorAnalista(idAnalistaResponsavel));
     }
   }
 

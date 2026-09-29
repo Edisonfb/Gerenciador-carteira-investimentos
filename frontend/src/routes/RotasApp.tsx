@@ -12,7 +12,7 @@ import { MinhaContaInvestidorPage } from "../pages/MinhaContaInvestidorPage";
 export function RotasApp() {
   const usuarioAutenticado = buscarUsuarioAutenticado();
 
-  if (usuarioAutenticado.perfil === "analista") {
+  if (usuarioAutenticado?.perfil === "analista") {
     return (
       <Routes>
         <Route path="/minha-conta" element={<MinhaContaPage />} />
@@ -31,7 +31,7 @@ export function RotasApp() {
     );
   }
 
-  if (usuarioAutenticado.perfil === "administrador") {
+  if (usuarioAutenticado?.perfil === "administrador") {
     return (
       <Routes>
         <Route path="/usuarios" element={<UsuariosPage />} />
@@ -45,7 +45,7 @@ export function RotasApp() {
     );
   }
 
-  if (usuarioAutenticado.perfil === "investidor") {
+  if (usuarioAutenticado?.perfil === "investidor") {
     return (
       <Routes>
         <Route path="/minha-conta" element={<MinhaContaInvestidorPage />} />

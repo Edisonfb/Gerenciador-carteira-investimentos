@@ -11,7 +11,7 @@ export function CadastroInvestidorPage() {
   const navigate = useNavigate();
   const usuarioAutenticado = buscarUsuarioAutenticado();
 
-  if (usuarioAutenticado.perfil !== "analista") {
+  if (!usuarioAutenticado || usuarioAutenticado.perfil !== "analista") {
     return (
       <main className="pagina-usuarios">
         <div className="conteudo-usuarios">
@@ -26,15 +26,18 @@ export function CadastroInvestidorPage() {
       </main>
     );
   }
+
+  const idAnalistaResponsavel = usuarioAutenticado.id;
+
   function voltarParaLista() {
-    navigate("/investidores");
+    navigate("/dashboard");
   }
 
   async function cadastrarInvestidor(dados: DadosFormularioInvestidor) {
     try{
       await criarInvestidor({
         ...dados,
-        idAnalistaResponsavel: usuarioAutenticado.id,
+        idAnalistaResponsavel,
         perfil: "investidor",
         status: "ativo",
       });

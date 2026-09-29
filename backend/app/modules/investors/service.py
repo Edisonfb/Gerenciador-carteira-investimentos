@@ -60,3 +60,16 @@ class InvestidorService:
             raise
 
         return investidor_salvo, None
+
+    # Exclui um investidor do banco de dados utilizando o id
+    # Primeiro verifica se existe alguém com esse id no banco e depois exclui
+    # Retorna True caso tenha excluído e False caso o investidor não exista no banco
+    def excluir_investidor(self, id_investidor: int) -> bool:
+        investidor = self.repository.buscar_por_id(id_investidor)
+
+        if investidor is None:
+            return False
+
+        self.repository.excluir(investidor)
+        return True
+    
