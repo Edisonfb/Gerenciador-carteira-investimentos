@@ -15,9 +15,9 @@ export function InvestidoresPage() {
   const usuarioAutenticado = buscarUsuarioAutenticado();
 
   const [investidores, setInvestidores] = useState<Investidor[]>(
-    buscarInvestidoresPorAnalista(usuarioAutenticado.id),
+    buscarInvestidoresPorAnalista(usuarioAutenticado?.id ?? 0),
   );
-  if (usuarioAutenticado.perfil !== "analista") {
+  if (!usuarioAutenticado || usuarioAutenticado.perfil !== "analista") {
     return (
       <main className="pagina-usuarios">
         <div className="conteudo-usuarios">

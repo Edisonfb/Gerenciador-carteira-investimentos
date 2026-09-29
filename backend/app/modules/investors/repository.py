@@ -32,3 +32,9 @@ class InvestidorRepository:
 
     def desfazer(self) -> None:
         self.db.rollback()
+
+    def atualizar(self, investidor: Investidor) -> Investidor:
+        self.db.add(investidor)
+        self.db.commit()
+        self.db.refresh(investidor)
+        return investidor

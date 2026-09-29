@@ -11,7 +11,7 @@ export function CadastroInvestidorPage() {
   const navigate = useNavigate();
   const usuarioAutenticado = buscarUsuarioAutenticado();
 
-  if (usuarioAutenticado.perfil !== "analista") {
+  if (!usuarioAutenticado || usuarioAutenticado.perfil !== "analista") {
     return (
       <main className="pagina-usuarios">
         <div className="conteudo-usuarios">

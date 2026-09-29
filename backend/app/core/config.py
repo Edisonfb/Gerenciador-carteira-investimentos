@@ -45,6 +45,9 @@ class Settings:
     usar_tls: bool = (os.getenv("SMTP_USE_TLS") or "true").lower() == "true"
     endereco_frontend: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
     secret_key: str = os.getenv("SECRET_KEY", "development-only-change-this-secret")
+    access_token_expire_minutes: int = int(
+        os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
+    )
 
 
 settings = Settings()

@@ -1,19 +1,34 @@
 // frontend/src/components/LayoutPadrao.tsx
 import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { buscarUsuarioAutenticado, encerrarSessao } from '../services/autenticacaoService';
 
 export const LayoutPadrao: React.FC = () => {
+  const navigate = useNavigate();
+  const usuario = buscarUsuarioAutenticado();
+
+  function sair() {
+    encerrarSessao();
+    navigate('/', { replace: true });
+  }
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
       {/* Cabeçalho de Navegação */}
       <header style={{ background: '#1e293b', color: '#fff', padding: '1rem 2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Meta Ações</h2>
-          <nav style={{ display: 'flex', gap: '1.5rem' }}>
-            <Link to="/" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Dashboard</Link>
-            <Link to="/carteiras" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Carteiras</Link>
-            <Link to="/ativos" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Ativos</Link>
-            <Link to="/transacoes" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Transações</Link>
+          <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+            {usuario?.perfil === 'analista' && (
+              <>
+                <Link to="/dashboard" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Dashboard</Link>
+                <Link to="/cadastrar" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Cadastrar investidor</Link>
+              </>
+            )}
+            {usuario?.perfil === 'investidor' && (
+              <Link to="/minha-conta" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Meu Perfil</Link>
+            )}
+            <button type="button" onClick={sair}>Sair</button>
           </nav>
         </div>
       </header>
