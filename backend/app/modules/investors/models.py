@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import Boolean, ForeignKey, String, DateTime
+from sqlalchemy import ForeignKey, String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.modules.auth.models import Usuario
 from app.db.enums import Tipo_Usuario
@@ -25,10 +25,10 @@ class Investidor(Usuario):
     logradouro: Mapped[str] = mapped_column(String(50))
     numero: Mapped[str] = mapped_column(String(5))
     token_acesso: Mapped[str] = mapped_column(String(255))
-    token_expira_em: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    token_utilizado: Mapped[bool] = mapped_column(Boolean, default=False)
     
-    analista_responsavel: Mapped["Analista"] = relationship(back_populates="investidores")
+    analista_responsavel: Mapped["Analista"] = relationship(
+        back_populates="investidores",
+        foreign_keys="[Investidor.id_analista_responsavel]",)
 
     __mapper_args__ = {
         "polymorphic_identity": Tipo_Usuario.INVESTIDOR,

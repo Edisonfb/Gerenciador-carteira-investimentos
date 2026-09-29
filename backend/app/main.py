@@ -1,24 +1,35 @@
 """Ponto de entrada da API FastAPI."""
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.modules.assets.router import router as assets_router
-from app.modules.auth.primeiro_acesso.router import router as primeiro_acesso_router
 from app.modules.auth.router import router as auth_router
 from app.modules.investors.router import router as investors_router
 from app.modules.portfolios.router import router as portfolios_router
 from app.modules.transactions.router import router as transactions_router
-
+from app.modules.analysts.router import router as analysts_router
 
 app = FastAPI(title=settings.app_name)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(auth_router)
-app.include_router(primeiro_acesso_router)
 app.include_router(investors_router)
 app.include_router(portfolios_router)
 app.include_router(assets_router)
 app.include_router(transactions_router)
+app.include_router(analysts_router)
 
 
 @app.get("/health", tags=["health"])
