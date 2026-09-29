@@ -14,6 +14,13 @@ class InvestidorRepository:
     def buscar_investidor_por_cpf(self, cpf: str) -> Investidor | None:
         return self.db.query(Investidor).filter(Investidor.cpf == cpf).first()
 
+    def buscar_por_usuario_id(self, id_usuario: int) -> Investidor | None:
+        return (
+            self.db.query(Investidor)
+            .filter(Investidor.id_usuario == id_usuario)
+            .first()
+        )
+
     def adicionar(self, investidor: Investidor) -> Investidor:
         self.db.add(investidor)
         self.db.flush()

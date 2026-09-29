@@ -44,6 +44,7 @@ class Settings:
     email_remetente: str = os.getenv("SMTP_FROM", "")
     usar_tls: bool = (os.getenv("SMTP_USE_TLS") or "true").lower() == "true"
     endereco_frontend: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    secret_key: str = os.getenv("SECRET_KEY", "development-only-change-this-secret")
 
 
 settings = Settings()
