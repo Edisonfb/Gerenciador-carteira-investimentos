@@ -5,7 +5,7 @@ from email.message import EmailMessage
 from app.core.config import settings
 
 
-def enviar_token_acesso(email: str, nome: str, token: str) -> None:
+def enviar_token_acesso(email: str, token: str) -> None:
     if not settings.servidor_smtp or not settings.email_remetente:
         raise RuntimeError("Envio de e-mail não configurado. Defina SMTP_HOST e SMTP_FROM.")
     
@@ -16,7 +16,7 @@ def enviar_token_acesso(email: str, nome: str, token: str) -> None:
     mensagem["To"] = email
 
     mensagem.set_content(
-        f"Olá, {nome}.\n\n"
+        f"Olá.\n\n"
         "Sua conta foi cadastrada com sucesso.\n\n"
         "Seu token de acesso é:\n\n"
         f"{token}\n\n"

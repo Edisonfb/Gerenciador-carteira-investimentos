@@ -19,3 +19,6 @@ class AnalistaRepository:
 
     def listar_todos(self) -> list[Analista]:
         return self.db.query(Analista).all()
+
+    def buscar_por_usuario_id(self, id_usuario: int) -> Analista | None:
+        return self.db.query(Analista).filter(Analista.id_usuario == id_usuario).first()

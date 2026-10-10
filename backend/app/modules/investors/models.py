@@ -1,8 +1,7 @@
 """Modelos persistidos do modulo de investidores."""
 
-from datetime import datetime
 from typing import Optional
-from sqlalchemy import ForeignKey, String, DateTime
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.modules.auth.models import Usuario
 from app.db.enums import Tipo_Usuario
@@ -13,18 +12,19 @@ class Investidor(Usuario):
     id_investidor: Mapped[int] = mapped_column(primary_key=True)
     id_usuario: Mapped[int] = mapped_column(ForeignKey("usuario.id_usuario"))
     id_analista_responsavel: Mapped[int] = mapped_column(ForeignKey("analista.id_analista"))
-    nome: Mapped[str] = mapped_column(String(30))
-    sobrenome: Mapped[str] = mapped_column(String(30))
+    nome: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
+    sobrenome: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
     rg: Mapped[Optional[str]] = mapped_column(String(10), unique=True, nullable=True)
-    cpf: Mapped[str] = mapped_column(String(11), unique=True)
-    telefone: Mapped[str] = mapped_column(String(15), unique=True)
-    cep: Mapped[str] = mapped_column(String(8))
-    uf: Mapped[str] = mapped_column(String(2))
-    cidade: Mapped[str] = mapped_column(String(32))
-    bairro: Mapped[str] = mapped_column(String(30))
-    logradouro: Mapped[str] = mapped_column(String(50))
-    numero: Mapped[str] = mapped_column(String(5))
-    token_acesso: Mapped[str] = mapped_column(String(255))
+    cpf: Mapped[Optional[str]] = mapped_column(String(11), unique=True, nullable=True)
+    telefone: Mapped[Optional[str]] = mapped_column(String(15), unique=True, nullable=True)
+    cep: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
+    uf: Mapped[Optional[str]] = mapped_column(String(2), nullable=True)
+    cidade: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    bairro: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
+    logradouro: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    numero: Mapped[Optional[str]] = mapped_column(String(5), nullable=True)
+    email_recuperacao: Mapped[Optional[str]] = mapped_column(String(255), unique=True, nullable=True)
+    primeiro_acesso_concluido: Mapped[bool] = mapped_column(default=False)
     
     analista_responsavel: Mapped["Analista"] = relationship(
         back_populates="investidores",
