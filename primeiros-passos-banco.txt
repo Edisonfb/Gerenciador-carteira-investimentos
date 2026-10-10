@@ -1,0 +1,201 @@
+Primeiros passos para configurar o banco de dados local
+
+Objetivo
+Este guia explica como preparar o ambiente para rodar o banco de dados MySQL do projeto usando Docker.
+
+Importante:
+- O Docker sera usado somente para rodar e guardar o banco de dados.
+- O backend e o frontend continuam rodando normalmente no projeto, fora do container.
+- Antes de rodar o backend, baixe o arquivo .env disponibilizado para o grupo e coloque-o na pasta backend/.
+- O arquivo backend/.env contem as variaveis necessarias para banco, email e demais configuracoes do projeto.
+
+
+1. Verificar virtualizacao
+
+Antes de instalar WSL, Ubuntu e Docker, verifique se a virtualizacao esta habilitada no computador.
+Abra o Gerenciador de tarefas;
+Vá em Desempenho;
+Selecione CPU;
+Verifique se a propriedade "Virtualização" está habilitada;
+
+Se a virtualizacao nao estiver habilitada, habilite a virtualizacao na maquina antes de continuar.
+Busque um tutorial para habilitar, pois terá que ir na BIOS
+
+
+2. Instalar o WSL no Windows
+
+Abra o PowerShell como Administrador e execute:
+
+wsl --install
+
+Se o Windows pedir para reiniciar o computador, reinicie.
+
+Depois de reiniciar, abra o PowerShell novamente e atualize o WSL:
+
+wsl --update
+
+Defina o WSL 2 como versao padrao:
+
+wsl --set-default-version 2
+
+
+3. Instalar o Ubuntu no WSL
+
+Se o Ubuntu ainda nao tiver sido instalado, execute:
+
+wsl --install -d Ubuntu
+
+Depois abra o Ubuntu:
+
+wsl -d Ubuntu
+
+Na primeira abertura, o Ubuntu vai pedir:
+
+- nome de usuario;
+- senha.
+
+Crie o usuario e a senha do Linux normalmente.
+OBS: é normal não aparecer nenhum caractere enquanto digitar a senha, isso é normal. Apenas defina uma simples, 12345, por exemplo.
+
+Depois atualize os pacotes do Ubuntu:
+
+sudo apt update
+sudo apt upgrade -y
+
+
+4. Instalar o Docker Desktop
+
+Instale o Docker Desktop no Windows.
+
+Depois abra o Docker Desktop pelo menu iniciar.
+
+
+5. Integrar Docker Desktop com WSL e Ubuntu
+
+No Docker Desktop:
+
+1. Abra Settings.
+2. Va em General.
+3. Confira se a opcao Use the WSL 2 based engine esta ativada.
+4. Va em Resources.
+5. Va em WSL Integration.
+6. Ative a integracao com Ubuntu.
+7. Clique em Apply & Restart.
+
+Depois, no PowerShell, execute:
+
+wsl --shutdown
+
+Abra o Ubuntu novamente:
+
+wsl -d Ubuntu
+
+Teste se o Docker esta disponivel dentro do Ubuntu:
+
+docker --version
+docker compose version
+
+
+6. Baixar o arquivo .env do projeto
+
+Antes de subir o backend, baixe o arquivo .env disponibilizado para o grupo.
+
+Coloque esse arquivo em:
+
+backend/.env
+
+Nao crie as variaveis manualmente se o arquivo ja foi disponibilizado.
+Esse arquivo contem as configuracoes do banco e tambem outras variaveis usadas pelo projeto, como as configuracoes de email.
+
+
+7. Acessar a pasta do projeto pelo Ubuntu
+
+No Ubuntu, os discos do Windows aparecem dentro de /mnt.
+
+Exemplos:
+
+Se o projeto estiver no disco C:
+
+cd /mnt/c/caminho-ate/Gerenciador-carteira-investimentos
+
+Se o projeto estiver no disco D:
+
+cd /mnt/d/caminho-ate/Gerenciador-carteira-investimentos
+
+Exemplo real de formato:
+
+cd /mnt/d/Projeto_final_ifrs/Gerenciador-carteira-investimentos
+
+O próximo comando deve ser executado na pasta onde esta o arquivo docker-compose.yml (está na raiz do projeto).
+
+
+8. Subir o banco de dados com Docker Compose
+
+Dentro da pasta do projeto, execute:
+
+docker compose up -d mysql
+
+Esse comando sobe o container MySQL definido no arquivo docker-compose.yml.
+
+Para verificar se o container esta rodando:
+
+docker ps
+
+Deve aparecer um container com nome parecido com:
+
+investment_portfolio_mysql
+
+Se solicitar senha, essas são as senhas:
+Para usuário normal do banco:
+portfolio_password
+
+Para usuário root do MySQL:
+root_password
+
+10. Criar as tabelas do banco
+
+O Docker cria e mantem o banco MySQL.
+As tabelas do sistema sao criadas pelo script de migration do projeto.
+
+Depois que o container MySQL estiver rodando, volte para o projeto no Windows e execute o script de criacao de tabelas com o Python do backend.
+
+Exemplo no PowerShell, na raiz do projeto:
+
+.\backend\.venv\Scripts\python.exe .\database\migrations\create_tables.py
+
+Depois disso, o banco ja deve estar pronto para o backend usar.
+
+
+11. Rodar o backend
+
+No PowerShell, entre na pasta backend:
+
+cd backend
+
+Ative o ambiente virtual:
+
+.\.venv\Scripts\Activate.ps1
+
+Suba o servidor:
+
+uvicorn app.main:app --reload --reload-dir app
+
+Se o servidor abrir corretamente, teste no navegador:
+
+http://127.0.0.1:8000/docs
+
+
+12. Resumo do fluxo
+
+1. Habilitar virtualizacao, se necessario.
+2. Instalar WSL.
+3. Instalar Ubuntu.
+4. Atualizar Ubuntu.
+5. Instalar Docker Desktop.
+6. Integrar Docker Desktop com WSL e Ubuntu.
+7. Baixar o arquivo backend/.env disponibilizado ao grupo.
+8. Acessar a pasta do projeto pelo Ubuntu.
+9. Rodar docker compose up -d mysql.
+10. Criar as tabelas usando o script do projeto no Windows.
+11. Rodar backend e frontend normalmente.
+

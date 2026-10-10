@@ -11,6 +11,13 @@ class InvestidorRepository:
     def buscar_usuario_por_email(self, email: str) -> Usuario | None:
         return self.db.query(Usuario).filter(Usuario.email == email).first()
 
+    def buscar_por_email_recuperacao(self, email_recuperacao: str) -> Investidor | None:
+        return (
+            self.db.query(Investidor)
+            .filter(Investidor.email_recuperacao == email_recuperacao)
+            .first()
+        )
+
     def buscar_investidor_por_cpf(self, cpf: str) -> Investidor | None:
         return self.db.query(Investidor).filter(Investidor.cpf == cpf).first()
 
