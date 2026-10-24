@@ -30,3 +30,32 @@ antes de usar as rotas que gravam ou consultam dados.
 O backend segue uma divisão por módulos de negócio dentro de `app/modules/`.
 
 Cada módulo deve separar rotas, schemas, serviços, repositórios e modelos.
+
+
+## Recuperação de senha e primeiro acesso
+
+A tela de login identifica o perfil pela API (`/auth/me`), sem seleção manual.
+Analistas entram em `/dashboard`; investidores entram em `/minha-conta`.
+As rotas protegidas validam a sessão na API antes de exibir cada área.
+
+- `POST /auth/esqueci-senha`: recebe `email` e envia um link para uma conta ativa.
+- `POST /auth/primeiro-acesso`: recebe `email` e envia um link para investidores
+  que ainda possuem a senha inicial do cadastro.
+- `POST /auth/redefinir-senha`: recebe `token` e `senha` e grava a nova senha.
+
+O primeiro acesso usa uma conta previamente cadastrada pelo responsável.
+Os links expiram em 30 minutos e são invalidados após a troca da senha.
+Tokens de definição de senha não são aceitos como tokens de login.
+
+Configure no `.env` da raiz (ou `backend/.env`): `SMTP_HOST`, `SMTP_PORT`,
+`SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_USE_TLS` e `FRONTEND_URL`.
+Sem servidor e remetente SMTP configurados, as solicitações retornam uma
+mensagem de indisponibilidade. O endereço do frontend deve apontar para a
+aplicação, por exemplo `http://localhost:5173`.
+
+Para executar os testes deste fluxo, na raiz do projeto:
+
+```powershell
+$env:PYTHONPATH = "backend"
+.\backend\.venv\Scripts\python.exe -m pytest tests/backend/unit/services/test_password_service.py -q
+```

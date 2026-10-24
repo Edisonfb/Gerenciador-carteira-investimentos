@@ -24,3 +24,12 @@ class UsuarioUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     email: str | None = None
     ativo: bool | None = None
+
+
+class SolicitarSenhaEntrada(BaseModel):
+    email: str
+
+
+class RedefinirSenhaEntrada(BaseModel):
+    token: str
+    senha: str

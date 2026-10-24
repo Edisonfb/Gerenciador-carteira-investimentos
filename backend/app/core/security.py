@@ -29,6 +29,8 @@ def criar_token_acesso(id_usuario: int) -> str:
 def ler_id_usuario_token(token: str) -> int:
     """Valida o JWT e retorna o ID do usuário autenticado."""
     payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
+    if payload.get("purpose") is not None:
+        raise jwt.InvalidTokenError("Token não é de autenticação.")
     id_usuario = payload.get("sub")
     if not id_usuario:
         raise jwt.InvalidTokenError("Token sem identificador de usuário.")

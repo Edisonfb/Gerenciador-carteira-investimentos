@@ -32,6 +32,8 @@ export function InvestidoresPage() {
       </main>
     );
   }
+  const idUsuarioAutenticado = usuarioAutenticado.id;
+
   function iniciarCadastro() {
     navigate("/investidores/novo");
   }
@@ -58,7 +60,7 @@ export function InvestidoresPage() {
     const investidorExcluido = excluirInvestidor(id);
 
     if (investidorExcluido) {
-      setInvestidores(buscarInvestidoresPorAnalista(usuarioAutenticado.id));
+      setInvestidores(buscarInvestidoresPorAnalista(idUsuarioAutenticado));
     }
   }
 

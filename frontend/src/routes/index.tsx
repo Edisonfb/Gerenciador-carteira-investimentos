@@ -2,8 +2,9 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { LayoutLogin } from "../components/LayoutLogin";
 import { LayoutPadrao } from "../components/LayoutPadrao";
 import { CadastroInvestidorPage } from "../pages/CadastroInvestidorPage";
-import { DashboardInvestidor } from "../pages/DashboardInvestidor";
+import { AcessoSenhaPage } from "../pages/AcessoSenhaPage";
 import { DashboardAnalista } from "../pages/DashboardAnalista";
+import { CarteirasInvestidorPage } from "../pages/CarteirasInvestidorPage";
 
 import { Login } from "../pages/Login";
 import { MinhaContaInvestidorPage } from "../pages/MinhaContaInvestidorPage";
@@ -13,11 +14,17 @@ export const Rotas = () => (
   <Routes>
     <Route path="/" element={<LayoutLogin />}>
       <Route index element={<Login />} />
+      <Route path="esqueci-senha" element={<AcessoSenhaPage />} />
+      <Route path="primeiro-acesso" element={<AcessoSenhaPage primeiroAcesso />} />
+      <Route path="definir-senha" element={<AcessoSenhaPage definirSenha />} />
     </Route>
 
     <Route element={<RotaProtegida perfisPermitidos={["investidor"]} />}>
       <Route path="/minha-conta" element={<LayoutPadrao />}>
         <Route index element={<MinhaContaInvestidorPage />} />
+      </Route>
+      <Route path="/carteiras-investidor" element={<LayoutPadrao />}>
+        <Route index element={<CarteirasInvestidorPage />} />
       </Route>
     </Route>
 

@@ -87,3 +87,21 @@ export function encerrarSessao(): void {
   localStorage.removeItem("token_type");
   localStorage.removeItem(CHAVE_USUARIO);
 }
+
+export async function solicitarAcessoSenha(email: string, primeiroAcesso: boolean): Promise<void> {
+  await enviarSolicitacaoSenha(primeiroAcesso ? "/auth/primeiro-acesso" : "/auth/esqueci-senha", { email });
+}
+
+export async function redefinirSenha(token: string, senha: string): Promise<void> {
+  await enviarSolicitacaoSenha("/auth/redefinir-senha", { token, senha });
+}
+
+async function enviarSolicitacaoSenha(caminho: string, dados: object): Promise<void> {
+  const resposta = await fetch(`${API_BASE}${caminho}`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(dados),
+  });
+  if (!resposta.ok) {
+    const erro = await resposta.json().catch(() => null);
+    throw new Error(typeof erro?.detail === "string" ? erro.detail : "Não foi possível concluir a solicitação.");
+  }
+}

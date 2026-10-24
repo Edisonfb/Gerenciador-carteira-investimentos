@@ -26,6 +26,8 @@ export function CadastroInvestidorPage() {
       </main>
     );
   }
+  const idUsuarioAutenticado = usuarioAutenticado.id;
+
   function voltarParaLista() {
     navigate("/investidores");
   }
@@ -34,7 +36,7 @@ export function CadastroInvestidorPage() {
     try{
       await criarInvestidor({
         ...dados,
-        idAnalistaResponsavel: usuarioAutenticado.id,
+        idAnalistaResponsavel: idUsuarioAutenticado,
         perfil: "investidor",
         status: "ativo",
       });
@@ -44,7 +46,7 @@ export function CadastroInvestidorPage() {
       );
 
       voltarParaLista();
-    } catch(erro){
+    } catch{
     window.alert("Não foi possível cadastrar o investidor");
     }
   }
