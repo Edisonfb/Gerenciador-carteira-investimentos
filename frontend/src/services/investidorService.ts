@@ -96,7 +96,7 @@ export function buscarInvestidorPorId(id: number): Investidor | undefined {
 
 export async function criarInvestidor(
   novoInvestidor: Omit<Investidor, "id">,
-): Promise<Investidor> {
+): Promise<Investidor & { emailAcessoEnviado: boolean }> {
   function somenteNumeros(valor: string){
     return valor.replace(/\D/g, "");
   }
@@ -105,9 +105,9 @@ export async function criarInvestidor(
     method: "POST",
     headers:{
       "Content-Type": "application/json",
+      Authorization: `Bearer ${obterTokenAcesso()}`,
     },
     body: JSON.stringify({
-      id_analista_responsavel: novoInvestidor.idAnalistaResponsavel,
        nome: novoInvestidor.nome,
       sobrenome: novoInvestidor.sobrenome,
       email: novoInvestidor.email,
@@ -122,8 +122,19 @@ export async function criarInvestidor(
     })
   });
 
-  if(!resposta.ok){
-    throw new Error("Não foi possível cadastrar o investidor.");
+  if (!resposta.ok) {
+    const erro = await resposta.json().catch(() => null);
+    let mensagem = "Não foi possível cadastrar o investidor.";
+    if (typeof erro?.detail === "string") {
+      mensagem = erro.detail;
+    } else if (Array.isArray(erro?.detail)) {
+      mensagem = erro.detail.map((item: { loc?: (string | number)[]; msg?: string }) =>
+        `${item.loc?.slice(1).join(".") || "Campo"}: ${item.msg || "Valor inválido"}`,
+      ).join("; ");
+    } else if (resposta.status >= 500) {
+      mensagem = "O servidor encontrou um erro no cadastro. Verifique o terminal do backend antes de tentar novamente.";
+    }
+    throw new Error(mensagem);
   }
 
   const investidorCriado = await resposta.json();
@@ -131,6 +142,7 @@ export async function criarInvestidor(
   return{
     ...novoInvestidor,
     id: investidorCriado.id_investidor,
+    emailAcessoEnviado: investidorCriado.email_acesso_enviado === true,
     cpf: investidorCriado.cpf,
     celular: investidorCriado.telefone,
   }

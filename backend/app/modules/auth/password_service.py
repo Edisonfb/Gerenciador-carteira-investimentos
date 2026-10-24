@@ -36,6 +36,21 @@ def solicitar_link(repository, email: str, primeiro_acesso: bool):
     enviar_link_senha(usuario.email, link, primeiro_acesso)
 
 
+def validar_primeiro_acesso(repository, email: str, token_inicial: str) -> str:
+    usuario = repository.buscar_por_email(email.strip())
+    armazenado = getattr(usuario, "token_acesso", None) if usuario else None
+    if (usuario is None or not usuario.ativo or not armazenado
+        or not hmac.compare_digest(armazenado.encode(), token_inicial.strip().encode())
+        or not verificar_senha(armazenado, usuario.senha_hash)):
+        raise ValueError("E-mail ou token inválido, ou primeiro acesso já concluído.")
+    agora = datetime.now(timezone.utc)
+    return jwt.encode({
+        "sub": str(usuario.id_usuario), "purpose": "password_setup",
+        "fingerprint": assinatura_senha(usuario),
+        "iat": agora, "exp": agora + timedelta(minutes=30),
+    }, settings.secret_key, algorithm="HS256")
+
+
 def definir_senha(repository, token: str, senha: str):
     if len(senha) < 8 or len(senha.encode("utf-8")) > 72:
         raise ValueError("A senha deve ter no mínimo 8 caracteres e no máximo 72 bytes.")

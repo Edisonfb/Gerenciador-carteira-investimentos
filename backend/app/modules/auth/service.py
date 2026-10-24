@@ -16,6 +16,11 @@ class AuthService:
         if not usuario.ativo:
             return False
 
+        # O token de convite deve ser trocado por uma senha no primeiro acesso.
+        inicial = getattr(usuario, "token_acesso", None)
+        if inicial and verificar_senha(inicial, usuario.senha_hash):
+            return None
+
         senha_correta = verificar_senha(senha, usuario.senha_hash)
 
         if not senha_correta:

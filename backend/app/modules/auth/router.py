@@ -1,7 +1,7 @@
 """Rotas HTTP do modulo de autenticacao."""
 
-from app.modules.auth.schemas import SolicitarSenhaEntrada, RedefinirSenhaEntrada
-from app.modules.auth.password_service import solicitar_link, definir_senha
+from app.modules.auth.schemas import SolicitarSenhaEntrada, RedefinirSenhaEntrada, PrimeiroAcessoEntrada, PrimeiroAcessoSaida
+from app.modules.auth.password_service import solicitar_link, definir_senha, validar_primeiro_acesso
 from app.core.config import settings
 import logging
 import smtplib
@@ -95,9 +95,13 @@ def esqueci_senha(dados: SolicitarSenhaEntrada, db: Session = Depends(get_db)):
     return _solicitar_senha(dados, db, False)
 
 
-@router.post("/primeiro-acesso")
-def primeiro_acesso(dados: SolicitarSenhaEntrada, db: Session = Depends(get_db)):
-    return _solicitar_senha(dados, db, True)
+@router.post("/primeiro-acesso", response_model=PrimeiroAcessoSaida)
+def primeiro_acesso(dados: PrimeiroAcessoEntrada, db: Session = Depends(get_db)):
+    try:
+        token = validar_primeiro_acesso(AuthRepository(db), dados.email, dados.token)
+    except ValueError as erro:
+        raise HTTPException(status_code=400, detail=str(erro)) from erro
+    return {"token_definicao": token}
 
 
 @router.post("/redefinir-senha")

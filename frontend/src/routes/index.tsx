@@ -16,6 +16,7 @@ export const Rotas = () => (
       <Route index element={<Login />} />
       <Route path="esqueci-senha" element={<AcessoSenhaPage />} />
       <Route path="primeiro-acesso" element={<AcessoSenhaPage primeiroAcesso />} />
+      <Route path="primeiro-acesso/definir-senha" element={<AcessoSenhaPage primeiroAcesso definirSenha />} />
       <Route path="definir-senha" element={<AcessoSenhaPage definirSenha />} />
     </Route>
 

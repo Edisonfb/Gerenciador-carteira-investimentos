@@ -3,7 +3,7 @@
 from pydantic import BaseModel, ConfigDict
 
 class CadastroInvestidorEntrada(BaseModel):
-    id_analista_responsavel: int
+    id_analista_responsavel: int | None = None
     nome: str
     sobrenome: str
     email: str
@@ -18,6 +18,7 @@ class CadastroInvestidorEntrada(BaseModel):
     numero: str
 
 class InvestidorSaida(BaseModel):
+    email_acesso_enviado: bool = False
     id_investidor: int
     id_usuario: int
     nome: str

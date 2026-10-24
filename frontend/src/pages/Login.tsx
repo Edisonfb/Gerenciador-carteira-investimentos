@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { realizarLogin } from "../services/autenticacaoService";
 import "../styles/login.css";
 
 export const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const mensagemSucesso = (location.state as { mensagemSucesso?: string } | null)?.mensagemSucesso;
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [mensagemErro, setMensagemErro] = useState("");
@@ -27,6 +29,7 @@ export const Login = () => {
   return (
     <section className="acesso-cartao" aria-labelledby="titulo-login">
       <h1 id="titulo-login">Login</h1>
+      {mensagemSucesso && <p role="status" className="acesso-mensagem">{mensagemSucesso}</p>}
       <form onSubmit={enviarLogin} className="acesso-formulario">
         <label htmlFor="email">E-mail</label>
         <input type="email" id="email" name="email" autoComplete="username" required value={email} onChange={(evento) => setEmail(evento.target.value)} />

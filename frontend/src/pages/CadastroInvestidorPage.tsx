@@ -29,12 +29,12 @@ export function CadastroInvestidorPage() {
   const idUsuarioAutenticado = usuarioAutenticado.id;
 
   function voltarParaLista() {
-    navigate("/investidores");
+    navigate("/dashboard");
   }
 
   async function cadastrarInvestidor(dados: DadosFormularioInvestidor) {
     try{
-      await criarInvestidor({
+      const criado = await criarInvestidor({
         ...dados,
         idAnalistaResponsavel: idUsuarioAutenticado,
         perfil: "investidor",
@@ -42,12 +42,14 @@ export function CadastroInvestidorPage() {
       });
 
       window.alert(
-        "Investidor cadastrado com sucesso. O acesso será enviado para o e-mail informado.",
+        criado.emailAcessoEnviado
+          ? "Investidor cadastrado com sucesso. O acesso foi enviado para o e-mail informado."
+          : "Investidor cadastrado com sucesso, mas o e-mail de acesso não foi enviado. Solicite ao responsável a configuração do envio de e-mail. Não é necessário cadastrar novamente.",
       );
 
       voltarParaLista();
-    } catch{
-    window.alert("Não foi possível cadastrar o investidor");
+    } catch (erro) {
+      window.alert(erro instanceof Error ? erro.message : "Não foi possível cadastrar o investidor.");
     }
   }
 

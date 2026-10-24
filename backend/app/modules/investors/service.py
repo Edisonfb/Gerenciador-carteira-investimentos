@@ -1,5 +1,9 @@
 """Regras de negocio do modulo de investidores."""
 import secrets
+import logging
+import smtplib
+
+from app.core.config import settings
 
 from app.core.security import hash_senha
 from app.db.enums import Tipo_Usuario
@@ -13,6 +17,7 @@ from app.modules.investors.schemas import CadastroInvestidorEntrada
 class InvestidorService:
     def __init__(self, repository: InvestidorRepository):
         self.repository = repository
+        self.email_acesso_enviado = False
 
     def cadastrar_investidor(self, dados: CadastroInvestidorEntrada) -> tuple[Investidor | None, str | None]:
         usuario_existente = self.repository.buscar_usuario_por_email(dados.email)
@@ -48,6 +53,15 @@ class InvestidorService:
 
         investidor_salvo = self.repository.salvar(investidor)
 
-        email_service.enviar_token_acesso(dados.email, dados.nome, token_inicial)
+        if settings.servidor_smtp and settings.email_remetente:
+            try:
+                email_service.enviar_token_acesso(dados.email, dados.nome, token_inicial)
+                self.email_acesso_enviado = True
+            except (smtplib.SMTPException, OSError, ValueError) as erro:
+                logging.getLogger(__name__).warning(
+                    "Investidor cadastrado, mas o envio do e-mail de acesso falhou. Tipo: %s; código SMTP: %s.",
+                    type(erro).__name__,
+                    getattr(erro, "smtp_code", "indisponível"),
+                )
 
         return investidor_salvo, None

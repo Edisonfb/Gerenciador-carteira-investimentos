@@ -88,15 +88,21 @@ export function encerrarSessao(): void {
   localStorage.removeItem(CHAVE_USUARIO);
 }
 
-export async function solicitarAcessoSenha(email: string, primeiroAcesso: boolean): Promise<void> {
-  await enviarSolicitacaoSenha(primeiroAcesso ? "/auth/primeiro-acesso" : "/auth/esqueci-senha", { email });
+export async function solicitarAcessoSenha(email: string): Promise<void> {
+  await enviarSolicitacaoSenha("/auth/esqueci-senha", { email });
+}
+
+export async function validarPrimeiroAcesso(email: string, token: string): Promise<string> {
+  const resposta = await enviarSolicitacaoSenha("/auth/primeiro-acesso", { email, token });
+  const dados: { token_definicao: string } = await resposta.json();
+  return dados.token_definicao;
 }
 
 export async function redefinirSenha(token: string, senha: string): Promise<void> {
   await enviarSolicitacaoSenha("/auth/redefinir-senha", { token, senha });
 }
 
-async function enviarSolicitacaoSenha(caminho: string, dados: object): Promise<void> {
+async function enviarSolicitacaoSenha(caminho: string, dados: object): Promise<Response> {
   const resposta = await fetch(`${API_BASE}${caminho}`, {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(dados),
   });
@@ -104,4 +110,5 @@ async function enviarSolicitacaoSenha(caminho: string, dados: object): Promise<v
     const erro = await resposta.json().catch(() => null);
     throw new Error(typeof erro?.detail === "string" ? erro.detail : "Não foi possível concluir a solicitação.");
   }
+  return resposta;
 }

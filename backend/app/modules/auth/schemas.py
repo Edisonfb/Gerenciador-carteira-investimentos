@@ -1,6 +1,6 @@
 """Schemas de entrada e saida do modulo de autenticacao."""
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class LoginEntrada(BaseModel):
@@ -33,3 +33,12 @@ class SolicitarSenhaEntrada(BaseModel):
 class RedefinirSenhaEntrada(BaseModel):
     token: str
     senha: str
+
+
+class PrimeiroAcessoEntrada(BaseModel):
+    email: str = Field(min_length=1, max_length=255)
+    token: str = Field(min_length=1, max_length=255)
+
+
+class PrimeiroAcessoSaida(BaseModel):
+    token_definicao: str

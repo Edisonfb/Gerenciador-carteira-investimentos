@@ -8,7 +8,7 @@ import pytest
 
 from app.core.config import settings
 from app.core.security import hash_senha, verificar_senha, ler_id_usuario_token
-from app.modules.auth.password_service import solicitar_link, definir_senha
+from app.modules.auth.password_service import solicitar_link, definir_senha, validar_primeiro_acesso
 
 
 class Repository:
@@ -87,7 +87,7 @@ def test_senha_curta_nao_salva():
     assert not repository.salvo
 
 
-@pytest.mark.parametrize("caminho", ["/auth/esqueci-senha", "/auth/primeiro-acesso"])
+@pytest.mark.parametrize("caminho", ["/auth/esqueci-senha"])
 def test_endpoint_indica_smtp_indisponivel(caminho):
     from fastapi.testclient import TestClient
     from app.main import app
@@ -102,5 +102,58 @@ def test_endpoint_indica_smtp_indisponivel(caminho):
             resposta = TestClient(app).post(caminho, json={"email": "conta@example.test"})
         assert resposta.status_code == 503
         assert "indisponível" in resposta.json()["detail"]
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+
+def test_primeiro_acesso_valida_token_sem_enviar_email_e_libera_login_apos_senha():
+    from app.modules.auth.service import AuthService
+    repository = Repository()
+    with patch("app.modules.auth.password_service.enviar_link_senha") as enviar:
+        assert AuthService(repository).realizar_login(repository.usuario.email, "senha-inicial") is None
+        token = validar_primeiro_acesso(repository, repository.usuario.email, "senha-inicial")
+        with pytest.raises(jwt.InvalidTokenError):
+            ler_id_usuario_token(token)
+        definir_senha(repository, token, "nova-senha-definitiva")
+        assert repository.usuario.token_acesso == ""
+        assert AuthService(repository).realizar_login(repository.usuario.email, "senha-inicial") is None
+        assert AuthService(repository).realizar_login(repository.usuario.email, "nova-senha-definitiva")["access_token"]
+        with pytest.raises(ValueError):
+            validar_primeiro_acesso(repository, repository.usuario.email, "senha-inicial")
+    enviar.assert_not_called()
+
+
+@pytest.mark.parametrize("situacao", ["email", "token", "inativo", "concluido", "unicode"])
+def test_primeiro_acesso_rejeita_credenciais_invalidas(situacao):
+    repository = Repository()
+    email = repository.usuario.email
+    token = "senha-inicial"
+    if situacao == "email": email = "outro@example.test"
+    if situacao == "token": token = "token-incorreto"
+    if situacao == "inativo": repository.usuario.ativo = False
+    if situacao == "concluido": repository.usuario.token_acesso = ""
+    if situacao == "unicode": token = "token-inválido"
+    with pytest.raises(ValueError, match="E-mail ou token inválido"):
+        validar_primeiro_acesso(repository, email, token)
+    assert not repository.salvo
+
+
+def test_endpoints_primeiro_acesso_e_definicao_de_senha_sem_smtp():
+    from fastapi.testclient import TestClient
+    from app.main import app
+    from app.db.session import get_db
+    repository = Repository()
+    app.dependency_overrides[get_db] = lambda: None
+    try:
+        with patch("app.modules.auth.router.AuthRepository", return_value=repository), patch.object(settings, "servidor_smtp", ""), patch("app.modules.auth.password_service.enviar_link_senha") as enviar:
+            client = TestClient(app)
+            dados = {"email": repository.usuario.email, "token": "senha-inicial"}
+            resposta = client.post("/auth/primeiro-acesso", json=dados)
+            assert resposta.status_code == 200
+            token = resposta.json()["token_definicao"]
+            assert client.post("/auth/redefinir-senha", json={"token": token, "senha": "nova-senha-definitiva"}).status_code == 200
+            assert client.post("/auth/primeiro-acesso", json=dados).status_code == 400
+            assert client.post("/auth/redefinir-senha", json={"token": token, "senha": "outra-senha-definitiva"}).status_code == 400
+        enviar.assert_not_called()
     finally:
         app.dependency_overrides.pop(get_db, None)

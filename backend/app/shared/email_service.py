@@ -17,11 +17,13 @@ def enviar_token_acesso(email: str, nome: str, token: str) -> None:
         "Sua conta foi cadastrada com sucesso.\n\n"
         "Seu token de acesso é:\n\n"
         f"{token}\n\n"
-        "Utilize este token para acessar o sistema.\n"
+        "Na tela de login, selecione Primeiro acesso e informe seu e-mail e este token.\n"
+        "Depois, cadastre sua senha para entrar no sistema.\n"
+        f"{settings.endereco_frontend.rstrip('/')}/primeiro-acesso\n"
         "Não compartilhe este token com outras pessoas."
     )
 
-    with smtplib.SMTP(settings.servidor_smtp, settings.porta_smtp) as servidor:
+    with smtplib.SMTP(settings.servidor_smtp, settings.porta_smtp, timeout=15) as servidor:
         if settings.usar_tls:
             servidor.starttls()
         if settings.usuario_smtp:

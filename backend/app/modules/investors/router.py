@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.db.session import get_db
 from app.modules.investors.repository import InvestidorRepository
@@ -12,7 +13,7 @@ from app.modules.investors.schemas import (
     MeuPerfilInvestidorSaida,
 )
 from app.modules.investors.service import InvestidorService
-from app.core.dependencies import exigir_investidor
+from app.core.dependencies import exigir_investidor, obter_usuario_autenticado
 from app.modules.auth.models import Usuario
 
 
@@ -75,12 +76,23 @@ def atualizar_meu_perfil(
 @router.post("", response_model= InvestidorSaida, status_code=201)
 def cadastrar_investidor(
     dados: CadastroInvestidorEntrada,
+    usuario: Usuario = Depends(obter_usuario_autenticado),
     db: Session = Depends(get_db),
 ):
+    if usuario.tipo_usuario.value != "analista":
+        raise HTTPException(status_code=403, detail="Apenas analistas podem cadastrar investidores.")
     repository = InvestidorRepository(db)
+    analista = repository.buscar_analista_por_usuario(usuario.id_usuario)
+    if analista is None:
+        raise HTTPException(status_code=404, detail="Perfil de analista não encontrado.")
+    dados = dados.model_copy(update={"id_analista_responsavel": analista.id_analista})
     service = InvestidorService(repository)
 
-    investidor, erro = service.cadastrar_investidor(dados)
+    try:
+        investidor, erro = service.cadastrar_investidor(dados)
+    except IntegrityError as falha:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Não foi possível cadastrar: confira se CPF, e-mail ou telefone já estão em uso e se o analista é válido.") from falha
 
     if erro is not None or investidor is None:
         raise HTTPException(
@@ -89,6 +101,7 @@ def cadastrar_investidor(
         )
 
     return {
+        "email_acesso_enviado": service.email_acesso_enviado,
         "id_investidor": investidor.id_investidor,
         "id_usuario": investidor.id_usuario,
         "nome": investidor.nome,
