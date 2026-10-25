@@ -1,12 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { realizarLogin } from "../services/autenticacaoService";
+import {
+  encerrarSessao,
+  realizarLogin,
+} from "../services/autenticacaoService";
+import type { PerfilUsuario } from "../types/usuario";
 
 export const Login = () => {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [perfilSelecionado, setPerfilSelecionado] = useState<PerfilUsuario>("investidor");
   const [mensagemErro, setMensagemErro] = useState("");
   const [carregando, setCarregando] = useState(false);
 
@@ -17,12 +22,19 @@ export const Login = () => {
       setCarregando(true);
       setMensagemErro("");
 
-      const resposta = await realizarLogin(email, senha);
+      const usuario = await realizarLogin(email, senha);
+      if (usuario.perfil !== perfilSelecionado) {
+        encerrarSessao();
+        throw new Error("O tipo selecionado não corresponde ao perfil desta conta.");
+      }
 
-      localStorage.setItem("access_token", resposta.access_token);
-      localStorage.setItem("token_type", resposta.token_type);
+     if  (usuario.perfil === "investidor"){
+        navigate("/minha-conta");
+     }
 
+     if (usuario.perfil === "analista"){
       navigate("/dashboard");
+     }
     } catch (erro) {
       if (erro instanceof Error) {
         setMensagemErro(erro.message);
@@ -40,18 +52,19 @@ export const Login = () => {
         <h2 style={{ marginBottom: '1.5rem', textAlign: 'center' }}>Login</h2>
         <form onSubmit={enviarLogin}>
           <div>
-            <label htmlFor="tipo_usuario">Tipo usuario:</label>
+            <label htmlFor="tipo_usuario">Tipo de usuário:</label>
 
             <select 
               name="seletor_usuario" id="seletor_usuario_login"
+              value={perfilSelecionado}
+              onChange={(evento) => setPerfilSelecionado(evento.target.value as PerfilUsuario)}
               style={{ width: "100%", padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc", background: "#fff" }}
               required
             
             >
               
-              <option value="Investidor">Investidor</option>
-              <option value="Analista">Analista</option>
-              <option value="Admin">Adiministrador</option>
+              <option value="investidor">Investidor</option>
+              <option value="analista">Analista</option>
 
             </select>
           </div>

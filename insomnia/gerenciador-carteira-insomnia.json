@@ -1,0 +1,175 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-09-29T00:00:00.000Z",
+  "__export_source": "codex",
+  "resources": [
+    {
+      "_id": "wrk_portfolio_api",
+      "parentId": null,
+      "name": "Gerenciador de Carteiras - API local",
+      "description": "Coleção dos endpoints atualmente implementados no backend FastAPI.",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_portfolio_base",
+      "parentId": "wrk_portfolio_api",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://127.0.0.1:8000",
+        "access_token": "",
+        "usuario_id": "2",
+        "analista_id": "1",
+        "investidor_email_teste": "investidor.teste@example.com"
+      },
+      "_type": "environment"
+    },
+    {
+      "_id": "fld_health",
+      "parentId": "wrk_portfolio_api",
+      "name": "Health",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_health",
+      "parentId": "fld_health",
+      "name": "Verificar API",
+      "method": "GET",
+      "url": "{{ _.base_url }}/health",
+      "headers": [],
+      "_type": "request"
+    },
+    {
+      "_id": "fld_auth",
+      "parentId": "wrk_portfolio_api",
+      "name": "Autenticação e usuários",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_login",
+      "parentId": "fld_auth",
+      "name": "Login",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"analista@teste.com\",\n  \"senha\": \"INFORME_A_SENHA\"\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_me",
+      "parentId": "fld_auth",
+      "name": "Usuário atual (implementação provisória)",
+      "description": "Hoje este endpoint não valida o Bearer token e retorna dados fixos. Pode também falhar na validação do response_model.",
+      "method": "GET",
+      "url": "{{ _.base_url }}/auth/me",
+      "headers": [],
+      "authentication": { "type": "bearer", "token": "{{ _.access_token }}" },
+      "_type": "request"
+    },
+    {
+      "_id": "req_users_list",
+      "parentId": "fld_auth",
+      "name": "Listar usuários",
+      "method": "GET",
+      "url": "{{ _.base_url }}/auth/usuarios",
+      "headers": [],
+      "_type": "request"
+    },
+    {
+      "_id": "req_users_get",
+      "parentId": "fld_auth",
+      "name": "Buscar usuário por ID",
+      "method": "GET",
+      "url": "{{ _.base_url }}/auth/usuarios/{{ _.usuario_id }}",
+      "headers": [],
+      "_type": "request"
+    },
+    {
+      "_id": "req_users_patch",
+      "parentId": "fld_auth",
+      "name": "Atualizar usuário",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/auth/atualizar/{{ _.usuario_id }}",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"analista@teste.com\",\n  \"ativo\": true\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "fld_analysts",
+      "parentId": "wrk_portfolio_api",
+      "name": "Analistas",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_analyst_create",
+      "parentId": "fld_analysts",
+      "name": "Cadastrar analista",
+      "method": "POST",
+      "url": "{{ _.base_url }}/analysts",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Analista Teste\",\n  \"email\": \"analista.novo@example.com\",\n  \"senha\": \"SenhaDeTeste123!\"\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_analyst_list",
+      "parentId": "fld_analysts",
+      "name": "Listar analistas",
+      "method": "GET",
+      "url": "{{ _.base_url }}/analysts/analistas",
+      "headers": [],
+      "_type": "request"
+    },
+    {
+      "_id": "req_analyst_get",
+      "parentId": "fld_analysts",
+      "name": "Buscar analista por ID",
+      "method": "GET",
+      "url": "{{ _.base_url }}/analysts/analistas/{{ _.analista_id }}",
+      "headers": [],
+      "_type": "request"
+    },
+    {
+      "_id": "req_analyst_patch",
+      "parentId": "fld_analysts",
+      "name": "Atualizar analista",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/analysts/analistas/{{ _.analista_id }}",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Analista Teste Atualizado\",\n  \"email\": \"analista.teste@example.com\"\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "fld_investors",
+      "parentId": "wrk_portfolio_api",
+      "name": "Investidores",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_investor_create",
+      "parentId": "fld_investors",
+      "name": "Cadastrar investidor",
+      "description": "Requer id_analista_responsavel existente. O backend salva antes de tentar enviar o token por SMTP; com SMTP indisponível, o registro pode ser criado mesmo se a requisição terminar em erro.",
+      "method": "POST",
+      "url": "{{ _.base_url }}/investors",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id_analista_responsavel\": {{ _.analista_id }},\n  \"nome\": \"Investidor\",\n  \"sobrenome\": \"Teste\",\n  \"email\": \"{{ _.investidor_email_teste }}\",\n  \"rg\": null,\n  \"cpf\": \"98765432100\",\n  \"telefone\": \"11987654321\",\n  \"cep\": \"01310100\",\n  \"uf\": \"SP\",\n  \"cidade\": \"São Paulo\",\n  \"bairro\": \"Centro\",\n  \"logradouro\": \"Rua de Teste\",\n  \"numero\": \"100\"\n}"
+      },
+      "_type": "request"
+    }
+  ]
+}

@@ -53,7 +53,7 @@ export function UsuariosPage() {
         <div className="cabecalho-pagina">
           <h1>Usuários do Sistema</h1>
 
-          {usuarioAutenticado.perfil === "administrador" && (
+          {usuarioAutenticado?.perfil === "administrador" && (
             <button className="botao botao-primario" onClick={iniciarCadastro}>
               Cadastrar Usuário +
             </button>

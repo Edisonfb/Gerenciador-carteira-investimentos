@@ -11,11 +11,48 @@ class InvestidorRepository:
     def buscar_usuario_por_email(self, email: str) -> Usuario | None:
         return self.db.query(Usuario).filter(Usuario.email == email).first()
 
+    def buscar_por_email_recuperacao(self, email_recuperacao: str) -> Investidor | None:
+        return (
+            self.db.query(Investidor)
+            .filter(Investidor.email_recuperacao == email_recuperacao)
+            .first()
+        )
+
     def buscar_investidor_por_cpf(self, cpf: str) -> Investidor | None:
         return self.db.query(Investidor).filter(Investidor.cpf == cpf).first()
 
-    def salvar(self, investidor: Investidor) -> Investidor:
+    def buscar_por_usuario_id(self, id_usuario: int) -> Investidor | None:
+        return (
+            self.db.query(Investidor)
+            .filter(Investidor.id_usuario == id_usuario)
+            .first()
+        )
+
+    def adicionar(self, investidor: Investidor) -> Investidor:
+        self.db.add(investidor)
+        self.db.flush()
+        self.db.refresh(investidor)
+        return investidor
+
+    def confirmar(self)-> None:
+        self.db.commit()
+
+    def desfazer(self) -> None:
+        self.db.rollback()
+
+    def atualizar(self, investidor: Investidor) -> Investidor:
         self.db.add(investidor)
         self.db.commit()
         self.db.refresh(investidor)
         return investidor
+
+    def buscar_por_id(self, id_investidor: int) -> Investidor | None:
+        return (
+            self.db.query(Investidor)
+            .filter(Investidor.id_investidor == id_investidor)
+            .first()
+        )
+
+    def excluir(self, investidor: Investidor) -> None:
+        self.db.delete(investidor)
+        self.db.commit()

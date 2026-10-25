@@ -13,6 +13,8 @@ from app.modules.auth.schemas import (
 from app.db.session import get_db
 from app.modules.auth.repository import AuthRepository
 from app.modules.auth.service import AuthService
+from app.core.dependencies import obter_usuario_autenticado
+from app.modules.auth.models import Usuario
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -46,11 +48,12 @@ def get_usuario_por_id(id_usuario: int, db: Session = Depends(get_db)):
     return usuario
 
 @router.get("/me", response_model=UsuarioSaida)
-def obter_usuario_atual():
+def obter_usuario_atual(usuario: Usuario = Depends(obter_usuario_autenticado)):
     return {
-        "id": 1,
-        "nome": "Usuario Teste",
-        "email": "teste@email.com",
+        "id_usuario": usuario.id_usuario,
+        "email": usuario.email,
+        "tipo_usuario": usuario.tipo_usuario.value,
+        "ativo": usuario.ativo,
     }
 
 @router.patch("/atualizar/{id_usuario}", response_model=UsuarioUpdate)
