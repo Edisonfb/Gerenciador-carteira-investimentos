@@ -2,11 +2,15 @@
 from sqlalchemy.orm import Session
 
 from app.modules.auth.models import Usuario
+from app.modules.analysts.models import Analista
 from app.modules.investors.models import Investidor
 
 class InvestidorRepository:
     def __init__(self, db: Session):
         self.db = db
+
+    def buscar_analista_por_usuario(self, id_usuario: int) -> Analista | None:
+        return self.db.query(Analista).filter(Analista.id_usuario == id_usuario).first()
 
     def buscar_usuario_por_email(self, email: str) -> Usuario | None:
         return self.db.query(Usuario).filter(Usuario.email == email).first()

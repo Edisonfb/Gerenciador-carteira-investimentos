@@ -1,0 +1,9 @@
+.acesso-cartao { width: 100%; max-width: 400px; margin: 3rem auto; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px #0000001a; }
+.acesso-cartao h1 { text-align: center; margin-bottom: 1.5rem; }
+.acesso-formulario { display: flex; flex-direction: column; gap: .75rem; }
+.acesso-formulario input { width: 100%; padding: .65rem; border: 1px solid #94a3b8; border-radius: 4px; }
+.acesso-formulario button { padding: .65rem; cursor: pointer; border: 0; border-radius: 4px; background: #1e293b; color: white; }
+.acesso-formulario button:disabled { opacity: .6; cursor: wait; }
+.acesso-link { text-align: center; color: #334155; text-underline-offset: 3px; }
+.acesso-erro { color: #b91c1c; margin: 0; }
+.acesso-mensagem { color: #166534; margin: 0; }

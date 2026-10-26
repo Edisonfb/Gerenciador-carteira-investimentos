@@ -27,6 +27,11 @@ export function TabelaInvestidores({
         </thead>
 
         <tbody>
+          {investidores.length === 0 && (
+            <tr>
+              <td colSpan={6}>Nenhum investidor cadastrado.</td>
+            </tr>
+          )}
           {investidores.map((investidor) => (
             <tr key={investidor.id}>
               <td>

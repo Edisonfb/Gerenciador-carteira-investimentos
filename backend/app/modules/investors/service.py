@@ -1,5 +1,9 @@
 """Regras de negocio do modulo de investidores."""
 import secrets
+import logging
+import smtplib
+
+from app.core.config import settings
 
 from app.core.security import hash_senha
 from app.db.enums import Tipo_Usuario
@@ -16,6 +20,7 @@ from app.modules.investors.schemas import (
 class InvestidorService:
     def __init__(self, repository: InvestidorRepository):
         self.repository = repository
+        self.email_acesso_enviado = False
 
     def cadastrar_investidor(
         self,

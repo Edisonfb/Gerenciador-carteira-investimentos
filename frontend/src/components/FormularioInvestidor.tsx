@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import type { Investidor } from "../types/investidor";
@@ -22,6 +24,8 @@ interface FormularioInvestidorProps {
   onCancelar: () => void;
   permitirAlterarCpf?: boolean;
   textoBotaoSalvar?: string;
+  usarShadcn?: boolean;
+  salvando?: boolean;
 }
 
 export function FormularioInvestidor({
@@ -30,7 +34,11 @@ export function FormularioInvestidor({
   onCancelar,
   permitirAlterarCpf = true,
   textoBotaoSalvar = "Salvar alterações",
+  usarShadcn = false,
+  salvando = false,
 }: FormularioInvestidorProps) {
+  const CampoEntrada = usarShadcn ? Input : "input";
+
   const [nome, setNome] = useState(investidor?.nome ?? "");
   const [sobrenome, setSobrenome] = useState(investidor?.sobrenome ?? "");
   const [email, setEmail] = useState(investidor?.email ?? "");
@@ -160,11 +168,12 @@ export function FormularioInvestidor({
   }
 
   return (
-    <form className="formulario-usuario" onSubmit={enviarFormulario}>
-      <div className="grade-formulario">
-        <div className="campo-formulario">
+    <form className={usarShadcn ? "space-y-6" : "formulario-usuario"} onSubmit={enviarFormulario} aria-busy={salvando}>
+      <fieldset disabled={salvando} className={usarShadcn ? "m-0 min-w-0 border-0 p-0" : undefined}>
+      <div className={usarShadcn ? "grid grid-cols-1 gap-5 sm:grid-cols-2" : "grade-formulario"}>
+        <div className={usarShadcn ? "flex flex-col gap-2 text-sm font-medium" : "campo-formulario"}>
           <label htmlFor="nome">Nome</label>
-          <input
+          <CampoEntrada
             id="nome"
             type="text"
             value={nome}
@@ -172,9 +181,9 @@ export function FormularioInvestidor({
           />
         </div>
 
-        <div className="campo-formulario">
+        <div className={usarShadcn ? "flex flex-col gap-2 text-sm font-medium" : "campo-formulario"}>
           <label htmlFor="sobrenome">Sobrenome</label>
-          <input
+          <CampoEntrada
             id="sobrenome"
             type="text"
             value={sobrenome}
@@ -182,9 +191,9 @@ export function FormularioInvestidor({
           />
         </div>
 
-        <div className="campo-formulario">
+        <div className={usarShadcn ? "flex flex-col gap-2 text-sm font-medium" : "campo-formulario"}>
           <label htmlFor="email">E-mail</label>
-          <input
+          <CampoEntrada
             id="email"
             type="email"
             value={email}
@@ -192,9 +201,9 @@ export function FormularioInvestidor({
           />
         </div>
 
-        <div className="campo-formulario">
+        <div className={usarShadcn ? "flex flex-col gap-2 text-sm font-medium" : "campo-formulario"}>
           <label htmlFor="cpf">CPF</label>
-          <input
+          <CampoEntrada
             id="cpf"
             type="text"
             value={cpf}
@@ -203,9 +212,9 @@ export function FormularioInvestidor({
           />
         </div>
 
-        <div className="campo-formulario">
+        <div className={usarShadcn ? "flex flex-col gap-2 text-sm font-medium" : "campo-formulario"}>
           <label htmlFor="celular">Celular</label>
-          <input
+          <CampoEntrada
             id="celular"
             type="text"
             value={celular}
@@ -213,9 +222,9 @@ export function FormularioInvestidor({
           />
         </div>
 
-        <div className="campo-formulario">
+        <div className={usarShadcn ? "flex flex-col gap-2 text-sm font-medium" : "campo-formulario"}>
           <label htmlFor="rua">Rua</label>
-          <input
+          <CampoEntrada
             id="rua"
             type="text"
             value={rua}
@@ -223,9 +232,9 @@ export function FormularioInvestidor({
           />
         </div>
 
-        <div className="campo-formulario">
+        <div className={usarShadcn ? "flex flex-col gap-2 text-sm font-medium" : "campo-formulario"}>
           <label htmlFor="numero">Número</label>
-          <input
+          <CampoEntrada
             id="numero"
             type="text"
             value={numero}
@@ -233,9 +242,9 @@ export function FormularioInvestidor({
           />
         </div>
 
-        <div className="campo-formulario">
+        <div className={usarShadcn ? "flex flex-col gap-2 text-sm font-medium" : "campo-formulario"}>
           <label htmlFor="bairro">Bairro</label>
-          <input
+          <CampoEntrada
             id="bairro"
             type="text"
             value={bairro}
@@ -243,9 +252,9 @@ export function FormularioInvestidor({
           />
         </div>
 
-        <div className="campo-formulario">
+        <div className={usarShadcn ? "flex flex-col gap-2 text-sm font-medium" : "campo-formulario"}>
           <label htmlFor="cep">CEP</label>
-          <input
+          <CampoEntrada
             id="cep"
             type="text"
             value={cep}
@@ -253,9 +262,9 @@ export function FormularioInvestidor({
           />
         </div>
 
-        <div className="campo-formulario">
+        <div className={usarShadcn ? "flex flex-col gap-2 text-sm font-medium" : "campo-formulario"}>
           <label htmlFor="cidade">Cidade</label>
-          <input
+          <CampoEntrada
             id="cidade"
             type="text"
             value={cidade}
@@ -263,9 +272,9 @@ export function FormularioInvestidor({
           />
         </div>
 
-        <div className="campo-formulario">
+        <div className={usarShadcn ? "flex flex-col gap-2 text-sm font-medium" : "campo-formulario"}>
           <label htmlFor="uf">UF</label>
-          <input
+          <CampoEntrada
             id="uf"
             type="text"
             value={uf}
@@ -275,21 +284,20 @@ export function FormularioInvestidor({
         </div>
       </div>
 
-      {mensagemErro && <p className="mensagem-erro">{mensagemErro}</p>}
+      </fieldset>
+      {mensagemErro && <p role="alert" className={usarShadcn ? "text-sm text-destructive" : "mensagem-erro"}>{mensagemErro}</p>}
 
-      <div className="acoes-formulario">
-        <button
-          className="botao botao-secundario"
-          type="button"
-          onClick={onCancelar}
-        >
-          Cancelar
-        </button>
-
-        <button className="botao botao-primario" type="submit">
-          {textoBotaoSalvar}
-        </button>
-      </div>
+      {usarShadcn ? (
+        <div className="flex flex-col-reverse gap-3 border-t pt-6 sm:flex-row sm:justify-end">
+          <Button variant="outline" type="button" onClick={onCancelar} disabled={salvando}>Cancelar</Button>
+          <Button type="submit" disabled={salvando}>{salvando ? "Salvando..." : textoBotaoSalvar}</Button>
+        </div>
+      ) : (
+        <div className="acoes-formulario">
+          <button className="botao botao-secundario" type="button" onClick={onCancelar}>Cancelar</button>
+          <button className="botao botao-primario" type="submit">{textoBotaoSalvar}</button>
+        </div>
+      )}
     </form>
   );
 }
