@@ -3,29 +3,24 @@
 from pydantic import BaseModel, ConfigDict
 
 class CadastroInvestidorEntrada(BaseModel):
-    id_analista_responsavel: int | None = None
-    nome: str
-    sobrenome: str
+    model_config = ConfigDict(extra="forbid")
+
     email: str
-    rg: str | None = None
-    cpf: str
-    telefone: str
-    cep: str
-    uf: str
-    cidade: str
-    bairro: str
-    logradouro: str
-    numero: str
+
 
 class InvestidorSaida(BaseModel):
     email_acesso_enviado: bool = False
     id_investidor: int
     id_usuario: int
-    nome: str
-    sobrenome: str
     email: str
-    cpf: str
-    telefone: str
+    primeiro_acesso_concluido: bool
+
+
+class PrimeiroAcessoInvestidorEntrada(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    email_recuperacao: str
+    nova_senha: str
 
 
 class MeuPerfilInvestidorSaida(BaseModel):
@@ -33,18 +28,20 @@ class MeuPerfilInvestidorSaida(BaseModel):
     id_usuario: int
     id_analista_responsavel: int
     email: str
+    email_recuperacao: str | None
     tipo_usuario: str
     ativo: bool
-    nome: str
-    sobrenome: str
-    cpf: str
-    telefone: str
-    cep: str
-    uf: str
-    cidade: str
-    bairro: str
-    logradouro: str
-    numero: str
+    primeiro_acesso_concluido: bool
+    nome: str | None
+    sobrenome: str | None
+    cpf: str | None
+    telefone: str | None
+    cep: str | None
+    uf: str | None
+    cidade: str | None
+    bairro: str | None
+    logradouro: str | None
+    numero: str | None
 
 
 class MeuPerfilInvestidorAtualizacao(BaseModel):

@@ -46,3 +46,15 @@ def exigir_investidor(
             detail="Esta operação é permitida apenas para investidores.",
         )
     return usuario
+
+
+def exigir_analista(
+    usuario: Usuario = Depends(obter_usuario_autenticado),
+) -> Usuario:
+    """Garante que a operação seja feita por um analista autenticado."""
+    if usuario.tipo_usuario.value != "analista":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Esta operação é permitida apenas para analistas.",
+        )
+    return usuario

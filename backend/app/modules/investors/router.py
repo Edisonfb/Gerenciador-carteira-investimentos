@@ -1,6 +1,6 @@
 """Rotas HTTP do modulo de investidores."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
@@ -11,10 +11,12 @@ from app.modules.investors.schemas import (
     InvestidorSaida,
     MeuPerfilInvestidorAtualizacao,
     MeuPerfilInvestidorSaida,
+    PrimeiroAcessoInvestidorEntrada,
 )
 from app.modules.investors.service import InvestidorService
-from app.core.dependencies import exigir_investidor, obter_usuario_autenticado
 from app.modules.auth.models import Usuario
+from app.core.dependencies import exigir_investidor, exigir_analista
+from app.modules.analysts.repository import AnalistaRepository
 
 
 router = APIRouter(prefix="/investors", tags=["investors"])
@@ -26,8 +28,10 @@ def _perfil_para_resposta(investidor):
         "id_usuario": investidor.id_usuario,
         "id_analista_responsavel": investidor.id_analista_responsavel,
         "email": investidor.email,
+        "email_recuperacao": investidor.email_recuperacao,
         "tipo_usuario": investidor.tipo_usuario.value,
         "ativo": investidor.ativo,
+        "primeiro_acesso_concluido": investidor.primeiro_acesso_concluido,
         "nome": investidor.nome,
         "sobrenome": investidor.sobrenome,
         "cpf": investidor.cpf,
@@ -73,10 +77,32 @@ def atualizar_meu_perfil(
     return _perfil_para_resposta(investidor)
 
 
-@router.post("", response_model= InvestidorSaida, status_code=201)
+@router.post("/me/first-access", response_model=MeuPerfilInvestidorSaida)
+def concluir_primeiro_acesso(
+    dados: PrimeiroAcessoInvestidorEntrada,
+    usuario: Usuario = Depends(exigir_investidor),
+    db: Session = Depends(get_db),
+):
+    """Conclui o primeiro acesso do investidor autenticado."""
+    repository = InvestidorRepository(db)
+    service = InvestidorService(repository)
+
+    investidor, erro = service.concluir_primeiro_acesso(usuario.id_usuario, dados)
+
+    if erro is not None or investidor is None:
+        status_code = 404 if erro == "Perfil de investidor não encontrado." else 400
+        raise HTTPException(
+            status_code=status_code,
+            detail=erro or "Não foi possível concluir o primeiro acesso.",
+        )
+
+    return _perfil_para_resposta(investidor)
+
+
+@router.post("", response_model=InvestidorSaida, status_code=201)
 def cadastrar_investidor(
     dados: CadastroInvestidorEntrada,
-    usuario: Usuario = Depends(obter_usuario_autenticado),
+    usuario: Usuario = Depends(exigir_analista),
     db: Session = Depends(get_db),
 ):
     if usuario.tipo_usuario.value != "analista":
@@ -88,11 +114,15 @@ def cadastrar_investidor(
     dados = dados.model_copy(update={"id_analista_responsavel": analista.id_analista})
     service = InvestidorService(repository)
 
-    try:
-        investidor, erro = service.cadastrar_investidor(dados)
-    except IntegrityError as falha:
-        db.rollback()
-        raise HTTPException(status_code=409, detail="Não foi possível cadastrar: confira se CPF, e-mail ou telefone já estão em uso e se o analista é válido.") from falha
+    analista = AnalistaRepository(db).buscar_por_usuario_id(usuario.id_usuario)
+
+    if analista is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Perfil de analista não encontrado.",
+        )
+
+    investidor, erro = service.cadastrar_investidor(dados, analista.id_analista)
 
     if erro is not None or investidor is None:
         raise HTTPException(
@@ -104,9 +134,19 @@ def cadastrar_investidor(
         "email_acesso_enviado": service.email_acesso_enviado,
         "id_investidor": investidor.id_investidor,
         "id_usuario": investidor.id_usuario,
-        "nome": investidor.nome,
-        "sobrenome": investidor.sobrenome,
         "email": investidor.email,
-        "cpf": investidor.cpf,
-        "telefone": investidor.telefone,
+        "primeiro_acesso_concluido": investidor.primeiro_acesso_concluido,
     }
+
+@router.delete("/{id_investidor}", status_code=status.HTTP_204_NO_CONTENT)
+def excluir_investidor( id_investidor:int, db: Session = Depends(get_db)):
+    repository = InvestidorRepository(db)
+    service = InvestidorService(repository)
+
+    investidor_excluido = service.excluir_investidor(id_investidor)
+
+    if not investidor_excluido:
+        raise HTTPException(
+            status_code=404,
+            detail= "Investidor não encontrado."
+        )

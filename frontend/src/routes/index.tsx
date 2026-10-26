@@ -30,12 +30,27 @@ export const Rotas = () => (
     </Route>
 
     <Route element={<RotaProtegida perfisPermitidos={["analista"]} />}>
+
       <Route path="/dashboard" element={<LayoutPadrao />}>
         <Route index element={<DashboardAnalista />} />
       </Route>
+
+      <Route path="/investidores" element={<LayoutPadrao />}>
+        <Route index element={<InvestidoresPage />} />
+      </Route>
+
+      <Route path="/investidores/novo" element={<LayoutPadrao />}>
+        <Route index element={<CadastroInvestidorPage />} />
+      </Route>
+
+      <Route path="/investidores/:id/editar" element={<LayoutPadrao />}>
+        <Route index element={<EdicaoInvestidorPage />} />
+      </Route>
+      
       <Route path="/cadastrar" element={<LayoutPadrao />}>
         <Route index element={<CadastroInvestidorPage />} />
       </Route>
+
     </Route>
 
     <Route path="*" element={<Navigate to="/" replace />} />
