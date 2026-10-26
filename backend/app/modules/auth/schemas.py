@@ -20,6 +20,10 @@ class TokenSaida(BaseModel):
     token_type: str = "bearer"
 
 
+class LogoutSaida(BaseModel):
+    mensagem: str
+
+
 class UsuarioUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     email: str | None = None
