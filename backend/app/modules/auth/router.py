@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.modules.auth.schemas import (
     LoginEntrada,
+    LogoutSaida,
     TokenSaida,
     UsuarioSaida,
     UsuarioUpdate,
@@ -32,6 +33,16 @@ def realizar_login(dados: LoginEntrada, db: Session = Depends(get_db)):
         raise HTTPException(status_code = 401, detail = "Email ou senha inválidos")
     
     return resultado
+
+@router.post("/logout", response_model=LogoutSaida)
+def realizar_logout(
+    usuario: Usuario = Depends(obter_usuario_autenticado),
+    db: Session = Depends(get_db),
+):
+    repository = AuthRepository(db)
+    service = AuthService(repository)
+
+    return service.realizar_logout(usuario)
 
 @router.get("/usuarios", response_model=list[UsuarioSaida])
 def listar_usuarios(db: Session = Depends(get_db)):
