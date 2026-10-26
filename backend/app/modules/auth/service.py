@@ -27,6 +27,10 @@ class AuthService:
             "token_type": "bearer"
         }
 
+    def realizar_logout(self, usuario: Usuario) -> dict:
+        # O token JWT não fica salvo no servidor; o cliente deve descartá-lo.
+        return {"mensagem": f"Sessão de {usuario.email} encerrada com sucesso."}
+
     def listar_usuarios(self) -> list[Usuario]:
         return self.repository.listar_todos()
 
