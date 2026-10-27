@@ -10,6 +10,7 @@ from app.modules.investors.schemas import (
     CadastroInvestidorEntrada,
     PrimeiroAcessoInvestidorEntrada,
 )
+from app.shared.usernames import normalizar_nome_usuario
 
 
 
@@ -71,7 +72,15 @@ class InvestidorService:
         if investidor.primeiro_acesso_concluido:
             return None, "O primeiro acesso deste investidor já foi concluído."
 
+        nome_usuario = normalizar_nome_usuario(dados.nome_usuario)
         email_recuperacao = dados.email_recuperacao.strip().lower()
+
+        if not nome_usuario:
+            return None, "O nome de usuário é obrigatório."
+
+        usuario_com_nome = self.repository.buscar_usuario_por_nome_usuario(nome_usuario)
+        if usuario_com_nome is not None and usuario_com_nome.id_usuario != investidor.id_usuario:
+            return None, "Já existe um usuário com este nome de usuário."
 
         if not email_recuperacao:
             return None, "O e-mail de recuperação é obrigatório."
@@ -90,6 +99,7 @@ class InvestidorService:
         if investidor_com_email is not None:
             return None, "Este e-mail de recuperação já está em uso."
 
+        investidor.nome_usuario = nome_usuario
         investidor.email_recuperacao = email_recuperacao
         investidor.senha_hash = hash_senha(dados.nova_senha)
         investidor.primeiro_acesso_concluido = True

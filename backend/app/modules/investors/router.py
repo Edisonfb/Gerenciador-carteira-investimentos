@@ -27,6 +27,7 @@ def _perfil_para_resposta(investidor):
         "id_usuario": investidor.id_usuario,
         "id_analista_responsavel": investidor.id_analista_responsavel,
         "email": investidor.email,
+        "nome_usuario": investidor.nome_usuario,
         "email_recuperacao": investidor.email_recuperacao,
         "tipo_usuario": investidor.tipo_usuario.value,
         "ativo": investidor.ativo,
@@ -127,6 +128,7 @@ def cadastrar_investidor(
         "id_investidor": investidor.id_investidor,
         "id_usuario": investidor.id_usuario,
         "email": investidor.email,
+        "nome_usuario": investidor.nome_usuario,
         "primeiro_acesso_concluido": investidor.primeiro_acesso_concluido,
     }
 

@@ -12,6 +12,7 @@ class Usuario(Base):
 
     id_usuario: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True)
+    nome_usuario: Mapped[Optional[str]] = mapped_column(String(50), unique=True, nullable=True)
     senha_hash: Mapped[str] = mapped_column(String(255))
     tipo_usuario: Mapped[Tipo_Usuario] = mapped_column(SQLEnum(Tipo_Usuario))
     data_cadastro: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
@@ -22,4 +23,4 @@ class Usuario(Base):
     }
 
     def __repr__(self) -> str:
-        return f"Usuario(id={self.id_usuario!r}, email={self.email!r}, tipo_usuario={self.tipo_usuario!r}, data_cadastro={self.data_cadastro!r}, ativo={self.ativo!r})"
+        return f"Usuario(id={self.id_usuario!r}, email={self.email!r}, nome_usuario={self.nome_usuario!r}, tipo_usuario={self.tipo_usuario!r}, data_cadastro={self.data_cadastro!r}, ativo={self.ativo!r})"

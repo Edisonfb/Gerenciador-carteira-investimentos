@@ -15,7 +15,7 @@ class CarteiraService:
         if not nome:
             return None, "O nome da carteira é obrigatório."
 
-        carteira = Carteira(id_investidor = id_investidor, nome = nome, descricao = dados.descricao)
+        carteira = Carteira(id_investidor = id_investidor, nome = nome)
 
         carteira_salva = self.repository.adicionar(carteira)
 
@@ -46,9 +46,6 @@ class CarteiraService:
                 return None, "O nome da carteira é obrigatório."
 
             carteira.nome = nome
-
-        if "descricao" in atualizacoes:
-            carteira.descricao = atualizacoes["descricao"]
 
         if "ativa" in atualizacoes:
             if atualizacoes["ativa"] is None:

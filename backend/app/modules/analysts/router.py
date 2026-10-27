@@ -28,6 +28,7 @@ def cadastrar_analista(
         "id_usuario": analista.id_usuario,
         "nome": analista.nome,
         "email": analista.email,
+        "nome_usuario": analista.nome_usuario,
         "ativo": analista.ativo,
     }
 
