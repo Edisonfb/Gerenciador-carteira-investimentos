@@ -55,6 +55,13 @@ class AtivoService:
 
         return [ativo]
 
+    def buscar_por_setor(self, setor: str)-> list[Ativo]:
+        """Pega o setor e busca os ativos correspondentes."""
+        setor = setor.strip()
+
+        return self.repository.buscar_por_setor(setor)
+
+    
     def buscar_ativos(self, id_ativo: int) -> Ativo | None:
         """Busca um ativo pelo identificados"""
         return self.repository.buscar_por_id(id_ativo)

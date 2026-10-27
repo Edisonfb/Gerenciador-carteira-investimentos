@@ -44,3 +44,13 @@ def buscar_ativo(
         )
 
     return ativo
+
+@router.get("/setor/{setor}", response_model = list[AtivoSaida])
+def buscar_ativos_por_setor(
+    setor: str,
+    db: Session = Depends(get_db)
+):
+    """Consulta os ativos pertencentes ao setor informado"""
+    service = AtivoService(AtivoRepository(db))
+
+    return service.buscar_por_setor(setor)

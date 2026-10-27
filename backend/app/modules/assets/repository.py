@@ -27,6 +27,10 @@ class AtivoRepository:
         """Busca um ativo pelo codigo"""
         return self.db.query(Ativo).filter(Ativo.codigo == codigo).first()
 
+    def buscar_por_setor(self, setor: str) -> list[Ativo] | None:
+        """Busca um ativo pelo setor"""
+        return self.db.query(Ativo).filter(Ativo.setor == setor).all()
+
     def atualizar(self, ativo: Ativo) -> Ativo:
         """Atualiza os dados de um ativo existente"""
         self.db.add(ativo)

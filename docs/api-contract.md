@@ -132,6 +132,7 @@ Endpoints planejados:
 
 ```text
 GET    /assets
+GET    /assets/setor/{setor}
 GET    /assets/{asset_id}
 POST   /assets
 PUT    /assets/{asset_id}
@@ -154,6 +155,43 @@ Exemplos de ativos:
 - criptoativo;
 - ETF;
 - outro.
+
+### 6.1. Consulta de ativos por setor
+
+Endpoint implementado:
+
+```text
+GET /assets/setor/{setor}
+```
+
+Objetivo: retornar os ativos cadastrados que pertencem ao setor informado.
+
+- Autenticacao: enviar `Authorization: Bearer <token>` de um investidor ativo.
+- Parametro de caminho: `setor`, texto obrigatorio com o nome completo do setor.
+- O service remove espacos das pontas do parametro antes da consulta.
+- O repository compara o campo `Ativo.setor` por igualdade; nao realiza busca parcial. A distincao entre maiusculas e minusculas depende da configuracao do banco.
+- A consulta nao aplica filtro adicional pelo status `ativo`.
+
+Exemplo de requisicao:
+
+```text
+GET /assets/setor/Energia
+```
+
+Resposta de sucesso: `200 OK`, com uma lista de objetos contendo os campos de `AtivoSaida`: `id_ativo`, `codigo`, `setor`, `ativo` e `data_criacao`.
+
+Quando nao houver ativos no setor informado, retorna `200 OK` com uma lista vazia:
+
+```json
+[]
+```
+
+Erros de acesso:
+
+- `401`: token ausente, invalido ou expirado, ou usuario inexistente ou inativo;
+- `403`: usuario autenticado sem perfil do tipo investidor.
+
+Esta consulta usa uma rota especifica por setor. O parametro `setor` nao e um filtro de query implementado em `GET /assets`.
 
 ## 7. Transacoes
 
