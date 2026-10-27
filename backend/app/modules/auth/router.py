@@ -32,11 +32,11 @@ def realizar_login(dados: LoginEntrada, db: Session = Depends(get_db)):
     repository = AuthRepository(db)
     service = AuthService(repository)
 
-    resultado = service.realizar_login(dados.email, dados.senha)
+    resultado = service.realizar_login(dados.email, dados.nome_usuario, dados.senha)
     if resultado is False:
         raise HTTPException(status_code=403, detail="Usuário inativo. Contate o administrador.")
     if resultado is None:
-        raise HTTPException(status_code = 401, detail = "Email ou senha inválidos")
+        raise HTTPException(status_code = 401, detail = "E-mail, nome de usuário ou senha inválidos")
     
     return resultado
 
@@ -69,6 +69,7 @@ def obter_usuario_atual(usuario: Usuario = Depends(obter_usuario_autenticado)):
     return {
         "id_usuario": usuario.id_usuario,
         "email": usuario.email,
+        "nome_usuario": usuario.nome_usuario,
         "tipo_usuario": usuario.tipo_usuario.value,
         "ativo": usuario.ativo,
     }
@@ -82,8 +83,10 @@ def atualizar_usuario(
     repository = AuthRepository(db)
     service = AuthService(repository)
     
-    usuario = service.atualizar_usuario(id_usuario, dados)
+    usuario, erro = service.atualizar_usuario(id_usuario, dados)
     if not usuario:
+        if erro != "Usuário não encontrado.":
+            raise HTTPException(status_code=400, detail=erro or "Não foi possível atualizar o usuário.")
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
     return usuario
 

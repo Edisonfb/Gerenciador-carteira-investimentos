@@ -3,19 +3,29 @@ from app.modules.analysts.models import Analista
 from app.modules.analysts.repository import AnalistaRepository
 from app.modules.analysts.schemas import CadastroAnalistaEntrada, AnalistaUpdate
 from app.core.security import hash_senha
+from app.shared.usernames import normalizar_nome_usuario
 
 class AnalistaService:
     def __init__(self, repository: AnalistaRepository):
         self.repository = repository
 
     def cadastrar_analista(self, dados: CadastroAnalistaEntrada) -> tuple[Analista | None, str | None]:
-        usuario_existente = self.repository.buscar_por_email(dados.email)
+        email = dados.email.strip().lower()
+        usuario_existente = self.repository.buscar_usuario_por_email(email)
 
         if usuario_existente is not None:
             return None, "Já existe um usuário com este e-mail."
 
+        nome_usuario = normalizar_nome_usuario(dados.nome_usuario)
+        if not nome_usuario:
+            return None, "O nome de usuário é obrigatório."
+
+        if self.repository.buscar_usuario_por_nome_usuario(nome_usuario) is not None:
+            return None, "Já existe um usuário com este nome de usuário."
+
         analista = Analista(
-            email=dados.email,
+            email=email,
+            nome_usuario=nome_usuario,
             senha_hash=hash_senha(dados.senha),
             tipo_usuario=Tipo_Usuario.ANALISTA,
             nome=dados.nome,

@@ -9,6 +9,9 @@ class AuthRepository:
     def buscar_por_email(self, email: str) -> Usuario | None:
         return self.db.query(Usuario).filter(Usuario.email == email).first()
 
+    def buscar_por_nome_usuario(self, nome_usuario: str) -> Usuario | None:
+        return self.db.query(Usuario).filter(Usuario.nome_usuario == nome_usuario).first()
+
     def buscar_por_id(self, id_usuario: int) -> Usuario | None:
         return self.db.query(Usuario).filter(Usuario.id_usuario == id_usuario).first()
 

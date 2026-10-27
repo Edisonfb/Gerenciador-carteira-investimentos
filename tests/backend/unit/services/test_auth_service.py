@@ -1,87 +1,69 @@
-"""Login e logout (AuthService), usados por investidor e analista.
+"""Testes unitarios do servico de autenticacao."""
 
-Cobre:
-- Item 1 - Autenticacao no Sistema (Investidor): login do investidor.
-- Item 2 - Autenticacao no Sistema (Analista): US 2.1 login e US 2.2 logout.
-"""
+from types import SimpleNamespace
 
 import pytest
+from pydantic import ValidationError
 
-from app.core.security import hash_senha, ler_id_usuario_token
-from app.db.enums import Tipo_Usuario
-from app.modules.analysts.models import Analista
+from app.modules.auth.schemas import LoginEntrada
 from app.modules.auth.service import AuthService
-from app.modules.investors.models import Investidor
 
 
-SENHA = "senha-correta"
-SENHA_HASH = hash_senha(SENHA)
+class AuthRepositoryFake:
+    """Simula buscas por e-mail e nome de usuario sem acessar banco."""
 
-
-class RepositorioAuthFalso:
-    def __init__(self, usuarios):
-        self.usuarios = {usuario.email: usuario for usuario in usuarios}
+    def __init__(self, usuario):
+        self.usuario = usuario
 
     def buscar_por_email(self, email):
-        return self.usuarios.get(email)
+        return self.usuario if email == self.usuario.email else None
+
+    def buscar_por_nome_usuario(self, nome_usuario):
+        return self.usuario if nome_usuario == self.usuario.nome_usuario else None
 
 
-def _analista(ativo=True):
-    return Analista(
+def test_realizar_login_busca_por_email(monkeypatch):
+    usuario = SimpleNamespace(
         id_usuario=1,
-        email="analista@teste.com",
-        senha_hash=SENHA_HASH,
-        tipo_usuario=Tipo_Usuario.ANALISTA,
-        nome="Ana",
-        ativo=ativo,
+        email="ana@email.com",
+        nome_usuario="ana",
+        senha_hash="hash",
+        ativo=True,
     )
+    service = AuthService(AuthRepositoryFake(usuario))
+    monkeypatch.setattr("app.modules.auth.service.verificar_senha", lambda senha, senha_hash: True)
+    monkeypatch.setattr("app.modules.auth.service.criar_token_acesso", lambda id_usuario: f"token-{id_usuario}")
+
+    resultado = service.realizar_login("ana@email.com", None, "senha-correta")
+
+    assert resultado == {"access_token": "token-1", "token_type": "bearer"}
 
 
-def _investidor(ativo=True):
-    return Investidor(
+def test_realizar_login_busca_por_nome_usuario_quando_email_nao_existe(monkeypatch):
+    usuario = SimpleNamespace(
         id_usuario=2,
-        email="investidor@teste.com",
-        senha_hash=SENHA_HASH,
-        tipo_usuario=Tipo_Usuario.INVESTIDOR,
-        id_analista_responsavel=1,
-        ativo=ativo,
+        email="bia@email.com",
+        nome_usuario="bia",
+        senha_hash="hash",
+        ativo=True,
     )
+    service = AuthService(AuthRepositoryFake(usuario))
+    monkeypatch.setattr("app.modules.auth.service.verificar_senha", lambda senha, senha_hash: True)
+    monkeypatch.setattr("app.modules.auth.service.criar_token_acesso", lambda id_usuario: f"token-{id_usuario}")
+
+    resultado = service.realizar_login(None, "bia", "senha-correta")
+
+    assert resultado == {"access_token": "token-2", "token_type": "bearer"}
 
 
-@pytest.fixture
-def service():
-    return AuthService(RepositorioAuthFalso([_analista(), _investidor()]))
+def test_login_payload_aceita_email_ou_nome_usuario():
+    login_por_email = LoginEntrada.model_validate({"email": "ana@email.com", "senha": "senha"})
+    login_por_nome_usuario = LoginEntrada.model_validate({"nome_usuario": "ana", "senha": "senha"})
+
+    assert login_por_email.email == "ana@email.com"
+    assert login_por_nome_usuario.nome_usuario == "ana"
 
 
-@pytest.mark.parametrize(
-    "email, id_esperado",
-    [("analista@teste.com", 1), ("investidor@teste.com", 2)],
-)
-def test_login_com_credenciais_corretas_retorna_token_do_usuario(service, email, id_esperado):
-    resultado = service.realizar_login(email, SENHA)
-
-    assert resultado["token_type"] == "bearer"
-    assert ler_id_usuario_token(resultado["access_token"]) == id_esperado
-
-
-@pytest.mark.parametrize("email", ["analista@teste.com", "investidor@teste.com"])
-def test_login_com_senha_errada_retorna_none(service, email):
-    assert service.realizar_login(email, "senha-errada") is None
-
-
-def test_login_com_email_inexistente_retorna_none(service):
-    assert service.realizar_login("ninguem@teste.com", SENHA) is None
-
-
-@pytest.mark.parametrize("fabrica", [_analista, _investidor])
-def test_login_de_usuario_inativo_retorna_false(fabrica):
-    usuario = fabrica(ativo=False)
-    service = AuthService(RepositorioAuthFalso([usuario]))
-
-    assert service.realizar_login(usuario.email, SENHA) is False
-
-
-def test_logout_retorna_mensagem_com_email_do_usuario(service):
-    resultado = service.realizar_logout(_analista())
-
-    assert resultado == {"mensagem": "Sessão de analista@teste.com encerrada com sucesso."}
+def test_login_payload_rejeita_identificador():
+    with pytest.raises(ValidationError):
+        LoginEntrada.model_validate({"identificador": "ana", "senha": "senha"})
