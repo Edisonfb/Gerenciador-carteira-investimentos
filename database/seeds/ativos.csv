@@ -1,0 +1,437 @@
+ticker,nome,setor,subsetor,segmento
+RRRP3,3R PETROLEUM,Petróleo Gás e Biocombustíveis,Petróleo Gás e Biocombustíveis,Exploração Refino e Distribuição
+CSAN3,COSAN,Petróleo Gás e Biocombustíveis,Petróleo Gás e Biocombustíveis,Exploração Refino e Distribuição
+ENAT3,ENAUTA PART,Petróleo Gás e Biocombustíveis,Petróleo Gás e Biocombustíveis,Exploração Refino e Distribuição
+RPMG3,PET MANGUINH,Petróleo Gás e Biocombustíveis,Petróleo Gás e Biocombustíveis,Exploração Refino e Distribuição
+PETR4,PETROBRAS,Petróleo Gás e Biocombustíveis,Petróleo Gás e Biocombustíveis,Exploração Refino e Distribuição
+RECV3,PETRORECSA,Petróleo Gás e Biocombustíveis,Petróleo Gás e Biocombustíveis,Exploração Refino e Distribuição
+PRIO3,PETRORIO,Petróleo Gás e Biocombustíveis,Petróleo Gás e Biocombustíveis,Exploração Refino e Distribuição
+UGPA3,ULTRAPAR,Petróleo Gás e Biocombustíveis,Petróleo Gás e Biocombustíveis,Exploração Refino e Distribuição
+VBBR3,VIBRA,Petróleo Gás e Biocombustíveis,Petróleo Gás e Biocombustíveis,Exploração Refino e Distribuição
+LUPA3,LUPATECH,Petróleo Gás e Biocombustíveis,Petróleo Gás e Biocombustíveis,Equipamentos e Serviços
+OPCT3,OCEANPACT,Petróleo Gás e Biocombustíveis,Petróleo Gás e Biocombustíveis,Equipamentos e Serviços
+OSXB3,OSX BRASIL,Petróleo Gás e Biocombustíveis,Petróleo Gás e Biocombustíveis,Equipamentos e Serviços
+AURA33,AURA 360,Materiais Básicos,Mineração,Minerais Metálicos
+BRAP4,BRADESPAR,Materiais Básicos,Mineração,Minerais Metálicos
+CBAV3,CBA,Materiais Básicos,Mineração,Minerais Metálicos
+CMIN3,CSNMINERACAO,Materiais Básicos,Mineração,Minerais Metálicos
+LTEL3B,LITEL,Materiais Básicos,Mineração,Minerais Metálicos
+LTLA3B,LITELA,Materiais Básicos,Mineração,Minerais Metálicos
+VALE3,VALE,Materiais Básicos,Mineração,Minerais Metálicos
+FESA4,FERBASA,Materiais Básicos,Siderurgia e Metalurgia,Siderurgia
+GGBR4,GERDAU,Materiais Básicos,Siderurgia e Metalurgia,Siderurgia
+GOAU4,GERDAU MET,Materiais Básicos,Siderurgia e Metalurgia,Siderurgia
+CSNA3,SID NACIONAL,Materiais Básicos,Siderurgia e Metalurgia,Siderurgia
+USIM5,USIMINAS,Materiais Básicos,Siderurgia e Metalurgia,Siderurgia
+MGEL4,MANGELS INDL,Materiais Básicos,Siderurgia e Metalurgia,Artefatos de Ferro e Aço
+PATI4,PANATLANTICA,Materiais Básicos,Siderurgia e Metalurgia,Artefatos de Ferro e Aço
+TKNO4,TEKNO,Materiais Básicos,Siderurgia e Metalurgia,Artefatos de Ferro e Aço
+PMAM3,PARANAPANEMA,Materiais Básicos,Siderurgia e Metalurgia,Artefatos de Cobre
+BRKM5,BRASKEM,Materiais Básicos,Químicos,Petroquímicos
+DEXP3,DEXXOS PAR,Materiais Básicos,Químicos,Petroquímicos
+FHER3,FER HERINGER,Materiais Básicos,Químicos,Fertilizantes e Defensivos
+NUTR3,NUTRIPLANT,Materiais Básicos,Químicos,Fertilizantes e Defensivos
+VITT3,VITTIA,Materiais Básicos,Químicos,Fertilizantes e Defensivos
+CRPG5,CRISTAL,Materiais Básicos,Químicos,Químicos Diversos
+UNIP6,UNIPAR,Materiais Básicos,Químicos,Químicos Diversos
+DXCO3,DEXCO,Materiais Básicos,Madeira e Papel,Madeira
+EUCA4,EUCATEX,Materiais Básicos,Madeira e Papel,Madeira
+KLBN4,KLABIN S/A,Materiais Básicos,Madeira e Papel,Papel e Celulose
+MSPA3,MELHOR SP,Materiais Básicos,Madeira e Papel,Papel e Celulose
+NEMO3,SUZANO HOLD,Materiais Básicos,Madeira e Papel,Papel e Celulose
+SUZB3,SUZANO S.A.,Materiais Básicos,Madeira e Papel,Papel e Celulose
+RANI3,IRANI,Materiais Básicos,Embalagens,Embalagens
+SNSY5,SANSUY,Materiais Básicos,Materiais Diversos,Materiais Diversos
+ETER3,ETERNIT,Bens Industriais,Construção e Engenharia,Produtos para Construção
+HAGA4,HAGA S/A,Bens Industriais,Construção e Engenharia,Produtos para Construção
+PTBL3,PORTOBELLO,Bens Industriais,Construção e Engenharia,Produtos para Construção
+AZEV4,AZEVEDO,Bens Industriais,Construção e Engenharia,Construção Pesada
+SOND5,SONDOTECNICA,Bens Industriais,Construção e Engenharia,Engenharia Consultiva
+EMBR3,EMBRAER,Bens Industriais,Material de Transporte,Material Aeronáutico e de Defesa
+FRAS4,FRAS-LE,Bens Industriais,Material de Transporte,Material Rodoviário
+POMO4,MARCOPOLO,Bens Industriais,Material de Transporte,Material Rodoviário
+RAPT4,RANDON PART,Bens Industriais,Material de Transporte,Material Rodoviário
+RCSL4,RECRUSUL,Bens Industriais,Material de Transporte,Material Rodoviário
+RSUL4,RIOSULENSE,Bens Industriais,Material de Transporte,Material Rodoviário
+TUPY3,TUPY,Bens Industriais,Material de Transporte,Material Rodoviário
+MWET4,WETZEL S/A,Bens Industriais,Material de Transporte,Material Rodoviário
+SHUL4,SCHULZ,Bens Industriais,Máquinas e Equipamentos,"Motores, Compressores e Outros"
+WEGE3,WEG,Bens Industriais,Máquinas e Equipamentos,"Motores, Compressores e Outros"
+EALT4,ACO ALTONA,Bens Industriais,Máquinas e Equipamentos,Máq. e Equip. Industriais
+AERI3,AERIS,Bens Industriais,Máquinas e Equipamentos,Máq. e Equip. Industriais
+ARML3,ARMAC,Bens Industriais,Máquinas e Equipamentos,Máq. e Equip. Industriais
+BDLL4,BARDELLA,Bens Industriais,Máquinas e Equipamentos,Máq. e Equip. Industriais
+INEP4,INEPAR,Bens Industriais,Máquinas e Equipamentos,Máq. e Equip. Industriais
+KEPL3,KEPLER WEBER,Bens Industriais,Máquinas e Equipamentos,Máq. e Equip. Industriais
+FRIO3,METALFRIO,Bens Industriais,Máquinas e Equipamentos,Máq. e Equip. Industriais
+MILS3,MILLS,Bens Industriais,Máquinas e Equipamentos,Máq. e Equip. Industriais
+NORD3,NORDON MET,Bens Industriais,Máquinas e Equipamentos,Máq. e Equip. Industriais
+PTCA3,PRATICA,Bens Industriais,Máquinas e Equipamentos,Máq. e Equip. Industriais
+ROMI3,ROMI,Bens Industriais,Máquinas e Equipamentos,Máq. e Equip. Industriais
+MTSA4,METISA,Bens Industriais,Máquinas e Equipamentos,Máq. e Equip. Construção e Agrícolas
+TASA4,TAURUS ARMAS,Bens Industriais,Máquinas e Equipamentos,Armas e Munições
+AZUL4,AZUL,Bens Industriais,Transporte,Linhas Aéreas de Passageiros
+GOLL4,GOL,Bens Industriais,Transporte,Linhas Aéreas de Passageiros
+FRRN3,ALL NORTE,Bens Industriais,Transporte,Transporte Ferroviário
+GASC3,ALL PAULISTA,Bens Industriais,Transporte,Transporte Ferroviário
+VSPT3,FER C ATLANT,Bens Industriais,Transporte,Transporte Ferroviário
+MRSA3B,MRS LOGIST,Bens Industriais,Transporte,Transporte Ferroviário
+RAIL3,RUMO S.A.,Bens Industriais,Transporte,Transporte Ferroviário
+HBSA3,HIDROVIAS,Bens Industriais,Transporte,Transporte Hidroviário
+LOGN3,LOG-IN,Bens Industriais,Transporte,Transporte Hidroviário
+LUXM4,TREVISA,Bens Industriais,Transporte,Transporte Hidroviário
+JSLG3,JSL,Bens Industriais,Transporte,Transporte Rodoviário
+TGMA3,TEGMA,Bens Industriais,Transporte,Transporte Rodoviário
+ANHB3,AUTOBAN,Bens Industriais,Transporte,Exploração de Rodovias
+CCRO3,CCR SA,Bens Industriais,Transporte,Exploração de Rodovias
+RPTA3,CONC RAPOSO,Bens Industriais,Transporte,Exploração de Rodovias
+CRTE3B,CONC RIO TER,Bens Industriais,Transporte,Exploração de Rodovias
+ASCP3,ECOPISTAS,Bens Industriais,Transporte,Exploração de Rodovias
+ECOR3,ECORODOVIAS,Bens Industriais,Transporte,Exploração de Rodovias
+ECOV3,ECOVIAS,Bens Industriais,Transporte,Exploração de Rodovias
+COLN3,ROD COLINAS,Bens Industriais,Transporte,Exploração de Rodovias
+RDVT3,ROD TIETE,Bens Industriais,Transporte,Exploração de Rodovias
+CRBD3,RT BANDEIRAS,Bens Industriais,Transporte,Exploração de Rodovias
+TPIS3,TRIUNFO PART,Bens Industriais,Transporte,Exploração de Rodovias
+VOES3,VIAOESTE,Bens Industriais,Transporte,Exploração de Rodovias
+AGRU3B,GRUAIRPORT,Bens Industriais,Transporte,Serviços de Apoio e Armazenagem
+HMOB3,HMOBI S.A,Bens Industriais,Transporte,Serviços de Apoio e Armazenagem
+IVPR3B,INVEPAR,Bens Industriais,Transporte,Serviços de Apoio e Armazenagem
+PSVM3,PORTO VM,Bens Industriais,Transporte,Serviços de Apoio e Armazenagem
+SAIP3,SALUS INFRA,Bens Industriais,Transporte,Serviços de Apoio e Armazenagem
+STBP3,SANTOS BRP,Bens Industriais,Transporte,Serviços de Apoio e Armazenagem
+PORT3,WILSON SONS,Bens Industriais,Transporte,Serviços de Apoio e Armazenagem
+ATMP3,ATMASA,Bens Industriais,Serviços Diversos,Serviços Diversos
+BBML3,BBMLOGISTICA,Bens Industriais,Serviços Diversos,Serviços Diversos
+DTCY3,DTCOM-DIRECT,Bens Industriais,Serviços Diversos,Serviços Diversos
+ALPK3,ESTAPAR,Bens Industriais,Serviços Diversos,Serviços Diversos
+FLEX3,FLEX S/A,Bens Industriais,Serviços Diversos,Serviços Diversos
+GGPS3,GPS,Bens Industriais,Serviços Diversos,Serviços Diversos
+PRNR3,PRINER,Bens Industriais,Serviços Diversos,Serviços Diversos
+SEQL3,SEQUOIA LOG,Bens Industriais,Serviços Diversos,Serviços Diversos
+VLID3,VALID,Bens Industriais,Serviços Diversos,Serviços Diversos
+EPAR3,EMBPAR S/A,Bens Industriais,Comércio,Material de Transporte
+MMAQ3,MINASMAQUINA,Bens Industriais,Comércio,Material de Transporte
+RBNS3,RODOBENS,Bens Industriais,Comércio,Material de Transporte
+WLMM3,WLM IND COM,Bens Industriais,Comércio,Material de Transporte
+TTEN3,3TENTOS,Consumo não Cíclico,Agropecuária,Agricultura
+GRAO3,AGRIBRASIL,Consumo não Cíclico,Agropecuária,Agricultura
+AGXY3,AGROGALAXY,Consumo não Cíclico,Agropecuária,Agricultura
+APTI3,ALIPERTI,Consumo não Cíclico,Agropecuária,Agricultura
+SOJA3,BOA SAFRA,Consumo não Cíclico,Agropecuária,Agricultura
+AGRO3,BRASILAGRO,Consumo não Cíclico,Agropecuária,Agricultura
+CTCA3,CTC S.A.,Consumo não Cíclico,Agropecuária,Agricultura
+FRTA3,POMIFRUTAS,Consumo não Cíclico,Agropecuária,Agricultura
+RAIZ4,RAIZEN,Consumo não Cíclico,Agropecuária,Agricultura
+SLCE3,SLC AGRICOLA,Consumo não Cíclico,Agropecuária,Agricultura
+LAND3,TERRASANTAPA,Consumo não Cíclico,Agropecuária,Agricultura
+JALL3,JALLESMACHAD,Consumo não Cíclico,Alimentos Processados,Açucar e Alcool
+RESA3,RAIZEN ENERG,Consumo não Cíclico,Alimentos Processados,Açucar e Alcool
+SMTO3,SAO MARTINHO,Consumo não Cíclico,Alimentos Processados,Açucar e Alcool
+BRFS3,BRF SA,Consumo não Cíclico,Alimentos Processados,Carnes e Derivados
+BAUH4,EXCELSIOR,Consumo não Cíclico,Alimentos Processados,Carnes e Derivados
+JBSS3,JBS,Consumo não Cíclico,Alimentos Processados,Carnes e Derivados
+MRFG3,MARFRIG,Consumo não Cíclico,Alimentos Processados,Carnes e Derivados
+BEEF3,MINERVA,Consumo não Cíclico,Alimentos Processados,Carnes e Derivados
+MNPR3,MINUPAR,Consumo não Cíclico,Alimentos Processados,Carnes e Derivados
+CAML3,CAMIL,Consumo não Cíclico,Alimentos Processados,Alimentos Diversos
+JOPA3,JOSAPAR,Consumo não Cíclico,Alimentos Processados,Alimentos Diversos
+MDIA3,M.DIASBRANCO,Consumo não Cíclico,Alimentos Processados,Alimentos Diversos
+ODER3,ODERICH,Consumo não Cíclico,Alimentos Processados,Alimentos Diversos
+ABEV3,AMBEV S/A,Consumo não Cíclico,Bebidas,Cervejas e Refrigerantes
+NTCO3,GRUPO NATURA,Consumo não Cíclico,Produtos de Cuidado Pessoal e de Limpeza,Produtos de Cuidado Pessoal
+BOBR3,BOMBRIL,Consumo não Cíclico,Produtos de Cuidado Pessoal e de Limpeza,Produtos de Limpeza
+ASAI3,ASSAI,Consumo não Cíclico,Comércio e Distribuição,Alimentos
+CRFB3,CARREFOUR BR,Consumo não Cíclico,Comércio e Distribuição,Alimentos
+GMAT3,GRUPO MATEUS,Consumo não Cíclico,Comércio e Distribuição,Alimentos
+PCAR3,P.ACUCAR-CBD,Consumo não Cíclico,Comércio e Distribuição,Alimentos
+AVLL3,ALPHAVILLE,Consumo Cíclico,Construção Civil,Incorporações
+CALI3,CONST A LIND,Consumo Cíclico,Construção Civil,Incorporações
+CURY3,CURY S/A,Consumo Cíclico,Construção Civil,Incorporações
+CYRE3,CYRELA REALT,Consumo Cíclico,Construção Civil,Incorporações
+DIRR3,DIRECIONAL,Consumo Cíclico,Construção Civil,Incorporações
+EVEN3,EVEN,Consumo Cíclico,Construção Civil,Incorporações
+EZTC3,EZTEC,Consumo Cíclico,Construção Civil,Incorporações
+FIEI3,FICA,Consumo Cíclico,Construção Civil,Incorporações
+GFSA3,GAFISA,Consumo Cíclico,Construção Civil,Incorporações
+HBOR3,HELBOR,Consumo Cíclico,Construção Civil,Incorporações
+INNT3,INTER SA,Consumo Cíclico,Construção Civil,Incorporações
+JHSF3,JHSF PART,Consumo Cíclico,Construção Civil,Incorporações
+JFEN3,JOAO FORTES,Consumo Cíclico,Construção Civil,Incorporações
+KLAS3,KALLAS,Consumo Cíclico,Construção Civil,Incorporações
+LAVV3,LAVVI,Consumo Cíclico,Construção Civil,Incorporações
+MELK3,MELNICK,Consumo Cíclico,Construção Civil,Incorporações
+MTRE3,MITRE REALTY,Consumo Cíclico,Construção Civil,Incorporações
+MDNE3,MOURA DUBEUX,Consumo Cíclico,Construção Civil,Incorporações
+MRVE3,MRV,Consumo Cíclico,Construção Civil,Incorporações
+PDGR3,PDG REALT,Consumo Cíclico,Construção Civil,Incorporações
+PLPL3,PLANOEPLANO,Consumo Cíclico,Construção Civil,Incorporações
+RDNI3,RNI,Consumo Cíclico,Construção Civil,Incorporações
+RSID3,ROSSI RESID,Consumo Cíclico,Construção Civil,Incorporações
+TCSA3,TECNISA,Consumo Cíclico,Construção Civil,Incorporações
+TEGA3,TEGRA INCORP,Consumo Cíclico,Construção Civil,Incorporações
+TEND3,TENDA,Consumo Cíclico,Construção Civil,Incorporações
+TRIS3,TRISUL,Consumo Cíclico,Construção Civil,Incorporações
+VIVR3,VIVER,Consumo Cíclico,Construção Civil,Incorporações
+CEDO4,CEDRO,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Fios e Tecidos
+CTNM4,COTEMINAS,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Fios e Tecidos
+DOHL4,DOHLER,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Fios e Tecidos
+CATA4,IND CATAGUAS,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Fios e Tecidos
+CTKA4,KARSTEN,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Fios e Tecidos
+PTNT4,PETTENATI,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Fios e Tecidos
+CTSA4,SANTANENSE,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Fios e Tecidos
+SGPS3,SPRINGS,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Fios e Tecidos
+TEKA4,TEKA,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Fios e Tecidos
+TXRX4,TEX RENAUX,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Fios e Tecidos
+TFCO4,TRACK FIELD,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Vestuário
+ALPA4,ALPARGATAS,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Calçados
+CAMB4,CAMBUCI,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Calçados
+GRND3,GRENDENE,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Calçados
+VULC3,VULCABRAS,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Calçados
+MNDL3,MUNDIAL,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Acessórios
+TECN3,TECHNOS,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Acessórios
+VIVA3,VIVARA S.A.,Consumo Cíclico,"Tecidos, Vestuário e Calçados",Acessórios
+WHRL4,WHIRLPOOL,Consumo Cíclico,Utilidades Domésticas,Eletrodomésticos
+UCAS3,UNICASA,Consumo Cíclico,Utilidades Domésticas,Móveis
+HETA4,HERCULES,Consumo Cíclico,Utilidades Domésticas,Utensílios Domésticos
+MYPK3,IOCHP-MAXION,Consumo Cíclico,Automóveis e Motocicletas,Automóveis e Motocicletas
+LEVE3,METAL LEVE,Consumo Cíclico,Automóveis e Motocicletas,Automóveis e Motocicletas
+PLAS3,PLASCAR PART,Consumo Cíclico,Automóveis e Motocicletas,Automóveis e Motocicletas
+HOOT4,HOTEIS OTHON,Consumo Cíclico,Hoteis e Restaurantes,Hotelaria
+MEAL3,IMC S/A,Consumo Cíclico,Hoteis e Restaurantes,Restaurante e Similares
+ZAMP3,ZAMP S.A.,Consumo Cíclico,Hoteis e Restaurantes,Restaurante e Similares
+BMKS3,BIC MONARK,Consumo Cíclico,Viagens e Lazer,Bicicletas
+ESTR4,ESTRELA,Consumo Cíclico,Viagens e Lazer,Brinquedos e Jogos
+AHEB3,SPTURIS,Consumo Cíclico,Viagens e Lazer,Produção de Eventos e Shows
+SHOW3,TIME FOR FUN,Consumo Cíclico,Viagens e Lazer,Produção de Eventos e Shows
+CVCB3,CVC BRASIL,Consumo Cíclico,Viagens e Lazer,Viagens e Turismo
+SMFT3,SMART FIT,Consumo Cíclico,Viagens e Lazer,Atividades Esportivas
+ANIM3,ANIMA,Consumo Cíclico,Diversos,Serviços Educacionais
+BAHI3,BAHEMA,Consumo Cíclico,Diversos,Serviços Educacionais
+COGN3,COGNA ON,Consumo Cíclico,Diversos,Serviços Educacionais
+CSED3,CRUZEIRO EDU,Consumo Cíclico,Diversos,Serviços Educacionais
+SEER3,SER EDUCA,Consumo Cíclico,Diversos,Serviços Educacionais
+YDUQ3,YDUQS PART,Consumo Cíclico,Diversos,Serviços Educacionais
+RENT3,LOCALIZA,Consumo Cíclico,Diversos,Aluguel de carros
+MSRO3,MAESTROLOC,Consumo Cíclico,Diversos,Aluguel de carros
+MOVI3,MOVIDA,Consumo Cíclico,Diversos,Aluguel de carros
+VAMO3,VAMOS,Consumo Cíclico,Diversos,Aluguel de carros
+DOTZ3,DOTZ SA,Consumo Cíclico,Diversos,Programas de Fidelização
+ARZZ3,AREZZO CO,Consumo Cíclico,Comércio Varejista,"Tecidos, Vestuário e Calçados"
+CEAB3,CEA MODAS,Consumo Cíclico,Comércio Varejista,"Tecidos, Vestuário e Calçados"
+CGRA4,GRAZZIOTIN,Consumo Cíclico,Comércio Varejista,"Tecidos, Vestuário e Calçados"
+SOMA3,GRUPO SOMA,Consumo Cíclico,Comércio Varejista,"Tecidos, Vestuário e Calçados"
+GUAR3,GUARARAPES,Consumo Cíclico,Comércio Varejista,"Tecidos, Vestuário e Calçados"
+AMAR3,LOJAS MARISA,Consumo Cíclico,Comércio Varejista,"Tecidos, Vestuário e Calçados"
+LREN3,LOJAS RENNER,Consumo Cíclico,Comércio Varejista,"Tecidos, Vestuário e Calçados"
+VSTE3,VESTE,Consumo Cíclico,Comércio Varejista,"Tecidos, Vestuário e Calçados"
+ALLD3,ALLIED,Consumo Cíclico,Comércio Varejista,Eletrodomésticos
+MGLU3,MAGAZ LUIZA,Consumo Cíclico,Comércio Varejista,Eletrodomésticos
+VIIA3,VIA,Consumo Cíclico,Comércio Varejista,Eletrodomésticos
+AMER3,AMERICANAS,Consumo Cíclico,Comércio Varejista,Produtos Diversos
+ESPA3,ESPACOLASER,Consumo Cíclico,Comércio Varejista,Produtos Diversos
+SBFG3,GRUPO SBF,Consumo Cíclico,Comércio Varejista,Produtos Diversos
+LLBI3,LE BISCUIT,Consumo Cíclico,Comércio Varejista,Produtos Diversos
+PETZ3,PETZ,Consumo Cíclico,Comércio Varejista,Produtos Diversos
+LJQQ3,QUERO-QUERO,Consumo Cíclico,Comércio Varejista,Produtos Diversos
+SLED4,SARAIVA LIVR,Consumo Cíclico,Comércio Varejista,Produtos Diversos
+BIOM3,BIOMM,Saúde,Medicamentos e Outros Produtos,Medicamentos e Outros Produtos
+NRTQ3,NORTCQUIMICA,Saúde,Medicamentos e Outros Produtos,Medicamentos e Outros Produtos
+OFSA3,OUROFINO S/A,Saúde,Medicamentos e Outros Produtos,Medicamentos e Outros Produtos
+AALR3,ALLIAR,Saúde,"Serviços Médico - Hospitalares, Análises e Diagnósticos","Serviços Médico - Hospitalares, Análises e Diagnósticos"
+DASA3,DASA,Saúde,"Serviços Médico - Hospitalares, Análises e Diagnósticos","Serviços Médico - Hospitalares, Análises e Diagnósticos"
+FLRY3,FLEURY,Saúde,"Serviços Médico - Hospitalares, Análises e Diagnósticos","Serviços Médico - Hospitalares, Análises e Diagnósticos"
+HAPV3,HAPVIDA,Saúde,"Serviços Médico - Hospitalares, Análises e Diagnósticos","Serviços Médico - Hospitalares, Análises e Diagnósticos"
+KRSA3,KORA SAUDE,Saúde,"Serviços Médico - Hospitalares, Análises e Diagnósticos","Serviços Médico - Hospitalares, Análises e Diagnósticos"
+MATD3,MATER DEI,Saúde,"Serviços Médico - Hospitalares, Análises e Diagnósticos","Serviços Médico - Hospitalares, Análises e Diagnósticos"
+ODPV3,ODONTOPREV,Saúde,"Serviços Médico - Hospitalares, Análises e Diagnósticos","Serviços Médico - Hospitalares, Análises e Diagnósticos"
+ONCO3,ONCOCLINICAS,Saúde,"Serviços Médico - Hospitalares, Análises e Diagnósticos","Serviços Médico - Hospitalares, Análises e Diagnósticos"
+QUAL3,QUALICORP,Saúde,"Serviços Médico - Hospitalares, Análises e Diagnósticos","Serviços Médico - Hospitalares, Análises e Diagnósticos"
+RDOR3,REDE D OR,Saúde,"Serviços Médico - Hospitalares, Análises e Diagnósticos","Serviços Médico - Hospitalares, Análises e Diagnósticos"
+BALM4,BAUMER,Saúde,Equipamentos,Equipamentos
+LMED3,LIFEMED,Saúde,Equipamentos,Equipamentos
+BLAU3,BLAU,Saúde,Comércio e Distribuição,Medicamentos e Outros Produtos
+DMVF3,D1000VFARMA,Saúde,Comércio e Distribuição,Medicamentos e Outros Produtos
+PNVL3,DIMED,Saúde,Comércio e Distribuição,Medicamentos e Outros Produtos
+HYPE3,HYPERA,Saúde,Comércio e Distribuição,Medicamentos e Outros Produtos
+PGMN3,PAGUE MENOS,Saúde,Comércio e Distribuição,Medicamentos e Outros Produtos
+PFRM3,PROFARMA,Saúde,Comércio e Distribuição,Medicamentos e Outros Produtos
+RADL3,RAIADROGASIL,Saúde,Comércio e Distribuição,Medicamentos e Outros Produtos
+VVEO3,VIVEO,Saúde,Comércio e Distribuição,Medicamentos e Outros Produtos
+INTB3,INTELBRAS,Tecnologia da Informação,Computadores e Equipamentos,Computadores e Equipamentos
+MLAS3,MULTILASER,Tecnologia da Informação,Computadores e Equipamentos,Computadores e Equipamentos
+POSI3,POSITIVO TEC,Tecnologia da Informação,Computadores e Equipamentos,Computadores e Equipamentos
+BMOB3,BEMOBI TECH,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+BRQB3,BRQ,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+ENJU3,ENJOEI,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+NINJ3,GETNINJAS,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+IFCM3,INFRACOMM,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+LWSA3,LOCAWEB,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+CASH3,MELIUZ,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+MBLY3,MOBLY,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+NGRD3,NEOGRID,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+PDTC3,PADTEC,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+QUSW3,QUALITY SOFT,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+SQIA3,SINQIA,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+TRAD3,TC,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+TOTS3,TOTVS,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+LVTC3,WDC NETWORKS,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+WEST3,WESTWING,Tecnologia da Informação,Programas e Serviços,Programas e Serviços
+ALGT3,ALGAR TELEC,Comunicações,Telecomunicações,Telecomunicações
+BRIT3,BRISANET,Comunicações,Telecomunicações,Telecomunicações
+DESK3,DESKTOP,Comunicações,Telecomunicações,Telecomunicações
+OIBR3,OI,Comunicações,Telecomunicações,Telecomunicações
+TELB4,TELEBRAS,Comunicações,Telecomunicações,Telecomunicações
+VIVT3,TELEF BRASIL,Comunicações,Telecomunicações,Telecomunicações
+TIMS3,TIM,Comunicações,Telecomunicações,Telecomunicações
+FIQE3,UNIFIQUE,Comunicações,Telecomunicações,Telecomunicações
+ELMD3,ELETROMIDIA,Comunicações,Mídia,Publicidade e Propaganda
+AESB3,AES BRASIL,Utilidade Pública,Energia Elétrica,Energia Elétrica
+AESL3,AES SUL,Utilidade Pública,Energia Elétrica,Energia Elétrica
+AESO3,AESOPERACOES,Utilidade Pública,Energia Elétrica,Energia Elétrica
+AFLT3,AFLUENTE T,Utilidade Pública,Energia Elétrica,Energia Elétrica
+ALUP11,ALUPAR,Utilidade Pública,Energia Elétrica,Energia Elétrica
+CBEE3,AMPLA ENERG,Utilidade Pública,Energia Elétrica,Energia Elétrica
+AURE3,AUREN,Utilidade Pública,Energia Elétrica,Energia Elétrica
+CPTE3B,CACHOEIRA,Utilidade Pública,Energia Elétrica,Energia Elétrica
+CEBR3,CEB,Utilidade Pública,Energia Elétrica,Energia Elétrica
+CEED3,CEEE-D,Utilidade Pública,Energia Elétrica,Energia Elétrica
+CLSC4,CELESC,Utilidade Pública,Energia Elétrica,Energia Elétrica
+GPAR3,CELGPAR,Utilidade Pública,Energia Elétrica,Energia Elétrica
+CMIG4,CEMIG,Utilidade Pública,Energia Elétrica,Energia Elétrica
+CEEB3,COELBA,Utilidade Pública,Energia Elétrica,Energia Elétrica
+COCE3,COELCE,Utilidade Pública,Energia Elétrica,Energia Elétrica
+COMR3,COMERC PAR,Utilidade Pública,Energia Elétrica,Energia Elétrica
+CPLE6,COPEL,Utilidade Pública,Energia Elétrica,Energia Elétrica
+CSRN3,COSERN,Utilidade Pública,Energia Elétrica,Energia Elétrica
+CPFE3,CPFL ENERGIA,Utilidade Pública,Energia Elétrica,Energia Elétrica
+CPFG3,CPFL GERACAO,Utilidade Pública,Energia Elétrica,Energia Elétrica
+CPFP3,CPFL PIRATIN,Utilidade Pública,Energia Elétrica,Energia Elétrica
+CPRE3,CPFL RENOVAV,Utilidade Pública,Energia Elétrica,Energia Elétrica
+EBEN3,EBE,Utilidade Pública,Energia Elétrica,Energia Elétrica
+EKTR3,ELEKTRO,Utilidade Pública,Energia Elétrica,Energia Elétrica
+ELET3,ELETROBRAS,Utilidade Pública,Energia Elétrica,Energia Elétrica
+LIPR3,ELETROPAR,Utilidade Pública,Energia Elétrica,Energia Elétrica
+EMAE3,EMAE,Utilidade Pública,Energia Elétrica,Energia Elétrica
+ENGI3,ENERGISA,Utilidade Pública,Energia Elétrica,Energia Elétrica
+ENMT3,ENERGISA MT,Utilidade Pública,Energia Elétrica,Energia Elétrica
+ENER3,ENERSUL,Utilidade Pública,Energia Elétrica,Energia Elétrica
+ENEV3,ENEVA,Utilidade Pública,Energia Elétrica,Energia Elétrica
+EGIE3,ENGIE BRASIL,Utilidade Pública,Energia Elétrica,Energia Elétrica
+EQPA3,EQTL PARA,Utilidade Pública,Energia Elétrica,Energia Elétrica
+EQMA3B,EQTLMARANHAO,Utilidade Pública,Energia Elétrica,Energia Elétrica
+EQTL3,EQUATORIAL,Utilidade Pública,Energia Elétrica,Energia Elétrica
+ESCE3,ESCELSA,Utilidade Pública,Energia Elétrica,Energia Elétrica
+FGEN3,FGENERGIA,Utilidade Pública,Energia Elétrica,Energia Elétrica
+GEPA3,GER PARANAP,Utilidade Pública,Energia Elétrica,Energia Elétrica
+LIGH3,LIGHT,Utilidade Pública,Energia Elétrica,Energia Elétrica
+LIGT3,LIGHT S/A,Utilidade Pública,Energia Elétrica,Energia Elétrica
+NEOE3,NEOENERGIA,Utilidade Pública,Energia Elétrica,Energia Elétrica
+MEGA3,OMEGAENERGIA,Utilidade Pública,Energia Elétrica,Energia Elétrica
+PALF3,PAUL F LUZ,Utilidade Pública,Energia Elétrica,Energia Elétrica
+PRMN3B,PROMAN,Utilidade Pública,Energia Elétrica,Energia Elétrica
+REDE3,REDE ENERGIA,Utilidade Pública,Energia Elétrica,Energia Elétrica
+RNEW4,RENOVA,Utilidade Pública,Energia Elétrica,Energia Elétrica
+STKF3,STATKRAFT,Utilidade Pública,Energia Elétrica,Energia Elétrica
+STEN3,STO ANTONIO,Utilidade Pública,Energia Elétrica,Energia Elétrica
+TAEE11,TAESA,Utilidade Pública,Energia Elétrica,Energia Elétrica
+TEPE3,TERM. PE III,Utilidade Pública,Energia Elétrica,Energia Elétrica
+TMPE3,TERMOPE,Utilidade Pública,Energia Elétrica,Energia Elétrica
+TRPL4,TRAN PAULIST,Utilidade Pública,Energia Elétrica,Energia Elétrica
+UPKP3B,UPTICK,Utilidade Pública,Energia Elétrica,Energia Elétrica
+AMBP3,AMBIPAR,Utilidade Pública,Água e Saneamento,Água e Saneamento
+CASN3,CASAN,Utilidade Pública,Água e Saneamento,Água e Saneamento
+CSMG3,COPASA,Utilidade Pública,Água e Saneamento,Água e Saneamento
+IGSN3,IGUA SA,Utilidade Pública,Água e Saneamento,Água e Saneamento
+ORVR3,ORIZON,Utilidade Pública,Água e Saneamento,Água e Saneamento
+SBSP3,SABESP,Utilidade Pública,Água e Saneamento,Água e Saneamento
+SAPR11,SANEPAR,Utilidade Pública,Água e Saneamento,Água e Saneamento
+SNST3,SANESALTO,Utilidade Pública,Água e Saneamento,Água e Saneamento
+CEGR3,CEG,Utilidade Pública,Gás,Gás
+CGAS5,COMGAS,Utilidade Pública,Gás,Gás
+PASS3,COMPASS,Utilidade Pública,Gás,Gás
+ABCB4,ABC BRASIL,Financeiro,Intermediários Financeiros,Bancos
+RPAD5,ALFA HOLDING,Financeiro,Intermediários Financeiros,Bancos
+BRIV4,ALFA INVEST,Financeiro,Intermediários Financeiros,Bancos
+BAZA3,AMAZONIA,Financeiro,Intermediários Financeiros,Bancos
+BMGB4,BANCO BMG,Financeiro,Intermediários Financeiros,Bancos
+BPAN4,BANCO PAN,Financeiro,Intermediários Financeiros,Bancos
+BGIP4,BANESE,Financeiro,Intermediários Financeiros,Bancos
+BEES3,BANESTES,Financeiro,Intermediários Financeiros,Bancos
+BPAR3,BANPARA,Financeiro,Intermediários Financeiros,Bancos
+BRSR6,BANRISUL,Financeiro,Intermediários Financeiros,Bancos
+BRBI11,BR PARTNERS,Financeiro,Intermediários Financeiros,Bancos
+BBDC4,BRADESCO,Financeiro,Intermediários Financeiros,Bancos
+BBAS3,BRASIL,Financeiro,Intermediários Financeiros,Bancos
+BSLI3,BRB BANCO,Financeiro,Intermediários Financeiros,Bancos
+BPAC11,BTGP BANCO,Financeiro,Intermediários Financeiros,Bancos
+INBR32,INTER CO,Financeiro,Intermediários Financeiros,Bancos
+ITSA4,ITAUSA,Financeiro,Intermediários Financeiros,Bancos
+ITUB4,ITAUUNIBANCO,Financeiro,Intermediários Financeiros,Bancos
+BMEB4,MERC BRASIL,Financeiro,Intermediários Financeiros,Bancos
+BMIN4,MERC INVEST,Financeiro,Intermediários Financeiros,Bancos
+BNBR3,NORD BRASIL,Financeiro,Intermediários Financeiros,Bancos
+NUBR33,NU-NUBANK,Financeiro,Intermediários Financeiros,Bancos
+PINE4,PINE,Financeiro,Intermediários Financeiros,Bancos
+SANB11,SANTANDER BR,Financeiro,Intermediários Financeiros,Bancos
+CRIV4,ALFA FINANC,Financeiro,Intermediários Financeiros,Soc. Crédito e Financiamento
+DMFN3,DMFINANCEIRA,Financeiro,Intermediários Financeiros,Soc. Crédito e Financiamento
+MERC4,MERC FINANC,Financeiro,Intermediários Financeiros,Soc. Crédito e Financiamento
+BDLS3,BRADESCO LSG,Financeiro,Intermediários Financeiros,Soc. Arrendamento Mercantil
+DBEN3,DIBENS LSG,Financeiro,Intermediários Financeiros,Soc. Arrendamento Mercantil
+BZRS3,BRAZIL REALT,Financeiro,Securitizadoras de Recebíveis,Securitizadoras de Recebíveis
+BSCS3,BRAZILIAN SC,Financeiro,Securitizadoras de Recebíveis,Securitizadoras de Recebíveis
+PDGS3,PDG SECURIT,Financeiro,Securitizadoras de Recebíveis,Securitizadoras de Recebíveis
+BNDP3B,BNDESPAR,Financeiro,Serviços Financeiros Diversos,Gestão de Recursos e Investimentos
+BFRE3,BRAZILIAN FR,Financeiro,Serviços Financeiros Diversos,Gestão de Recursos e Investimentos
+G2DI33,G2D INVEST,Financeiro,Serviços Financeiros Diversos,Gestão de Recursos e Investimentos
+GPIV33,GP INVEST,Financeiro,Serviços Financeiros Diversos,Gestão de Recursos e Investimentos
+PPLA33,PPLA,Financeiro,Serviços Financeiros Diversos,Gestão de Recursos e Investimentos
+B3SA3,B3,Financeiro,Serviços Financeiros Diversos,Serviços Financeiros Diversos
+BOAS3,BOA VISTA,Financeiro,Serviços Financeiros Diversos,Serviços Financeiros Diversos
+CIEL3,CIELO,Financeiro,Serviços Financeiros Diversos,Serviços Financeiros Diversos
+CLSA3,CLEARSALE,Financeiro,Serviços Financeiros Diversos,Serviços Financeiros Diversos
+CSUD3,CSU DIGITAL,Financeiro,Serviços Financeiros Diversos,Serviços Financeiros Diversos
+STOC31,STONE CO,Financeiro,Serviços Financeiros Diversos,Serviços Financeiros Diversos
+XPBR31,XP INC,Financeiro,Serviços Financeiros Diversos,Serviços Financeiros Diversos
+BRGE3,ALFA CONSORC,Financeiro,Previdência e Seguros,Seguradoras
+BBSE3,BBSEGURIDADE,Financeiro,Previdência e Seguros,Seguradoras
+CXSE3,CAIXA SEGURI,Financeiro,Previdência e Seguros,Seguradoras
+PSSA3,PORTO SEGURO,Financeiro,Previdência e Seguros,Seguradoras
+CSAB3,SEG AL BAHIA,Financeiro,Previdência e Seguros,Seguradoras
+IRBR3,IRBBRASIL RE,Financeiro,Previdência e Seguros,Resseguradoras
+APER3,ALPER S.A.,Financeiro,Previdência e Seguros,Corretoras de Seguros e Resseguros
+WIZC3,WIZ CO,Financeiro,Previdência e Seguros,Corretoras de Seguros e Resseguros
+ALSO3,ALIANSCSONAE,Financeiro,Exploração de Imóveis,Exploração de Imóveis
+BRPR3,BR PROPERT,Financeiro,Exploração de Imóveis,Exploração de Imóveis
+CORR4,COR RIBEIRO,Financeiro,Exploração de Imóveis,Exploração de Imóveis
+GSHP3,GENERALSHOPP,Financeiro,Exploração de Imóveis,Exploração de Imóveis
+HBTS3,HABITASUL,Financeiro,Exploração de Imóveis,Exploração de Imóveis
+HBRE3,HBR REALTY,Financeiro,Exploração de Imóveis,Exploração de Imóveis
+IGTI3,IGUATEMI S.A,Financeiro,Exploração de Imóveis,Exploração de Imóveis
+LOGG3,LOG COM PROP,Financeiro,Exploração de Imóveis,Exploração de Imóveis
+MNZC3B,MENEZES CORT,Financeiro,Exploração de Imóveis,Exploração de Imóveis
+MULT3,MULTIPLAN,Financeiro,Exploração de Imóveis,Exploração de Imóveis
+SCAR3,SAO CARLOS,Financeiro,Exploração de Imóveis,Exploração de Imóveis
+SYNE3,SYN PROP TEC,Financeiro,Exploração de Imóveis,Exploração de Imóveis
+LPSB3,LOPES BRASIL,Financeiro,Exploração de Imóveis,Intermediação Imobiliária
+NEXP3,NEXPE,Financeiro,Exploração de Imóveis,Intermediação Imobiliária
+MOAR3,MONT ARANHA,Financeiro,Holdings Diversificadas,Holdings Diversificadas
+PEAB3,PAR AL BAHIA,Financeiro,Holdings Diversificadas,Holdings Diversificadas
+SIMH3,SIMPAR,Financeiro,Holdings Diversificadas,Holdings Diversificadas
+CTBA3B,CEPAC - CTBA,Financeiro,Outros Títulos,Outros Títulos
+MCRJ3B,CEPAC - MCRJ,Financeiro,Outros Títulos,Outros Títulos
+PMSP3B,CEPAC - PMSP,Financeiro,Outros Títulos,Outros Títulos
+QVQP3B,524 PARTICIP,Outros,Outros,Outros
+ATOM3,ATOMPAR,Outros,Outros,Outros
+BETP3B,BETAPART,Outros,Outros,Outros
+CABI3B,CABINDA PART,Outros,Outros,Outros
+MAPT3,CEMEPE,Outros,Outros,Outros
+CMSA3,CIMS,Outros,Outros,Outros
+OPGM3B,GAMA PART,Outros,Outros,Outros
+FIGE3,INVEST BEMGE,Outros,Outros,Outros
+PPAR3,POLPAR,Outros,Outros,Outros
+PRPT3B,PROMPT PART,Outros,Outros,Outros
+OPSE3B,SUDESTE S/A,Outros,Outros,Outros
+OPTS3B,SUL 116 PART,Outros,Outros,Outros
+YBRA3,YBYRA S/A,Outros,Outros,Outros
