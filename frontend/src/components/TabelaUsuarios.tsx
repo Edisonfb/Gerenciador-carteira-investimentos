@@ -26,6 +26,11 @@ export function TabelaUsuarios({
         </thead>
 
         <tbody>
+          {usuarios.length === 0 && (
+            <tr>
+              <td colSpan={5}>Nenhum usuário cadastrado.</td>
+            </tr>
+          )}
           {usuarios.map((usuario) => (
             <tr key={usuario.id}>
               <td>

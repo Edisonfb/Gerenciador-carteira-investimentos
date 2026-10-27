@@ -27,6 +27,11 @@ class AuthService:
         if not usuario.ativo:
             return False
 
+        # O token de convite deve ser trocado por uma senha no primeiro acesso.
+        inicial = getattr(usuario, "token_acesso", None)
+        if inicial and verificar_senha(inicial, usuario.senha_hash):
+            return None
+
         senha_correta = verificar_senha(senha, usuario.senha_hash)
 
         if not senha_correta:
@@ -37,6 +42,10 @@ class AuthService:
             "access_token": criar_token_acesso(usuario.id_usuario),
             "token_type": "bearer"
         }
+
+    def realizar_logout(self, usuario: Usuario) -> dict:
+        # O token JWT não fica salvo no servidor; o cliente deve descartá-lo.
+        return {"mensagem": f"Sessão de {usuario.email} encerrada com sucesso."}
 
     def listar_usuarios(self) -> list[Usuario]:
         return self.repository.listar_todos()

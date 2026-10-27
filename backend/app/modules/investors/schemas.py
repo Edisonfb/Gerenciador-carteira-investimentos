@@ -9,6 +9,7 @@ class CadastroInvestidorEntrada(BaseModel):
 
 
 class InvestidorSaida(BaseModel):
+    email_acesso_enviado: bool = False
     id_investidor: int
     id_usuario: int
     email: str
