@@ -23,9 +23,9 @@ export const LayoutPadrao: React.FC = () => {
           <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
             {usuario?.perfil === 'analista' && (
               <>
-                <Link to="/dashboard" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Dashboard</Link>
                 <Link to="/investidores" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Investidores</Link>
-                <Link to="/investidores/novo" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Cadastrar investidor</Link>  
+                <Link to="/investidores/novo" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Gerar token</Link>  
+                <Link to="/minha-conta-analista" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Minha Conta</Link>
               </>
             )}
             {usuario?.perfil === 'investidor' && (

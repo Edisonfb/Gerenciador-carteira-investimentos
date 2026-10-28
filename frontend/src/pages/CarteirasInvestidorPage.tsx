@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Plus, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,9 +24,11 @@ export const CarteirasInvestidorPage = () => {
       </header>
 
       <div className="mb-4 flex justify-end">
-        <Button type="button" aria-describedby="disponibilidade-carteiras">
-          <Plus aria-hidden="true" />
-          Adicionar Carteira
+        <Button asChild>
+          <Link to="/carteiras-nova" className="no-underline hover:no-underline">
+            <Plus aria-hidden="true" />
+            Adicionar Carteira
+          </Link>
         </Button>
       </div>
 
