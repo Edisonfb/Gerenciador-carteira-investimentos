@@ -9,15 +9,18 @@ class CadastroInvestidorEntrada(BaseModel):
 
 
 class InvestidorSaida(BaseModel):
+    email_acesso_enviado: bool = False
     id_investidor: int
     id_usuario: int
     email: str
+    nome_usuario: str | None
     primeiro_acesso_concluido: bool
 
 
 class PrimeiroAcessoInvestidorEntrada(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    nome_usuario: str
     email_recuperacao: str
     nova_senha: str
 
@@ -27,6 +30,7 @@ class MeuPerfilInvestidorSaida(BaseModel):
     id_usuario: int
     id_analista_responsavel: int
     email: str
+    nome_usuario: str | None
     email_recuperacao: str | None
     tipo_usuario: str
     ativo: bool

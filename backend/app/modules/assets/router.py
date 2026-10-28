@@ -1,4 +1,4 @@
-"""Rotas HTTP do modulo de ativos financeiros."""
+"""Rotas de consulta dos ativos financeiros."""
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session

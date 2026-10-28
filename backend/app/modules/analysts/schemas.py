@@ -3,6 +3,7 @@ from pydantic import BaseModel, ConfigDict
 class CadastroAnalistaEntrada(BaseModel):
     nome: str
     email: str
+    nome_usuario: str
     senha: str
 
 class AnalistaSaida(BaseModel):
@@ -10,6 +11,7 @@ class AnalistaSaida(BaseModel):
     id_usuario: int
     nome: str
     email: str
+    nome_usuario: str | None
 
 class AnalistaUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")

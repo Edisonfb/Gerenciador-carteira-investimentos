@@ -1,0 +1,1630 @@
+==============================================================================
+DESPEJO DOS TESTES DO BACKEND - Gerenciador de Carteiras de Investimento
+Branch: testes | Gerado em: 2026-10-25
+Ferramentas: pytest, httpx e pytest-asyncio
+==============================================================================
+
+COMO EXECUTAR (na raiz do projeto, com o venv do backend ativado):
+
+    python -m pytest
+
+Nao precisa do MySQL: os unitarios usam repositorios falsos e os de API
+usam o app FastAPI real com banco SQLite em memoria (get_db sobrescrito).
+O envio de e-mail e substituido por uma funcao falsa.
+
+==============================================================================
+TASKS COBERTAS
+==============================================================================
+
+1) Item 1 - Autenticacao no Sistema (Investidor)
+   Unitarios : tests/backend/unit/services/test_auth_service.py
+               tests/backend/unit/services/test_dependencies.py
+               tests/backend/unit/services/test_investidor_service.py
+               tests/backend/unit/utils/test_security.py
+   API       : tests/backend/integration/api/test_auth_investidor_api.py
+
+2) Validacao de codigo do ativo
+   Unitarios : tests/backend/unit/utils/test_validar_codigo_ativo.py
+
+3) Gerenciamento de carteira de investimento
+   Unitarios : tests/backend/unit/services/test_carteira_service.py
+   API       : tests/backend/integration/api/test_carteiras_api.py
+
+4) Item 2 - Autenticacao no Sistema (Analista) - US 2.1 login / US 2.2 logout
+   Unitarios : tests/backend/unit/services/test_auth_service.py
+               tests/backend/unit/services/test_dependencies.py
+   API       : tests/backend/integration/api/test_auth_analista_api.py
+
+==============================================================================
+BUG ENCONTRADO (testes marcados como xfail strict)
+==============================================================================
+
+O modelo Carteira (backend/app/modules/portfolios/models.py) nao tem a
+coluna 'descricao', mas o service e o schema CarteiraSaida usam esse campo.
+  - POST /portfolios         -> TypeError -> erro 500;
+  - GET /portfolios (com itens), GET /portfolios/<id> e
+    PATCH /portfolios/<id>   -> ResponseValidationError -> erro 500.
+Quando o bug for corrigido o pytest acusa XPASS(strict): basta remover o
+marcador bug_descricao / xfail desses testes.
+
+==============================================================================
+RESULTADO DA EXECUCAO (pytest -v -rx)
+==============================================================================
+
+============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.1.1, pluggy-1.7.0 -- C:\Users\gabi_\Desktop\Gerenciador-carteira-investimentos\backend\.venv\Scripts\python.exe
+rootdir: C:\Users\gabi_\Desktop\gc-testes
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.15.1, asyncio-1.4.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 117 items
+
+tests/backend/integration/api/test_auth_analista_api.py::test_login_do_analista_retorna_token_bearer PASSED
+tests/backend/integration/api/test_auth_analista_api.py::test_login_do_analista_com_senha_errada_retorna_401 PASSED
+tests/backend/integration/api/test_auth_analista_api.py::test_login_de_analista_inativo_retorna_403 PASSED
+tests/backend/integration/api/test_auth_analista_api.py::test_auth_me_identifica_analista_logado PASSED
+tests/backend/integration/api/test_auth_analista_api.py::test_analista_logado_pode_cadastrar_investidor PASSED
+tests/backend/integration/api/test_auth_analista_api.py::test_investidor_nao_acessa_rota_de_analista PASSED
+tests/backend/integration/api/test_auth_analista_api.py::test_rota_de_analista_exige_token PASSED
+tests/backend/integration/api/test_auth_analista_api.py::test_logout_do_analista PASSED
+tests/backend/integration/api/test_auth_analista_api.py::test_logout_sem_token_retorna_401 PASSED
+tests/backend/integration/api/test_auth_analista_api.py::test_logout_com_token_invalido_retorna_401 PASSED
+tests/backend/integration/api/test_auth_investidor_api.py::test_login_do_investidor_retorna_token_bearer PASSED
+tests/backend/integration/api/test_auth_investidor_api.py::test_login_do_investidor_com_senha_errada_retorna_401 PASSED
+tests/backend/integration/api/test_auth_investidor_api.py::test_login_com_email_inexistente_retorna_401 PASSED
+tests/backend/integration/api/test_auth_investidor_api.py::test_login_de_investidor_inativo_retorna_403 PASSED
+tests/backend/integration/api/test_auth_investidor_api.py::test_login_sem_campos_obrigatorios_retorna_422 PASSED
+tests/backend/integration/api/test_auth_investidor_api.py::test_auth_me_identifica_investidor_logado PASSED
+tests/backend/integration/api/test_auth_investidor_api.py::test_auth_me_sem_token_retorna_401 PASSED
+tests/backend/integration/api/test_auth_investidor_api.py::test_auth_me_com_token_invalido_retorna_401 PASSED
+tests/backend/integration/api/test_auth_investidor_api.py::test_token_para_de_valer_quando_investidor_e_desativado PASSED
+tests/backend/integration/api/test_auth_investidor_api.py::test_investidor_acessa_o_proprio_perfil PASSED
+tests/backend/integration/api/test_auth_investidor_api.py::test_analista_nao_acessa_rota_de_investidor PASSED
+tests/backend/integration/api/test_auth_investidor_api.py::test_fluxo_completo_convite_e_primeiro_acesso PASSED
+tests/backend/integration/api/test_auth_investidor_api.py::test_primeiro_acesso_nao_pode_ser_repetido PASSED
+tests/backend/integration/api/test_auth_investidor_api.py::test_primeiro_acesso_exige_token PASSED
+tests/backend/integration/api/test_carteiras_api.py::test_carteiras_exigem_token PASSED
+tests/backend/integration/api/test_carteiras_api.py::test_analista_nao_gerencia_carteiras PASSED
+tests/backend/integration/api/test_carteiras_api.py::test_cria_carteira XFAIL
+tests/backend/integration/api/test_carteiras_api.py::test_criacao_sem_nome_retorna_400 PASSED
+tests/backend/integration/api/test_carteiras_api.py::test_criacao_com_campo_desconhecido_retorna_422 PASSED
+tests/backend/integration/api/test_carteiras_api.py::test_lista_vazia_para_investidor_sem_carteiras PASSED
+tests/backend/integration/api/test_carteiras_api.py::test_lista_apenas_as_proprias_carteiras XFAIL
+tests/backend/integration/api/test_carteiras_api.py::test_busca_carteira_por_id XFAIL
+tests/backend/integration/api/test_carteiras_api.py::test_carteira_de_outro_investidor_retorna_404 PASSED
+tests/backend/integration/api/test_carteiras_api.py::test_carteira_inexistente_retorna_404 PASSED
+tests/backend/integration/api/test_carteiras_api.py::test_atualiza_carteira XFAIL
+tests/backend/integration/api/test_carteiras_api.py::test_atualizacao_com_nome_vazio_retorna_400 PASSED
+tests/backend/integration/api/test_carteiras_api.py::test_atualizacao_de_carteira_alheia_retorna_404 PASSED
+tests/backend/integration/api/test_carteiras_api.py::test_exclui_carteira PASSED
+tests/backend/integration/api/test_carteiras_api.py::test_exclusao_de_carteira_alheia_retorna_404 PASSED
+tests/backend/unit/services/test_auth_service.py::test_login_com_credenciais_corretas_retorna_token_do_usuario[analista@teste.com-1] PASSED
+tests/backend/unit/services/test_auth_service.py::test_login_com_credenciais_corretas_retorna_token_do_usuario[investidor@teste.com-2] PASSED
+tests/backend/unit/services/test_auth_service.py::test_login_com_senha_errada_retorna_none[analista@teste.com] PASSED
+tests/backend/unit/services/test_auth_service.py::test_login_com_senha_errada_retorna_none[investidor@teste.com] PASSED
+tests/backend/unit/services/test_auth_service.py::test_login_com_email_inexistente_retorna_none PASSED
+tests/backend/unit/services/test_auth_service.py::test_login_de_usuario_inativo_retorna_false[_analista] PASSED
+tests/backend/unit/services/test_auth_service.py::test_login_de_usuario_inativo_retorna_false[_investidor] PASSED
+tests/backend/unit/services/test_auth_service.py::test_logout_retorna_mensagem_com_email_do_usuario PASSED
+tests/backend/unit/services/test_carteira_service.py::test_cria_carteira_com_nome_sem_espacos_extras XFAIL
+tests/backend/unit/services/test_carteira_service.py::test_criacao_exige_nome[] PASSED
+tests/backend/unit/services/test_carteira_service.py::test_criacao_exige_nome[   ] PASSED
+tests/backend/unit/services/test_carteira_service.py::test_lista_apenas_carteiras_do_investidor PASSED
+tests/backend/unit/services/test_carteira_service.py::test_busca_carteira_do_proprio_investidor PASSED
+tests/backend/unit/services/test_carteira_service.py::test_nao_busca_carteira_de_outro_investidor PASSED
+tests/backend/unit/services/test_carteira_service.py::test_atualiza_somente_campos_enviados PASSED
+tests/backend/unit/services/test_carteira_service.py::test_atualiza_descricao PASSED
+tests/backend/unit/services/test_carteira_service.py::test_atualizacao_de_carteira_inexistente PASSED
+tests/backend/unit/services/test_carteira_service.py::test_atualizacao_nao_alcanca_carteira_de_outro_investidor PASSED
+tests/backend/unit/services/test_carteira_service.py::test_atualizacao_valida_campos_obrigatorios[dados0-O nome da carteira \xe9 obrigat\xf3rio.] PASSED
+tests/backend/unit/services/test_carteira_service.py::test_atualizacao_valida_campos_obrigatorios[dados1-O nome da carteira \xe9 obrigat\xf3rio.] PASSED
+tests/backend/unit/services/test_carteira_service.py::test_atualizacao_valida_campos_obrigatorios[dados2-O status da carteira \xe9 obrigat\xf3rio.] PASSED
+tests/backend/unit/services/test_carteira_service.py::test_exclui_carteira_do_proprio_investidor PASSED
+tests/backend/unit/services/test_carteira_service.py::test_nao_exclui_carteira_inexistente_ou_de_outro_investidor PASSED
+tests/backend/unit/services/test_dependencies.py::test_token_valido_retorna_usuario PASSED
+tests/backend/unit/services/test_dependencies.py::test_sem_token_retorna_401 PASSED
+tests/backend/unit/services/test_dependencies.py::test_token_invalido_retorna_401 PASSED
+tests/backend/unit/services/test_dependencies.py::test_token_de_usuario_inexistente_retorna_401 PASSED
+tests/backend/unit/services/test_dependencies.py::test_token_de_usuario_inativo_retorna_401 PASSED
+tests/backend/unit/services/test_dependencies.py::test_exigir_investidor_aceita_investidor PASSED
+tests/backend/unit/services/test_dependencies.py::test_exigir_investidor_bloqueia_analista PASSED
+tests/backend/unit/services/test_dependencies.py::test_exigir_analista_aceita_analista PASSED
+tests/backend/unit/services/test_dependencies.py::test_exigir_analista_bloqueia_investidor PASSED
+tests/backend/unit/services/test_investidor_service.py::test_cadastro_envia_token_inicial_e_guarda_apenas_o_hash PASSED
+tests/backend/unit/services/test_investidor_service.py::test_cadastro_rejeita_email_vazio PASSED
+tests/backend/unit/services/test_investidor_service.py::test_cadastro_rejeita_email_ja_usado PASSED
+tests/backend/unit/services/test_investidor_service.py::test_cadastro_desfaz_quando_envio_de_email_falha PASSED
+tests/backend/unit/services/test_investidor_service.py::test_primeiro_acesso_troca_token_por_senha_definitiva PASSED
+tests/backend/unit/services/test_investidor_service.py::test_primeiro_acesso_sem_perfil_de_investidor PASSED
+tests/backend/unit/services/test_investidor_service.py::test_primeiro_acesso_nao_pode_ser_repetido PASSED
+tests/backend/unit/services/test_investidor_service.py::test_primeiro_acesso_valida_campos[dados0-O e-mail de recupera\xe7\xe3o \xe9 obrigat\xf3rio.] PASSED
+tests/backend/unit/services/test_investidor_service.py::test_primeiro_acesso_valida_campos[dados1-O e-mail de recupera\xe7\xe3o deve ser diferente do e-mail principal.] PASSED
+tests/backend/unit/services/test_investidor_service.py::test_primeiro_acesso_valida_campos[dados2-A nova senha \xe9 obrigat\xf3ria.] PASSED
+tests/backend/unit/services/test_investidor_service.py::test_primeiro_acesso_rejeita_email_de_recuperacao_que_e_email_principal_de_outro PASSED
+tests/backend/unit/services/test_investidor_service.py::test_primeiro_acesso_rejeita_email_de_recuperacao_ja_usado PASSED
+tests/backend/unit/utils/test_security.py::test_hash_nao_guarda_senha_em_texto_puro PASSED
+tests/backend/unit/utils/test_security.py::test_verificar_senha_rejeita_senha_errada PASSED
+tests/backend/unit/utils/test_security.py::test_token_gerado_identifica_o_usuario PASSED
+tests/backend/unit/utils/test_security.py::test_token_gerado_expira_conforme_configuracao PASSED
+tests/backend/unit/utils/test_security.py::test_rejeita_token_expirado PASSED
+tests/backend/unit/utils/test_security.py::test_rejeita_token_assinado_com_outra_chave PASSED
+tests/backend/unit/utils/test_security.py::test_rejeita_token_sem_identificador_valido[payload0] PASSED
+tests/backend/unit/utils/test_security.py::test_rejeita_token_sem_identificador_valido[payload1] PASSED
+tests/backend/unit/utils/test_security.py::test_rejeita_token_sem_identificador_valido[payload2] PASSED
+tests/backend/unit/utils/test_security.py::test_rejeita_token_malformado PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_aceita_codigos_validos_listados_na_b3[PETR4] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_aceita_codigos_validos_listados_na_b3[ITUB3] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_aceita_codigos_validos_listados_na_b3[VALE3] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_aceita_codigos_validos_listados_na_b3[BBAS3] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_aceita_codigos_validos_listados_na_b3[B3SA3] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_aceita_codigos_validos_listados_na_b3[G2DI3] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_aceita_codigo_em_minusculas PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_codigo_vazio[None] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_codigo_vazio[] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_codigo_com_formato_invalido[PETR] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_codigo_com_formato_invalido[PET4] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_codigo_com_formato_invalido[PETRO4] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_codigo_com_formato_invalido[PETR44] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_codigo_com_formato_invalido[PETRA] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_codigo_com_formato_invalido[PETR 4] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_codigo_com_formato_invalido[ PETR4] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_codigo_com_formato_invalido[PETR4 ] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_codigo_com_formato_invalido[PE-R4] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_codigo_com_formato_invalido[PETR4!] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_codigo_com_formato_invalido[P\xc9TR4] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_empresa_fora_da_lista_da_b3[ZZZZ3] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_empresa_fora_da_lista_da_b3[ABCD4] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_rejeita_empresa_fora_da_lista_da_b3[XPTO11] PASSED
+tests/backend/unit/utils/test_validar_codigo_ativo.py::test_lista_da_b3_foi_carregada_do_csv PASSED
+
+=========================== short test summary info ===========================
+XFAIL tests/backend/integration/api/test_carteiras_api.py::test_cria_carteira - Bug: o modelo Carteira nao tem a coluna 'descricao'. Criar carteira da TypeError e qualquer resposta com carteira falha na validacao de CarteiraSaida (descricao obrigatoria) -> erro 500.
+XFAIL tests/backend/integration/api/test_carteiras_api.py::test_lista_apenas_as_proprias_carteiras - Bug: o modelo Carteira nao tem a coluna 'descricao'. Criar carteira da TypeError e qualquer resposta com carteira falha na validacao de CarteiraSaida (descricao obrigatoria) -> erro 500.
+XFAIL tests/backend/integration/api/test_carteiras_api.py::test_busca_carteira_por_id - Bug: o modelo Carteira nao tem a coluna 'descricao'. Criar carteira da TypeError e qualquer resposta com carteira falha na validacao de CarteiraSaida (descricao obrigatoria) -> erro 500.
+XFAIL tests/backend/integration/api/test_carteiras_api.py::test_atualiza_carteira - Bug: o modelo Carteira nao tem a coluna 'descricao'. Criar carteira da TypeError e qualquer resposta com carteira falha na validacao de CarteiraSaida (descricao obrigatoria) -> erro 500.
+XFAIL tests/backend/unit/services/test_carteira_service.py::test_cria_carteira_com_nome_sem_espacos_extras - Bug: o modelo Carteira nao tem a coluna 'descricao', mas o service passa descricao= ao criar a carteira (TypeError).
+======================= 112 passed, 5 xfailed in 30.16s =======================
+
+==============================================================================
+ARQUIVO: pytest.ini
+==============================================================================
+
+[pytest]
+testpaths = tests
+pythonpath = backend
+asyncio_mode = auto
+asyncio_default_fixture_loop_scope = function
+
+==============================================================================
+ARQUIVO: tests/conftest.py
+==============================================================================
+
+"""Configuracoes compartilhadas por todos os testes."""
+
+import os
+
+# Precisa vir antes de qualquer import do app: o config le o ambiente ao ser
+# importado e o load_dotenv nao sobrescreve variaveis ja definidas.
+os.environ["DATABASE_URL"] = "sqlite://"
+os.environ["SECRET_KEY"] = "chave-de-teste-com-tamanho-suficiente-para-hs256"
+os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "60"
+
+import app.db  # noqa: E402,F401  registra todos os modelos no mapper
+
+==============================================================================
+ARQUIVO: tests/backend/unit/utils/test_validar_codigo_ativo.py
+==============================================================================
+
+"""Task: Validacao de codigo do ativo (shared/validators.py)."""
+
+import pytest
+
+from app.shared.validators import CODIGOS_ATIVOS_B3, validar_codigo_ativo
+
+
+@pytest.mark.parametrize(
+    "codigo",
+    ["PETR4", "ITUB3", "VALE3", "BBAS3", "B3SA3", "G2DI3"],
+)
+def test_aceita_codigos_validos_listados_na_b3(codigo):
+    assert validar_codigo_ativo(codigo) is True
+
+
+def test_aceita_codigo_em_minusculas():
+    assert validar_codigo_ativo("petr4") is True
+
+
+@pytest.mark.parametrize("codigo", [None, ""])
+def test_rejeita_codigo_vazio(codigo):
+    assert validar_codigo_ativo(codigo) is False
+
+
+@pytest.mark.parametrize(
+    "codigo",
+    [
+        "PETR",     # sem numero
+        "PET4",     # empresa com tres caracteres
+        "PETRO4",   # empresa com cinco caracteres
+        "PETR44",   # dois numeros no final
+        "PETRA",    # termina com letra
+        "PETR 4",   # espaco no meio
+        " PETR4",   # espaco no inicio
+        "PETR4 ",   # espaco no final
+        "PE-R4",    # caractere especial
+        "PETR4!",   # caractere especial no final
+        "PÉTR4",    # acento
+    ],
+)
+def test_rejeita_codigo_com_formato_invalido(codigo):
+    assert validar_codigo_ativo(codigo) is False
+
+
+@pytest.mark.parametrize("codigo", ["ZZZZ3", "ABCD4", "XPTO11"])
+def test_rejeita_empresa_fora_da_lista_da_b3(codigo):
+    assert validar_codigo_ativo(codigo) is False
+
+
+def test_lista_da_b3_foi_carregada_do_csv():
+    assert len(CODIGOS_ATIVOS_B3) > 400
+    assert {"PETR", "ITUB", "B3SA", "G2DI"} <= CODIGOS_ATIVOS_B3
+
+==============================================================================
+ARQUIVO: tests/backend/unit/utils/test_security.py
+==============================================================================
+
+"""Funcoes de senha e token usadas na autenticacao (core/security.py)."""
+
+from datetime import datetime, timedelta, timezone
+
+import jwt
+import pytest
+
+from app.core.config import settings
+from app.core.security import (
+    criar_token_acesso,
+    hash_senha,
+    ler_id_usuario_token,
+    verificar_senha,
+)
+
+
+def _token_com_payload(payload: dict, chave: str | None = None) -> str:
+    return jwt.encode(payload, chave or settings.secret_key, algorithm="HS256")
+
+
+def test_hash_nao_guarda_senha_em_texto_puro():
+    senha_hash = hash_senha("senha-secreta")
+
+    assert senha_hash != "senha-secreta"
+    assert verificar_senha("senha-secreta", senha_hash) is True
+
+
+def test_verificar_senha_rejeita_senha_errada():
+    assert verificar_senha("outra", hash_senha("senha-secreta")) is False
+
+
+def test_token_gerado_identifica_o_usuario():
+    token = criar_token_acesso(42)
+
+    assert ler_id_usuario_token(token) == 42
+
+
+def test_token_gerado_expira_conforme_configuracao():
+    token = criar_token_acesso(1)
+    payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
+
+    duracao = payload["exp"] - payload["iat"]
+    assert duracao == settings.access_token_expire_minutes * 60
+
+
+def test_rejeita_token_expirado():
+    agora = datetime.now(timezone.utc)
+    token = _token_com_payload(
+        {"sub": "1", "iat": agora - timedelta(hours=2), "exp": agora - timedelta(hours=1)}
+    )
+
+    with pytest.raises(jwt.ExpiredSignatureError):
+        ler_id_usuario_token(token)
+
+
+def test_rejeita_token_assinado_com_outra_chave():
+    token = _token_com_payload({"sub": "1"}, chave="outra-chave-com-tamanho-suficiente-hs256")
+
+    with pytest.raises(jwt.InvalidSignatureError):
+        ler_id_usuario_token(token)
+
+
+@pytest.mark.parametrize("payload", [{}, {"sub": ""}, {"sub": "abc"}])
+def test_rejeita_token_sem_identificador_valido(payload):
+    with pytest.raises(jwt.InvalidTokenError):
+        ler_id_usuario_token(_token_com_payload(payload))
+
+
+def test_rejeita_token_malformado():
+    with pytest.raises(jwt.InvalidTokenError):
+        ler_id_usuario_token("isto-nao-e-um-jwt")
+
+==============================================================================
+ARQUIVO: tests/backend/unit/services/test_auth_service.py
+==============================================================================
+
+"""Login e logout (AuthService), usados por investidor e analista.
+
+Cobre:
+- Item 1 - Autenticacao no Sistema (Investidor): login do investidor.
+- Item 2 - Autenticacao no Sistema (Analista): US 2.1 login e US 2.2 logout.
+"""
+
+import pytest
+
+from app.core.security import hash_senha, ler_id_usuario_token
+from app.db.enums import Tipo_Usuario
+from app.modules.analysts.models import Analista
+from app.modules.auth.service import AuthService
+from app.modules.investors.models import Investidor
+
+
+SENHA = "senha-correta"
+SENHA_HASH = hash_senha(SENHA)
+
+
+class RepositorioAuthFalso:
+    def __init__(self, usuarios):
+        self.usuarios = {usuario.email: usuario for usuario in usuarios}
+
+    def buscar_por_email(self, email):
+        return self.usuarios.get(email)
+
+
+def _analista(ativo=True):
+    return Analista(
+        id_usuario=1,
+        email="analista@teste.com",
+        senha_hash=SENHA_HASH,
+        tipo_usuario=Tipo_Usuario.ANALISTA,
+        nome="Ana",
+        ativo=ativo,
+    )
+
+
+def _investidor(ativo=True):
+    return Investidor(
+        id_usuario=2,
+        email="investidor@teste.com",
+        senha_hash=SENHA_HASH,
+        tipo_usuario=Tipo_Usuario.INVESTIDOR,
+        id_analista_responsavel=1,
+        ativo=ativo,
+    )
+
+
+@pytest.fixture
+def service():
+    return AuthService(RepositorioAuthFalso([_analista(), _investidor()]))
+
+
+@pytest.mark.parametrize(
+    "email, id_esperado",
+    [("analista@teste.com", 1), ("investidor@teste.com", 2)],
+)
+def test_login_com_credenciais_corretas_retorna_token_do_usuario(service, email, id_esperado):
+    resultado = service.realizar_login(email, SENHA)
+
+    assert resultado["token_type"] == "bearer"
+    assert ler_id_usuario_token(resultado["access_token"]) == id_esperado
+
+
+@pytest.mark.parametrize("email", ["analista@teste.com", "investidor@teste.com"])
+def test_login_com_senha_errada_retorna_none(service, email):
+    assert service.realizar_login(email, "senha-errada") is None
+
+
+def test_login_com_email_inexistente_retorna_none(service):
+    assert service.realizar_login("ninguem@teste.com", SENHA) is None
+
+
+@pytest.mark.parametrize("fabrica", [_analista, _investidor])
+def test_login_de_usuario_inativo_retorna_false(fabrica):
+    usuario = fabrica(ativo=False)
+    service = AuthService(RepositorioAuthFalso([usuario]))
+
+    assert service.realizar_login(usuario.email, SENHA) is False
+
+
+def test_logout_retorna_mensagem_com_email_do_usuario(service):
+    resultado = service.realizar_logout(_analista())
+
+    assert resultado == {"mensagem": "Sessão de analista@teste.com encerrada com sucesso."}
+
+==============================================================================
+ARQUIVO: tests/backend/unit/services/test_dependencies.py
+==============================================================================
+
+"""Identificacao da sessao e segregacao de perfil (core/dependencies.py).
+
+Cobre a parte de autorizacao do Item 1 (investidor) e do Item 2 (analista):
+token ausente/invalido e acesso restrito por tipo de usuario.
+"""
+
+from types import SimpleNamespace
+
+import pytest
+from fastapi import HTTPException
+from fastapi.security import HTTPAuthorizationCredentials
+
+from app.core import dependencies
+from app.core.dependencies import (
+    exigir_analista,
+    exigir_investidor,
+    obter_usuario_autenticado,
+)
+from app.core.security import criar_token_acesso
+from app.db.enums import Tipo_Usuario
+
+
+def _usuario(tipo, ativo=True, id_usuario=1):
+    return SimpleNamespace(id_usuario=id_usuario, tipo_usuario=tipo, ativo=ativo)
+
+
+def _credenciais(token):
+    return HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
+
+
+@pytest.fixture
+def usuarios_no_banco(monkeypatch):
+    """Substitui o AuthRepository por um dicionario em memoria."""
+    usuarios = {}
+
+    class RepositorioFalso:
+        def __init__(self, db):
+            pass
+
+        def buscar_por_id(self, id_usuario):
+            return usuarios.get(id_usuario)
+
+    monkeypatch.setattr(dependencies, "AuthRepository", RepositorioFalso)
+    return usuarios
+
+
+def test_token_valido_retorna_usuario(usuarios_no_banco):
+    usuario = _usuario(Tipo_Usuario.INVESTIDOR, id_usuario=7)
+    usuarios_no_banco[7] = usuario
+
+    resultado = obter_usuario_autenticado(_credenciais(criar_token_acesso(7)), db=None)
+
+    assert resultado is usuario
+
+
+def test_sem_token_retorna_401(usuarios_no_banco):
+    with pytest.raises(HTTPException) as erro:
+        obter_usuario_autenticado(None, db=None)
+
+    assert erro.value.status_code == 401
+    assert erro.value.headers == {"WWW-Authenticate": "Bearer"}
+
+
+def test_token_invalido_retorna_401(usuarios_no_banco):
+    with pytest.raises(HTTPException) as erro:
+        obter_usuario_autenticado(_credenciais("token-invalido"), db=None)
+
+    assert erro.value.status_code == 401
+
+
+def test_token_de_usuario_inexistente_retorna_401(usuarios_no_banco):
+    with pytest.raises(HTTPException) as erro:
+        obter_usuario_autenticado(_credenciais(criar_token_acesso(999)), db=None)
+
+    assert erro.value.status_code == 401
+
+
+def test_token_de_usuario_inativo_retorna_401(usuarios_no_banco):
+    usuarios_no_banco[3] = _usuario(Tipo_Usuario.ANALISTA, ativo=False, id_usuario=3)
+
+    with pytest.raises(HTTPException) as erro:
+        obter_usuario_autenticado(_credenciais(criar_token_acesso(3)), db=None)
+
+    assert erro.value.status_code == 401
+
+
+def test_exigir_investidor_aceita_investidor():
+    usuario = _usuario(Tipo_Usuario.INVESTIDOR)
+
+    assert exigir_investidor(usuario) is usuario
+
+
+def test_exigir_investidor_bloqueia_analista():
+    with pytest.raises(HTTPException) as erro:
+        exigir_investidor(_usuario(Tipo_Usuario.ANALISTA))
+
+    assert erro.value.status_code == 403
+
+
+def test_exigir_analista_aceita_analista():
+    usuario = _usuario(Tipo_Usuario.ANALISTA)
+
+    assert exigir_analista(usuario) is usuario
+
+
+def test_exigir_analista_bloqueia_investidor():
+    with pytest.raises(HTTPException) as erro:
+        exigir_analista(_usuario(Tipo_Usuario.INVESTIDOR))
+
+    assert erro.value.status_code == 403
+
+==============================================================================
+ARQUIVO: tests/backend/unit/services/test_investidor_service.py
+==============================================================================
+
+"""Item 1 - Autenticacao no Sistema (Investidor): convite e primeiro acesso.
+
+O analista cadastra o investidor so com o e-mail; o investidor recebe um
+token inicial por e-mail e, no primeiro acesso, troca esse token por uma
+senha definitiva e informa um e-mail de recuperacao.
+"""
+
+import pytest
+
+from app.core.security import hash_senha, verificar_senha
+from app.db.enums import Tipo_Usuario
+from app.modules.investors import service as investidor_service_modulo
+from app.modules.investors.models import Investidor
+from app.modules.investors.schemas import (
+    CadastroInvestidorEntrada,
+    PrimeiroAcessoInvestidorEntrada,
+)
+from app.modules.investors.service import InvestidorService
+
+
+class RepositorioInvestidorFalso:
+    def __init__(self):
+        self.investidores = []
+        self.outros_emails = set()
+        self.confirmado = False
+        self.desfeito = False
+
+    def buscar_usuario_por_email(self, email):
+        if email in self.outros_emails:
+            return object()
+        return next((i for i in self.investidores if i.email == email), None)
+
+    def buscar_por_email_recuperacao(self, email_recuperacao):
+        return next(
+            (i for i in self.investidores if i.email_recuperacao == email_recuperacao),
+            None,
+        )
+
+    def buscar_por_usuario_id(self, id_usuario):
+        return next((i for i in self.investidores if i.id_usuario == id_usuario), None)
+
+    def adicionar(self, investidor):
+        investidor.id_usuario = len(self.investidores) + 1
+        self.investidores.append(investidor)
+        return investidor
+
+    def confirmar(self):
+        self.confirmado = True
+
+    def desfazer(self):
+        self.desfeito = True
+
+    def atualizar(self, investidor):
+        return investidor
+
+
+@pytest.fixture
+def repositorio():
+    return RepositorioInvestidorFalso()
+
+
+@pytest.fixture
+def emails_enviados(monkeypatch):
+    enviados = []
+    monkeypatch.setattr(
+        investidor_service_modulo.email_service,
+        "enviar_token_acesso",
+        lambda email, token: enviados.append((email, token)),
+    )
+    return enviados
+
+
+def _investidor_convidado(repositorio, email="investidor@teste.com", token="token-inicial"):
+    investidor = Investidor(
+        id_usuario=10,
+        email=email,
+        senha_hash=hash_senha(token),
+        tipo_usuario=Tipo_Usuario.INVESTIDOR,
+        id_analista_responsavel=1,
+        primeiro_acesso_concluido=False,
+    )
+    repositorio.investidores.append(investidor)
+    return investidor
+
+
+def _primeiro_acesso(email_recuperacao="recuperacao@teste.com", nova_senha="NovaSenha123"):
+    return PrimeiroAcessoInvestidorEntrada(
+        email_recuperacao=email_recuperacao, nova_senha=nova_senha
+    )
+
+
+# Cadastro (convite) do investidor
+
+
+def test_cadastro_envia_token_inicial_e_guarda_apenas_o_hash(repositorio, emails_enviados):
+    service = InvestidorService(repositorio)
+
+    investidor, erro = service.cadastrar_investidor(
+        CadastroInvestidorEntrada(email="  Investidor@Teste.com "), id_analista_responsavel=5
+    )
+
+    assert erro is None
+    assert investidor.email == "investidor@teste.com"
+    assert investidor.id_analista_responsavel == 5
+    assert investidor.primeiro_acesso_concluido is False
+    assert repositorio.confirmado is True
+
+    [(email_destino, token)] = emails_enviados
+    assert email_destino == "investidor@teste.com"
+    assert investidor.senha_hash != token
+    assert verificar_senha(token, investidor.senha_hash) is True
+
+
+def test_cadastro_rejeita_email_vazio(repositorio, emails_enviados):
+    investidor, erro = InvestidorService(repositorio).cadastrar_investidor(
+        CadastroInvestidorEntrada(email="   "), id_analista_responsavel=1
+    )
+
+    assert investidor is None
+    assert erro == "O e-mail do investidor é obrigatório."
+    assert emails_enviados == []
+
+
+def test_cadastro_rejeita_email_ja_usado(repositorio, emails_enviados):
+    repositorio.outros_emails.add("existente@teste.com")
+
+    investidor, erro = InvestidorService(repositorio).cadastrar_investidor(
+        CadastroInvestidorEntrada(email="existente@teste.com"), id_analista_responsavel=1
+    )
+
+    assert investidor is None
+    assert erro == "Já existe um usuário com este e-mail."
+    assert emails_enviados == []
+
+
+def test_cadastro_desfaz_quando_envio_de_email_falha(repositorio, monkeypatch):
+    def falhar(email, token):
+        raise RuntimeError("SMTP fora do ar")
+
+    monkeypatch.setattr(investidor_service_modulo.email_service, "enviar_token_acesso", falhar)
+
+    with pytest.raises(RuntimeError):
+        InvestidorService(repositorio).cadastrar_investidor(
+            CadastroInvestidorEntrada(email="novo@teste.com"), id_analista_responsavel=1
+        )
+
+    assert repositorio.desfeito is True
+    assert repositorio.confirmado is False
+
+
+# Primeiro acesso
+
+
+def test_primeiro_acesso_troca_token_por_senha_definitiva(repositorio):
+    _investidor_convidado(repositorio, token="token-inicial")
+
+    investidor, erro = InvestidorService(repositorio).concluir_primeiro_acesso(
+        10, _primeiro_acesso(email_recuperacao=" Recuperacao@Teste.com ")
+    )
+
+    assert erro is None
+    assert investidor.primeiro_acesso_concluido is True
+    assert investidor.email_recuperacao == "recuperacao@teste.com"
+    assert verificar_senha("NovaSenha123", investidor.senha_hash) is True
+    assert verificar_senha("token-inicial", investidor.senha_hash) is False
+
+
+def test_primeiro_acesso_sem_perfil_de_investidor(repositorio):
+    investidor, erro = InvestidorService(repositorio).concluir_primeiro_acesso(99, _primeiro_acesso())
+
+    assert investidor is None
+    assert erro == "Perfil de investidor não encontrado."
+
+
+def test_primeiro_acesso_nao_pode_ser_repetido(repositorio):
+    _investidor_convidado(repositorio).primeiro_acesso_concluido = True
+
+    investidor, erro = InvestidorService(repositorio).concluir_primeiro_acesso(10, _primeiro_acesso())
+
+    assert investidor is None
+    assert erro == "O primeiro acesso deste investidor já foi concluído."
+
+
+@pytest.mark.parametrize(
+    "dados, mensagem",
+    [
+        (
+            {"email_recuperacao": "  "},
+            "O e-mail de recuperação é obrigatório.",
+        ),
+        (
+            {"email_recuperacao": "INVESTIDOR@teste.com"},
+            "O e-mail de recuperação deve ser diferente do e-mail principal.",
+        ),
+        (
+            {"nova_senha": "   "},
+            "A nova senha é obrigatória.",
+        ),
+    ],
+)
+def test_primeiro_acesso_valida_campos(repositorio, dados, mensagem):
+    convidado = _investidor_convidado(repositorio)
+    hash_original = convidado.senha_hash
+
+    investidor, erro = InvestidorService(repositorio).concluir_primeiro_acesso(
+        10, _primeiro_acesso(**dados)
+    )
+
+    assert investidor is None
+    assert erro == mensagem
+    assert convidado.primeiro_acesso_concluido is False
+    assert convidado.senha_hash == hash_original
+
+
+def test_primeiro_acesso_rejeita_email_de_recuperacao_que_e_email_principal_de_outro(repositorio):
+    _investidor_convidado(repositorio)
+    repositorio.outros_emails.add("analista@teste.com")
+
+    investidor, erro = InvestidorService(repositorio).concluir_primeiro_acesso(
+        10, _primeiro_acesso(email_recuperacao="analista@teste.com")
+    )
+
+    assert investidor is None
+    assert erro == "O e-mail de recuperação já está cadastrado como e-mail principal."
+
+
+def test_primeiro_acesso_rejeita_email_de_recuperacao_ja_usado(repositorio):
+    _investidor_convidado(repositorio)
+    outro = _investidor_convidado(repositorio, email="outro@teste.com")
+    outro.id_usuario = 11
+    outro.email_recuperacao = "recuperacao@teste.com"
+
+    investidor, erro = InvestidorService(repositorio).concluir_primeiro_acesso(10, _primeiro_acesso())
+
+    assert investidor is None
+    assert erro == "Este e-mail de recuperação já está em uso."
+
+==============================================================================
+ARQUIVO: tests/backend/unit/services/test_carteira_service.py
+==============================================================================
+
+"""Task: Gerenciamento de carteira de investimento (CarteiraService)."""
+
+import pytest
+
+from app.modules.portfolios.models import Carteira
+from app.modules.portfolios.schemas import (
+    CarteiraAtualizacaoEntrada,
+    CarteiraCadastroEntrada,
+)
+from app.modules.portfolios.service import CarteiraService
+
+
+BUG_DESCRICAO = (
+    "Bug: o modelo Carteira nao tem a coluna 'descricao', mas o service "
+    "passa descricao= ao criar a carteira (TypeError)."
+)
+
+
+class RepositorioCarteiraFalso:
+    def __init__(self):
+        self.carteiras = []
+        self.excluidas = []
+
+    def adicionar(self, carteira):
+        carteira.id_carteira = len(self.carteiras) + 1
+        self.carteiras.append(carteira)
+        return carteira
+
+    def listar_por_investidor(self, id_investidor):
+        return [c for c in self.carteiras if c.id_investidor == id_investidor]
+
+    def buscar_por_id_e_investidor(self, id_carteira, id_investidor):
+        return next(
+            (
+                c
+                for c in self.carteiras
+                if c.id_carteira == id_carteira and c.id_investidor == id_investidor
+            ),
+            None,
+        )
+
+    def atualizar(self, carteira):
+        return carteira
+
+    def excluir(self, carteira):
+        self.carteiras.remove(carteira)
+        self.excluidas.append(carteira)
+
+
+@pytest.fixture
+def repositorio():
+    return RepositorioCarteiraFalso()
+
+
+@pytest.fixture
+def service(repositorio):
+    return CarteiraService(repositorio)
+
+
+def _carteira_existente(repositorio, id_investidor=1, nome="Aposentadoria"):
+    carteira = Carteira(id_investidor=id_investidor, nome=nome, ativa=True)
+    return repositorio.adicionar(carteira)
+
+
+# Criacao
+
+
+@pytest.mark.xfail(reason=BUG_DESCRICAO, raises=TypeError, strict=True)
+def test_cria_carteira_com_nome_sem_espacos_extras(service):
+    carteira, erro = service.criar_carteira(
+        CarteiraCadastroEntrada(nome="  Aposentadoria  ", descricao="Longo prazo"),
+        id_investidor=1,
+    )
+
+    assert erro is None
+    assert carteira.nome == "Aposentadoria"
+    assert carteira.id_investidor == 1
+
+
+@pytest.mark.parametrize("nome", ["", "   "])
+def test_criacao_exige_nome(service, repositorio, nome):
+    carteira, erro = service.criar_carteira(CarteiraCadastroEntrada(nome=nome), id_investidor=1)
+
+    assert carteira is None
+    assert erro == "O nome da carteira é obrigatório."
+    assert repositorio.carteiras == []
+
+
+# Consulta
+
+
+def test_lista_apenas_carteiras_do_investidor(service, repositorio):
+    minha = _carteira_existente(repositorio, id_investidor=1)
+    _carteira_existente(repositorio, id_investidor=2)
+
+    assert service.listar_carteiras(1) == [minha]
+
+
+def test_busca_carteira_do_proprio_investidor(service, repositorio):
+    carteira = _carteira_existente(repositorio, id_investidor=1)
+
+    assert service.buscar_carteira(carteira.id_carteira, 1) is carteira
+
+
+def test_nao_busca_carteira_de_outro_investidor(service, repositorio):
+    carteira = _carteira_existente(repositorio, id_investidor=2)
+
+    assert service.buscar_carteira(carteira.id_carteira, 1) is None
+
+
+# Atualizacao
+
+
+def test_atualiza_somente_campos_enviados(service, repositorio):
+    carteira = _carteira_existente(repositorio, nome="Antigo")
+
+    atualizada, erro = service.atualizar_carteira(
+        carteira.id_carteira, 1, CarteiraAtualizacaoEntrada(nome="  Novo  ", ativa=False)
+    )
+
+    assert erro is None
+    assert atualizada.nome == "Novo"
+    assert atualizada.ativa is False
+
+
+def test_atualiza_descricao(service, repositorio):
+    carteira = _carteira_existente(repositorio)
+
+    atualizada, erro = service.atualizar_carteira(
+        carteira.id_carteira, 1, CarteiraAtualizacaoEntrada(descricao="Reserva")
+    )
+
+    assert erro is None
+    assert atualizada.descricao == "Reserva"
+    assert atualizada.nome == "Aposentadoria"
+
+
+def test_atualizacao_de_carteira_inexistente(service):
+    carteira, erro = service.atualizar_carteira(99, 1, CarteiraAtualizacaoEntrada(nome="X"))
+
+    assert carteira is None
+    assert erro == "Carteira não encontrada"
+
+
+def test_atualizacao_nao_alcanca_carteira_de_outro_investidor(service, repositorio):
+    carteira = _carteira_existente(repositorio, id_investidor=2, nome="Dele")
+
+    resultado, erro = service.atualizar_carteira(
+        carteira.id_carteira, 1, CarteiraAtualizacaoEntrada(nome="Invadida")
+    )
+
+    assert resultado is None
+    assert erro == "Carteira não encontrada"
+    assert carteira.nome == "Dele"
+
+
+@pytest.mark.parametrize(
+    "dados, mensagem",
+    [
+        ({"nome": None}, "O nome da carteira é obrigatório."),
+        ({"nome": "   "}, "O nome da carteira é obrigatório."),
+        ({"ativa": None}, "O status da carteira é obrigatório."),
+    ],
+)
+def test_atualizacao_valida_campos_obrigatorios(service, repositorio, dados, mensagem):
+    carteira = _carteira_existente(repositorio, nome="Original")
+
+    resultado, erro = service.atualizar_carteira(
+        carteira.id_carteira, 1, CarteiraAtualizacaoEntrada(**dados)
+    )
+
+    assert resultado is None
+    assert erro == mensagem
+    assert carteira.nome == "Original"
+    assert carteira.ativa is True
+
+
+# Exclusao
+
+
+def test_exclui_carteira_do_proprio_investidor(service, repositorio):
+    carteira = _carteira_existente(repositorio)
+
+    assert service.excluir_carteira(carteira.id_carteira, 1) is True
+    assert repositorio.excluidas == [carteira]
+
+
+def test_nao_exclui_carteira_inexistente_ou_de_outro_investidor(service, repositorio):
+    carteira = _carteira_existente(repositorio, id_investidor=2)
+
+    assert service.excluir_carteira(99, 1) is False
+    assert service.excluir_carteira(carteira.id_carteira, 1) is False
+    assert repositorio.excluidas == []
+
+==============================================================================
+ARQUIVO: tests/backend/integration/api/conftest.py
+==============================================================================
+
+"""Fixtures dos testes de API: app real com banco SQLite em memoria."""
+
+import httpx
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+
+from app.core.security import hash_senha
+from app.db.base import Base
+from app.db.enums import Tipo_Usuario
+from app.db.session import get_db
+from app.main import app
+from app.modules.analysts.models import Analista
+from app.modules.investors.models import Investidor
+from app.shared import email_service
+
+
+SENHA = "Senha123"
+
+
+@pytest.fixture
+def sessao_banco():
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(engine)
+    SessaoTeste = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+    def get_db_teste():
+        db = SessaoTeste()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    app.dependency_overrides[get_db] = get_db_teste
+    db = SessaoTeste()
+    yield db
+    db.close()
+    app.dependency_overrides.clear()
+    engine.dispose()
+
+
+@pytest.fixture
+async def cliente(sessao_banco):
+    transporte = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transporte, base_url="http://teste") as cliente:
+        yield cliente
+
+
+@pytest.fixture
+def emails_enviados(monkeypatch):
+    enviados = []
+    monkeypatch.setattr(
+        email_service,
+        "enviar_token_acesso",
+        lambda email, token: enviados.append((email, token)),
+    )
+    return enviados
+
+
+@pytest.fixture
+def criar_analista(sessao_banco):
+    def _criar(email="analista@teste.com", ativo=True):
+        analista = Analista(
+            email=email,
+            senha_hash=hash_senha(SENHA),
+            tipo_usuario=Tipo_Usuario.ANALISTA,
+            nome="Ana",
+            ativo=ativo,
+        )
+        sessao_banco.add(analista)
+        sessao_banco.commit()
+        return analista
+
+    return _criar
+
+
+@pytest.fixture
+def criar_investidor(sessao_banco, criar_analista):
+    def _criar(email="investidor@teste.com", ativo=True, primeiro_acesso_concluido=True):
+        analista = (
+            sessao_banco.query(Analista).first() or criar_analista()
+        )
+        investidor = Investidor(
+            email=email,
+            senha_hash=hash_senha(SENHA),
+            tipo_usuario=Tipo_Usuario.INVESTIDOR,
+            id_analista_responsavel=analista.id_analista,
+            primeiro_acesso_concluido=primeiro_acesso_concluido,
+            ativo=ativo,
+        )
+        sessao_banco.add(investidor)
+        sessao_banco.commit()
+        return investidor
+
+    return _criar
+
+
+@pytest.fixture
+def login(cliente):
+    async def _login(email, senha=SENHA):
+        resposta = await cliente.post("/auth/login", json={"email": email, "senha": senha})
+        assert resposta.status_code == 200, resposta.text
+        return {"Authorization": f"Bearer {resposta.json()['access_token']}"}
+
+    return _login
+
+==============================================================================
+ARQUIVO: tests/backend/integration/api/test_auth_investidor_api.py
+==============================================================================
+
+"""Item 1 - Autenticacao no Sistema (Investidor), pelos endpoints HTTP."""
+
+from app.core.security import verificar_senha
+from app.modules.investors.models import Investidor
+
+
+SENHA = "Senha123"  # mesma senha das fixtures criar_analista/criar_investidor
+
+
+async def test_login_do_investidor_retorna_token_bearer(cliente, criar_investidor):
+    criar_investidor()
+
+    resposta = await cliente.post(
+        "/auth/login", json={"email": "investidor@teste.com", "senha": SENHA}
+    )
+
+    assert resposta.status_code == 200
+    corpo = resposta.json()
+    assert corpo["token_type"] == "bearer"
+    assert corpo["access_token"]
+
+
+async def test_login_do_investidor_com_senha_errada_retorna_401(cliente, criar_investidor):
+    criar_investidor()
+
+    resposta = await cliente.post(
+        "/auth/login", json={"email": "investidor@teste.com", "senha": "errada"}
+    )
+
+    assert resposta.status_code == 401
+    assert resposta.json()["detail"] == "Email ou senha inválidos"
+
+
+async def test_login_com_email_inexistente_retorna_401(cliente):
+    resposta = await cliente.post(
+        "/auth/login", json={"email": "ninguem@teste.com", "senha": SENHA}
+    )
+
+    assert resposta.status_code == 401
+
+
+async def test_login_de_investidor_inativo_retorna_403(cliente, criar_investidor):
+    criar_investidor(ativo=False)
+
+    resposta = await cliente.post(
+        "/auth/login", json={"email": "investidor@teste.com", "senha": SENHA}
+    )
+
+    assert resposta.status_code == 403
+
+
+async def test_login_sem_campos_obrigatorios_retorna_422(cliente):
+    resposta = await cliente.post("/auth/login", json={"email": "investidor@teste.com"})
+
+    assert resposta.status_code == 422
+
+
+async def test_auth_me_identifica_investidor_logado(cliente, criar_investidor, login):
+    investidor = criar_investidor()
+    cabecalho = await login("investidor@teste.com")
+
+    resposta = await cliente.get("/auth/me", headers=cabecalho)
+
+    assert resposta.status_code == 200
+    assert resposta.json() == {
+        "id_usuario": investidor.id_usuario,
+        "email": "investidor@teste.com",
+        "tipo_usuario": "investidor",
+        "ativo": True,
+    }
+
+
+async def test_auth_me_sem_token_retorna_401(cliente):
+    resposta = await cliente.get("/auth/me")
+
+    assert resposta.status_code == 401
+
+
+async def test_auth_me_com_token_invalido_retorna_401(cliente):
+    resposta = await cliente.get("/auth/me", headers={"Authorization": "Bearer invalido"})
+
+    assert resposta.status_code == 401
+
+
+async def test_token_para_de_valer_quando_investidor_e_desativado(
+    cliente, sessao_banco, criar_investidor, login
+):
+    investidor = criar_investidor()
+    cabecalho = await login("investidor@teste.com")
+    investidor.ativo = False
+    sessao_banco.commit()
+
+    resposta = await cliente.get("/auth/me", headers=cabecalho)
+
+    assert resposta.status_code == 401
+
+
+async def test_investidor_acessa_o_proprio_perfil(cliente, criar_investidor, login):
+    criar_investidor()
+    cabecalho = await login("investidor@teste.com")
+
+    resposta = await cliente.get("/investors/me", headers=cabecalho)
+
+    assert resposta.status_code == 200
+    assert resposta.json()["email"] == "investidor@teste.com"
+    assert resposta.json()["tipo_usuario"] == "investidor"
+
+
+async def test_analista_nao_acessa_rota_de_investidor(cliente, criar_analista, login):
+    criar_analista()
+    cabecalho = await login("analista@teste.com")
+
+    resposta = await cliente.get("/investors/me", headers=cabecalho)
+
+    assert resposta.status_code == 403
+
+
+async def test_fluxo_completo_convite_e_primeiro_acesso(
+    cliente, sessao_banco, criar_analista, login, emails_enviados
+):
+    criar_analista()
+    cabecalho_analista = await login("analista@teste.com")
+
+    convite = await cliente.post(
+        "/investors", json={"email": "novo@teste.com"}, headers=cabecalho_analista
+    )
+    assert convite.status_code == 201
+    assert convite.json()["primeiro_acesso_concluido"] is False
+    [(_, token_inicial)] = emails_enviados
+
+    cabecalho_investidor = await login("novo@teste.com", token_inicial)
+    primeiro_acesso = await cliente.post(
+        "/investors/me/first-access",
+        json={"email_recuperacao": "recuperacao@teste.com", "nova_senha": "SenhaNova123"},
+        headers=cabecalho_investidor,
+    )
+    assert primeiro_acesso.status_code == 200
+    assert primeiro_acesso.json()["primeiro_acesso_concluido"] is True
+    assert primeiro_acesso.json()["email_recuperacao"] == "recuperacao@teste.com"
+
+    token_antigo = await cliente.post(
+        "/auth/login", json={"email": "novo@teste.com", "senha": token_inicial}
+    )
+    assert token_antigo.status_code == 401
+    await login("novo@teste.com", "SenhaNova123")
+
+    investidor = sessao_banco.query(Investidor).filter_by(email="novo@teste.com").one()
+    assert verificar_senha("SenhaNova123", investidor.senha_hash)
+
+
+async def test_primeiro_acesso_nao_pode_ser_repetido(cliente, criar_investidor, login):
+    criar_investidor(primeiro_acesso_concluido=True)
+    cabecalho = await login("investidor@teste.com")
+
+    resposta = await cliente.post(
+        "/investors/me/first-access",
+        json={"email_recuperacao": "recuperacao@teste.com", "nova_senha": "Outra123"},
+        headers=cabecalho,
+    )
+
+    assert resposta.status_code == 400
+    assert resposta.json()["detail"] == "O primeiro acesso deste investidor já foi concluído."
+
+
+async def test_primeiro_acesso_exige_token(cliente):
+    resposta = await cliente.post(
+        "/investors/me/first-access",
+        json={"email_recuperacao": "recuperacao@teste.com", "nova_senha": "Outra123"},
+    )
+
+    assert resposta.status_code == 401
+
+==============================================================================
+ARQUIVO: tests/backend/integration/api/test_auth_analista_api.py
+==============================================================================
+
+"""Item 2 - Autenticacao no Sistema (Analista), pelos endpoints HTTP.
+
+US 2.1 - Login do analista e segregacao de perfil.
+US 2.2 - Logout do analista.
+"""
+
+
+SENHA = "Senha123"  # mesma senha das fixtures criar_analista/criar_investidor
+
+
+async def test_login_do_analista_retorna_token_bearer(cliente, criar_analista):
+    criar_analista()
+
+    resposta = await cliente.post(
+        "/auth/login", json={"email": "analista@teste.com", "senha": SENHA}
+    )
+
+    assert resposta.status_code == 200
+    assert resposta.json()["token_type"] == "bearer"
+    assert resposta.json()["access_token"]
+
+
+async def test_login_do_analista_com_senha_errada_retorna_401(cliente, criar_analista):
+    criar_analista()
+
+    resposta = await cliente.post(
+        "/auth/login", json={"email": "analista@teste.com", "senha": "errada"}
+    )
+
+    assert resposta.status_code == 401
+
+
+async def test_login_de_analista_inativo_retorna_403(cliente, criar_analista):
+    criar_analista(ativo=False)
+
+    resposta = await cliente.post(
+        "/auth/login", json={"email": "analista@teste.com", "senha": SENHA}
+    )
+
+    assert resposta.status_code == 403
+    assert resposta.json()["detail"] == "Usuário inativo. Contate o administrador."
+
+
+async def test_auth_me_identifica_analista_logado(cliente, criar_analista, login):
+    analista = criar_analista()
+    cabecalho = await login("analista@teste.com")
+
+    resposta = await cliente.get("/auth/me", headers=cabecalho)
+
+    assert resposta.status_code == 200
+    assert resposta.json()["id_usuario"] == analista.id_usuario
+    assert resposta.json()["tipo_usuario"] == "analista"
+
+
+async def test_analista_logado_pode_cadastrar_investidor(
+    cliente, criar_analista, login, emails_enviados
+):
+    criar_analista()
+    cabecalho = await login("analista@teste.com")
+
+    resposta = await cliente.post(
+        "/investors", json={"email": "convidado@teste.com"}, headers=cabecalho
+    )
+
+    assert resposta.status_code == 201
+    assert resposta.json()["email"] == "convidado@teste.com"
+    assert [email for email, _ in emails_enviados] == ["convidado@teste.com"]
+
+
+async def test_investidor_nao_acessa_rota_de_analista(
+    cliente, criar_investidor, login, emails_enviados
+):
+    criar_investidor()
+    cabecalho = await login("investidor@teste.com")
+
+    resposta = await cliente.post(
+        "/investors", json={"email": "convidado@teste.com"}, headers=cabecalho
+    )
+
+    assert resposta.status_code == 403
+    assert emails_enviados == []
+
+
+async def test_rota_de_analista_exige_token(cliente, emails_enviados):
+    resposta = await cliente.post("/investors", json={"email": "convidado@teste.com"})
+
+    assert resposta.status_code == 401
+    assert emails_enviados == []
+
+
+async def test_logout_do_analista(cliente, criar_analista, login):
+    criar_analista()
+    cabecalho = await login("analista@teste.com")
+
+    resposta = await cliente.post("/auth/logout", headers=cabecalho)
+
+    assert resposta.status_code == 200
+    assert resposta.json() == {
+        "mensagem": "Sessão de analista@teste.com encerrada com sucesso."
+    }
+
+
+async def test_logout_sem_token_retorna_401(cliente):
+    resposta = await cliente.post("/auth/logout")
+
+    assert resposta.status_code == 401
+
+
+async def test_logout_com_token_invalido_retorna_401(cliente):
+    resposta = await cliente.post(
+        "/auth/logout", headers={"Authorization": "Bearer invalido"}
+    )
+
+    assert resposta.status_code == 401
+
+==============================================================================
+ARQUIVO: tests/backend/integration/api/test_carteiras_api.py
+==============================================================================
+
+"""Task: Gerenciamento de carteira de investimento, pelos endpoints HTTP."""
+
+import pytest
+
+from app.modules.portfolios.models import Carteira
+
+
+bug_descricao = pytest.mark.xfail(
+    reason=(
+        "Bug: o modelo Carteira nao tem a coluna 'descricao'. Criar carteira da "
+        "TypeError e qualquer resposta com carteira falha na validacao de "
+        "CarteiraSaida (descricao obrigatoria) -> erro 500."
+    ),
+    strict=True,
+)
+
+
+@pytest.fixture
+async def investidor_logado(criar_investidor, login):
+    investidor = criar_investidor()
+    return investidor, await login("investidor@teste.com")
+
+
+@pytest.fixture
+def criar_carteira(sessao_banco):
+    def _criar(investidor, nome="Aposentadoria"):
+        carteira = Carteira(id_investidor=investidor.id_investidor, nome=nome)
+        sessao_banco.add(carteira)
+        sessao_banco.commit()
+        return carteira
+
+    return _criar
+
+
+# Acesso
+
+
+async def test_carteiras_exigem_token(cliente):
+    resposta = await cliente.get("/portfolios")
+
+    assert resposta.status_code == 401
+
+
+async def test_analista_nao_gerencia_carteiras(cliente, criar_analista, login):
+    criar_analista()
+    cabecalho = await login("analista@teste.com")
+
+    resposta = await cliente.get("/portfolios", headers=cabecalho)
+
+    assert resposta.status_code == 403
+
+
+# Criacao
+
+
+@bug_descricao
+async def test_cria_carteira(cliente, investidor_logado):
+    investidor, cabecalho = investidor_logado
+
+    resposta = await cliente.post(
+        "/portfolios",
+        json={"nome": "  Aposentadoria  ", "descricao": "Longo prazo"},
+        headers=cabecalho,
+    )
+
+    assert resposta.status_code == 201
+    corpo = resposta.json()
+    assert corpo["nome"] == "Aposentadoria"
+    assert corpo["descricao"] == "Longo prazo"
+    assert corpo["id_investidor"] == investidor.id_investidor
+    assert corpo["ativa"] is True
+
+
+async def test_criacao_sem_nome_retorna_400(cliente, investidor_logado):
+    _, cabecalho = investidor_logado
+
+    resposta = await cliente.post("/portfolios", json={"nome": "   "}, headers=cabecalho)
+
+    assert resposta.status_code == 400
+    assert resposta.json()["detail"] == "O nome da carteira é obrigatório."
+
+
+async def test_criacao_com_campo_desconhecido_retorna_422(cliente, investidor_logado):
+    _, cabecalho = investidor_logado
+
+    resposta = await cliente.post(
+        "/portfolios", json={"nome": "X", "saldo": 100}, headers=cabecalho
+    )
+
+    assert resposta.status_code == 422
+
+
+# Consulta
+
+
+async def test_lista_vazia_para_investidor_sem_carteiras(cliente, investidor_logado):
+    _, cabecalho = investidor_logado
+
+    resposta = await cliente.get("/portfolios", headers=cabecalho)
+
+    assert resposta.status_code == 200
+    assert resposta.json() == []
+
+
+@bug_descricao
+async def test_lista_apenas_as_proprias_carteiras(
+    cliente, investidor_logado, criar_investidor, criar_carteira
+):
+    investidor, cabecalho = investidor_logado
+    outro = criar_investidor(email="outro@teste.com")
+    criar_carteira(investidor, nome="Minha")
+    criar_carteira(outro, nome="Dele")
+
+    resposta = await cliente.get("/portfolios", headers=cabecalho)
+
+    assert resposta.status_code == 200
+    assert [c["nome"] for c in resposta.json()] == ["Minha"]
+
+
+@bug_descricao
+async def test_busca_carteira_por_id(cliente, investidor_logado, criar_carteira):
+    investidor, cabecalho = investidor_logado
+    carteira = criar_carteira(investidor)
+
+    resposta = await cliente.get(f"/portfolios/{carteira.id_carteira}", headers=cabecalho)
+
+    assert resposta.status_code == 200
+    assert resposta.json()["id_carteira"] == carteira.id_carteira
+
+
+async def test_carteira_de_outro_investidor_retorna_404(
+    cliente, investidor_logado, criar_investidor, criar_carteira
+):
+    _, cabecalho = investidor_logado
+    carteira_alheia = criar_carteira(criar_investidor(email="outro@teste.com"))
+
+    resposta = await cliente.get(
+        f"/portfolios/{carteira_alheia.id_carteira}", headers=cabecalho
+    )
+
+    assert resposta.status_code == 404
+
+
+async def test_carteira_inexistente_retorna_404(cliente, investidor_logado):
+    _, cabecalho = investidor_logado
+
+    resposta = await cliente.get("/portfolios/999", headers=cabecalho)
+
+    assert resposta.status_code == 404
+
+
+# Atualizacao
+
+
+@bug_descricao
+async def test_atualiza_carteira(cliente, investidor_logado, criar_carteira):
+    investidor, cabecalho = investidor_logado
+    carteira = criar_carteira(investidor, nome="Antigo")
+
+    resposta = await cliente.patch(
+        f"/portfolios/{carteira.id_carteira}",
+        json={"nome": "Novo", "ativa": False},
+        headers=cabecalho,
+    )
+
+    assert resposta.status_code == 200
+    assert resposta.json()["nome"] == "Novo"
+    assert resposta.json()["ativa"] is False
+
+
+async def test_atualizacao_com_nome_vazio_retorna_400(
+    cliente, investidor_logado, criar_carteira
+):
+    investidor, cabecalho = investidor_logado
+    carteira = criar_carteira(investidor)
+
+    resposta = await cliente.patch(
+        f"/portfolios/{carteira.id_carteira}", json={"nome": "  "}, headers=cabecalho
+    )
+
+    assert resposta.status_code == 400
+
+
+async def test_atualizacao_de_carteira_alheia_retorna_404(
+    cliente, investidor_logado, criar_investidor, criar_carteira
+):
+    _, cabecalho = investidor_logado
+    carteira_alheia = criar_carteira(criar_investidor(email="outro@teste.com"), nome="Dele")
+
+    resposta = await cliente.patch(
+        f"/portfolios/{carteira_alheia.id_carteira}",
+        json={"nome": "Invadida"},
+        headers=cabecalho,
+    )
+
+    assert resposta.status_code == 404
+
+
+# Exclusao
+
+
+async def test_exclui_carteira(cliente, sessao_banco, investidor_logado, criar_carteira):
+    investidor, cabecalho = investidor_logado
+    id_carteira = criar_carteira(investidor).id_carteira
+
+    resposta = await cliente.delete(f"/portfolios/{id_carteira}", headers=cabecalho)
+
+    assert resposta.status_code == 204
+    sessao_banco.expire_all()
+    assert sessao_banco.get(Carteira, id_carteira) is None
+
+
+async def test_exclusao_de_carteira_alheia_retorna_404(
+    cliente, sessao_banco, investidor_logado, criar_investidor, criar_carteira
+):
+    _, cabecalho = investidor_logado
+    id_carteira = criar_carteira(criar_investidor(email="outro@teste.com")).id_carteira
+
+    resposta = await cliente.delete(f"/portfolios/{id_carteira}", headers=cabecalho)
+
+    assert resposta.status_code == 404
+    sessao_banco.expire_all()
+    assert sessao_banco.get(Carteira, id_carteira) is not None
