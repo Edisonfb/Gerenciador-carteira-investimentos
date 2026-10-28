@@ -110,14 +110,14 @@ def test_primeiro_acesso_valida_token_sem_enviar_email_e_libera_login_apos_senha
     from app.modules.auth.service import AuthService
     repository = Repository()
     with patch("app.modules.auth.password_service.enviar_link_senha") as enviar:
-        assert AuthService(repository).realizar_login(repository.usuario.email, "senha-inicial") is None
+        assert AuthService(repository).realizar_login(repository.usuario.email, None, "senha-inicial") is None
         token = validar_primeiro_acesso(repository, repository.usuario.email, "senha-inicial")
         with pytest.raises(jwt.InvalidTokenError):
             ler_id_usuario_token(token)
         definir_senha(repository, token, "nova-senha-definitiva")
         assert repository.usuario.token_acesso == ""
-        assert AuthService(repository).realizar_login(repository.usuario.email, "senha-inicial") is None
-        assert AuthService(repository).realizar_login(repository.usuario.email, "nova-senha-definitiva")["access_token"]
+        assert AuthService(repository).realizar_login(repository.usuario.email, None, "senha-inicial") is None
+        assert AuthService(repository).realizar_login(repository.usuario.email, None, "nova-senha-definitiva")["access_token"]
         with pytest.raises(ValueError):
             validar_primeiro_acesso(repository, repository.usuario.email, "senha-inicial")
     enviar.assert_not_called()

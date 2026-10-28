@@ -1,5 +1,9 @@
 """Ponto de entrada da API FastAPI."""
 
+from app.db import registrar_modelos
+
+registrar_modelos()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 

@@ -8,6 +8,7 @@ import jwt
 
 from app.core.config import settings
 from app.core.security import hash_senha, verificar_senha
+from app.db.enums import Tipo_Usuario
 from app.shared.email_service import enviar_link_senha
 
 
@@ -18,9 +19,19 @@ def assinatura_senha(usuario):
 
 
 def solicitar_link(repository, email: str, primeiro_acesso: bool):
-    usuario = repository.buscar_por_email(email.strip())
+    """Identifica a conta pelo email principal e envia ao destino de recuperacao."""
+    usuario = repository.buscar_por_email(email.strip().lower())
     if usuario is None or not usuario.ativo:
         return
+    if getattr(usuario, "tipo_usuario", None) == Tipo_Usuario.INVESTIDOR:
+        destinatario = getattr(usuario, "email_recuperacao", None)
+        if not destinatario or not destinatario.strip():
+            # Nao usa o email principal como alternativa para investidores.
+            return
+        destinatario = destinatario.strip().lower()
+    else:
+        # Analistas nao possuem email de recuperacao no modelo atual.
+        destinatario = usuario.email
     if primeiro_acesso:
         # Contas de investidores recebem uma senha inicial ao serem cadastradas.
         inicial = getattr(usuario, "token_acesso", None)
@@ -33,7 +44,7 @@ def solicitar_link(repository, email: str, primeiro_acesso: bool):
         "iat": agora, "exp": agora + timedelta(minutes=30),
     }, settings.secret_key, algorithm="HS256")
     link = settings.endereco_frontend.rstrip("/") + "/definir-senha?" + urlencode({"token": token})
-    enviar_link_senha(usuario.email, link, primeiro_acesso)
+    enviar_link_senha(destinatario, link)
 
 
 def validar_primeiro_acesso(repository, email: str, token_inicial: str) -> str:
