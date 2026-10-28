@@ -17,7 +17,7 @@ def _enviar_mensagem(email: str, assunto: str, conteudo: str) -> None:
     mensagem["To"] = email
     mensagem.set_content(conteudo)
 
-    with smtplib.SMTP(settings.servidor_smtp, settings.porta_smtp) as servidor:
+    with smtplib.SMTP(settings.servidor_smtp, settings.porta_smtp, timeout=15) as servidor:
         if settings.usar_tls:
             servidor.starttls()
         if settings.usuario_smtp:
@@ -40,13 +40,12 @@ def enviar_token_acesso(email: str, token: str) -> None:
     )
 
 
-def enviar_link_senha(email: str, link: str) -> None:
-    """Envia um link de redefinicao de senha, separado do convite inicial."""
+def enviar_link_senha(email: str, link: str, primeiro_acesso: bool = False) -> None:
+    """Envia o link e aceita a opcao de primeiro acesso usada na integracao."""
     _enviar_mensagem(
-        email, "Redefinição de senha",
+        email, "Primeiro acesso" if primeiro_acesso else "Redefinição de senha",
         "Olá.\n\n"
-        "Recebemos uma solicitação para redefinir a senha da sua conta.\n"
-        "Acesse o link abaixo para cadastrar uma nova senha:\n\n"
+        "Use o link abaixo para cadastrar uma nova senha:\n\n"
         f"{link}\n\n"
         "O link expira em 30 minutos e deixa de funcionar após a troca da senha.\n"
         "Se você não fez essa solicitação, ignore esta mensagem.",

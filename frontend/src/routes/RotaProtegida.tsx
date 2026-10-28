@@ -13,7 +13,7 @@ interface RotaProtegidaProps {
 
 function caminhoInicial(perfil: PerfilUsuario): string {
   if (perfil === "investidor") return "/minha-conta";
-  if (perfil === "analista") return "/dashboard";
+  if (perfil === "analista") return "/minha-conta-analista";
   return "/";
 }
 
