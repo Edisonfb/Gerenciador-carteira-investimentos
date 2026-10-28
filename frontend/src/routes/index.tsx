@@ -1,10 +1,13 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { LayoutLogin } from "../components/LayoutLogin";
 import { LayoutPadrao } from "../components/LayoutPadrao";
+import { InvestidoresPage } from "../pages/InvestidoresPage";
+import { EdicaoInvestidorPage } from "../pages/EdicaoInvestidorPage";
 import { CadastroInvestidorPage } from "../pages/CadastroInvestidorPage";
 import { AcessoSenhaPage } from "../pages/AcessoSenhaPage";
-import { DashboardAnalista } from "../pages/DashboardAnalista";
+import { MinhaContaPage } from "../pages/MinhaContaPage";
 import { CarteirasInvestidorPage } from "../pages/CarteirasInvestidorPage";
+import { CadastroCarteiraPage } from "../pages/CadastroCarteiraPage";
 
 import { Login } from "../pages/Login";
 import { MinhaContaInvestidorPage } from "../pages/MinhaContaInvestidorPage";
@@ -27,13 +30,17 @@ export const Rotas = () => (
       <Route path="/carteiras-investidor" element={<LayoutPadrao />}>
         <Route index element={<CarteirasInvestidorPage />} />
       </Route>
+      <Route path="/carteiras-nova" element={<LayoutPadrao />}>
+        <Route index element={<CadastroCarteiraPage />} />
+      </Route>
     </Route>
 
     <Route element={<RotaProtegida perfisPermitidos={["analista"]} />}>
 
-      <Route path="/dashboard" element={<LayoutPadrao />}>
-        <Route index element={<DashboardAnalista />} />
+      <Route path="/minha-conta-analista" element={<LayoutPadrao />}>
+        <Route index element={<MinhaContaPage />} />
       </Route>
+      <Route path="/dashboard" element={<Navigate to="/minha-conta-analista" replace />} />
 
       <Route path="/investidores" element={<LayoutPadrao />}>
         <Route index element={<InvestidoresPage />} />

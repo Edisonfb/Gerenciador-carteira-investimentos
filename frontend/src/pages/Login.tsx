@@ -18,7 +18,7 @@ export const Login = () => {
     setMensagemErro("");
     try {
       const usuario = await realizarLogin(email.trim(), senha);
-      navigate(usuario.perfil === "analista" ? "/dashboard" : "/minha-conta", { replace: true });
+      navigate(usuario.perfil === "analista" ? "/minha-conta-analista" : "/minha-conta", { replace: true });
     } catch (erro) {
       setMensagemErro(erro instanceof Error ? erro.message : "Não foi possível realizar o login.");
     } finally {

@@ -33,3 +33,25 @@ def enviar_token_acesso(email: str, token: str) -> None:
         if settings.usuario_smtp:
             servidor.login(settings.usuario_smtp, settings.senha_smtp)
         servidor.send_message(mensagem)
+
+
+def enviar_link_senha(email: str, link: str, primeiro_acesso: bool = False) -> None:
+    """Envia o link temporário de definição/recuperação de senha."""
+    if not settings.servidor_smtp or not settings.email_remetente:
+        raise RuntimeError("Envio de e-mail não configurado. Defina SMTP_HOST e SMTP_FROM.")
+
+    mensagem = EmailMessage()
+    mensagem["Subject"] = "Primeiro acesso" if primeiro_acesso else "Recuperação de senha"
+    mensagem["From"] = settings.email_remetente
+    mensagem["To"] = email
+    mensagem.set_content(
+        "Olá!\n\nUse o link abaixo para definir sua senha. "
+        "Ele expira em 30 minutos e só pode ser usado uma vez.\n\n"
+        f"{link}\n\nSe você não solicitou esta mensagem, ignore este e-mail."
+    )
+    with smtplib.SMTP(settings.servidor_smtp, settings.porta_smtp, timeout=15) as servidor:
+        if settings.usar_tls:
+            servidor.starttls()
+        if settings.usuario_smtp:
+            servidor.login(settings.usuario_smtp, settings.senha_smtp)
+        servidor.send_message(mensagem)
