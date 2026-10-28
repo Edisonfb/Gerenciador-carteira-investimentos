@@ -1,138 +1,161 @@
-"""Regras de negocio do modulo de ativos financeiros."""
-from app.modules.assets.models import Ativo
-from app.modules.assets.repository import AtivoRepository
+"""Regras de negocio e autorizacao dos ativos de carteiras."""
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import StaleDataError
+
+from app.modules.assets.models import Ativo, AtivoCarteira
+from app.modules.assets.repository import AtivoCarteiraRepository, AtivoRepository
 from app.modules.assets.schemas import (
-    AtivoAtualizacaoEntrada,
-    AtivoCadastroEntrada
+    AtivoAtualizacaoEntrada, AtivoCarteiraUpdate,
+    CadastroAtivoCarteiraEntrada, CadastroAtivoEntrada,
 )
+from app.modules.portfolios.repository import CarteiraRepository
+
+
+class ErroAtivo(ValueError):
+    """Representa uma falha prevista sem depender da camada HTTP."""
+
+    def __init__(self, mensagem: str, status_code: int):
+        """Carrega a mensagem e o codigo de resposta da falha."""
+        super().__init__(mensagem)
+        self.status_code = status_code
+
 
 class AtivoService:
-    """Concentra as validações e operações de negócios do ativo"""
+    """Consulta o catalogo e preserva a manutencao interna."""
 
     def __init__(self, repository: AtivoRepository):
+        """Recebe o repositorio do catalogo."""
         self.repository = repository
 
-    def criar_ativo(
-            self, dados: AtivoCadastroEntrada,
-    ) -> tuple[Ativo | None, str | None]:
-        """Valida os dados e cadastra um ativo com código único"""
-        codigo = dados.codigo.strip().upper()
-        setor = dados.setor.strip()
-
-        if not codigo:
-            return None, "O código do ativo é obrigatório"
-
-        if len(codigo) > 10:
-            return None, "O código do ativo deve ter no máximo 10 caracteres"
-
-        if not setor:
-            return None, "O setor do ativo é obrigatório"
-
-        if len(setor) > 80:
-            return None, "O setor do ativo deve ter no máximo 80 caracteres"
-
-        ativo_existente = self.repository.buscar_por_codigo(codigo)
-
-        if ativo_existente is not None:
-            return None, "Já existe um ativo com esse código"
-
-        ativo = Ativo(codigo = codigo, setor = setor)
-
-        ativo_salvo = self.repository.adicionar(ativo)
-
-        return ativo_salvo, None
-
     def listar_ativos(self, codigo: str | None = None) -> list[Ativo]:
-        """Retorna todos os ativos cadastrados"""
+        """Lista ou pesquisa um ticker exato normalizado."""
         if codigo is None:
-            return self.repository.listar_todos()
+            return self.repository.listar_ativos()
+        ativo = self.repository.buscar_por_codigo(codigo.strip().upper())
+        return [] if ativo is None else [ativo]
 
-        codigo = codigo.strip().upper()
-        ativo = self.repository.buscar_por_codigo(codigo)
+    def buscar_ativos(self, ticker: str) -> Ativo | None:
+        """Consulta pelo identificador publico ticker."""
+        return self.repository.buscar_por_codigo(ticker.strip().upper())
 
+    def buscar_por_setor(self, setor: str) -> list[Ativo]:
+        """Remove espacos e consulta o setor por igualdade."""
+        return self.repository.buscar_por_setor(setor.strip())
+
+    def criar_ativo(self, dados: CadastroAtivoEntrada) -> tuple[Ativo | None, str | None]:
+        """Evita tickers duplicados e cadastra os campos validados."""
+        if self.repository.buscar_por_codigo(dados.ticker) is not None:
+            return None, "Já existe um ativo com esse código."
+        try:
+            return self.repository.salvar(Ativo(**dados.model_dump())), None
+        except IntegrityError:
+            return None, "Não foi possível cadastrar o ativo por conflito de dados."
+
+    def atualizar_ativo(
+        self, ticker: str, dados: AtivoAtualizacaoEntrada,
+    ) -> tuple[Ativo | None, str | None]:
+        """Atualiza os campos enviados sem modificar a chave dos vinculos."""
+        ativo = self.buscar_ativos(ticker)
         if ativo is None:
-            return []
-
-        return [ativo]
-
-    def buscar_por_setor(self, setor: str)-> list[Ativo]:
-        """Pega o setor e busca os ativos correspondentes."""
-        setor = setor.strip()
-
-        return self.repository.buscar_por_setor(setor)
-
-    
-    def buscar_ativos(self, id_ativo: int) -> Ativo | None:
-        """Busca um ativo pelo identificados"""
-        return self.repository.buscar_por_id(id_ativo)
-
-    def atualizar_ativo(self,
-        id_ativo: int,
-        dados: AtivoAtualizacaoEntrada
-        )-> tuple[Ativo | None, str | None]:
-        """Valida os campos enviados e atualiza um ativo existente."""
-        ativo = self.repository.buscar_por_id(id_ativo)
-
-        if ativo is None:
-            return None, "Ativo não encontrado"
-
-        atualizacoes = dados.model_dump(exclude_unset = True)
-
-        if "codigo" in atualizacoes:
-            if atualizacoes["codigo"] is None:
-                return None, "O código do ativo é obrigatório"
-
-            codigo = atualizacoes["codigo"].strip().upper()
-
-            if not codigo:
-                return None, "O código do ativo é obrigatório"
-
-            if len(codigo) > 10:
-                return None, "O código do ativo deve ter no máximo 10 caracteres"
-
-            ativo_existente = self.repository.buscar_por_codigo(codigo)
-
-            if(ativo_existente is not None and ativo_existente.id_ativo != ativo.id_ativo):
-                return None, "Já existe um ativo com esse código."
-
-            atualizacoes["codigo"] = codigo
-
-        if "setor" in atualizacoes:
-            if atualizacoes["setor"] is None:
-                return None, "O setor do ativo é obrigatório."
-
-            setor = atualizacoes["setor"].strip()
-
-            if not setor:
-                return None, "O setor do ativo é obrigatório."
-
-            if len(setor) > 80:
-                return None, "O setor do ativo deve ter no máximo 80 caracteres."
-
-            atualizacoes["setor"] = setor
-
-        if "ativo" in atualizacoes:
-            if atualizacoes["ativo"] is None:
-                return None, "O status do ativo é obrigatório."
-
-        if not atualizacoes:
-            return ativo, None
-
-        for campo, valor in atualizacoes.items():
+            return None, "Ativo não encontrado."
+        campos = dados.model_dump(exclude_unset=True)
+        if any(valor is None for valor in campos.values()):
+            return None, "Os campos enviados não podem ser nulos."
+        for campo, valor in campos.items():
             setattr(ativo, campo, valor)
+        return self.repository.atualizar(ativo), None
 
-        ativo_atualizado = self.repository.atualizar(ativo)
-
-        return ativo_atualizado, None
-
-
-    def excluir_ativo(self, id_ativo: int) -> bool:
-        """Exclui um ativo existente e informa se ele foi encontrado."""
-        ativo = self.repository.buscar_por_id(id_ativo)
-
-        if ativo is None:
+    def excluir_ativo(self, ticker: str) -> bool:
+        """Preserva a exclusao interna apenas para ativos sem posicoes em carteiras."""
+        ativo = self.buscar_ativos(ticker)
+        if ativo is None or ativo.ativos_carteira:
             return False
-
-        self.repository.excluir(ativo)
-
+        try:
+            self.repository.excluir(ativo)
+        except IntegrityError:
+            return False
         return True
+
+
+class AtivoCarteiraService:
+    """Autoriza a carteira antes de consultar ou modificar seus ativos."""
+
+    def __init__(
+        self, repository: AtivoCarteiraRepository,
+        carteiras: CarteiraRepository, ativos: AtivoRepository,
+    ):
+        """Recebe repositorios, mantendo consultas fora das regras de negocio."""
+        self.repository = repository
+        self.carteiras = carteiras
+        self.ativos = ativos
+
+    def _exigir_carteira(self, id_carteira: int, id_investidor: int):
+        """Oculta carteiras inexistentes ou pertencentes a outro investidor."""
+        carteira = self.carteiras.buscar_por_id_e_investidor(id_carteira, id_investidor)
+        if carteira is None:
+            raise ErroAtivo("Carteira não encontrada.", 404)
+        return carteira
+
+    def cadastrar_ativo_carteira(
+        self, dados: CadastroAtivoCarteiraEntrada, id_investidor: int,
+    ) -> AtivoCarteira:
+        """Adiciona ativo existente apenas a uma carteira do investidor."""
+        carteira = self._exigir_carteira(dados.id_carteira, id_investidor)
+        if not carteira.ativa:
+            raise ErroAtivo("A carteira está desativada.", 400)
+        ativo = self.ativos.buscar_por_codigo(dados.ticker)
+        if ativo is None:
+            raise ErroAtivo("Ativo não encontrado.", 404)
+        if not ativo.ativo:
+            raise ErroAtivo("O ativo está desativado.", 400)
+        if self.repository.buscar(dados.ticker, dados.id_carteira) is not None:
+            raise ErroAtivo("O ativo já está cadastrado nesta carteira.", 409)
+        try:
+            return self.repository.salvar(AtivoCarteira(**dados.model_dump()))
+        except IntegrityError as erro:
+            # O repositorio ja executou rollback, inclusive em corridas de FK/duplicidade.
+            raise ErroAtivo("Conflito ao cadastrar o ativo na carteira.", 409) from erro
+
+    def listar_ativos_carteira(
+        self, id_carteira: int, id_investidor: int,
+    ) -> list[AtivoCarteira]:
+        """Lista os vinculos somente depois de verificar o proprietario."""
+        self._exigir_carteira(id_carteira, id_investidor)
+        return self.repository.listar_por_carteira(id_carteira)
+
+    def atualizar_quantidade(
+        self, id_carteira: int, ticker: str,
+        dados: AtivoCarteiraUpdate, id_investidor: int,
+    ) -> AtivoCarteira | None:
+        """Substitui a quantidade e remove o vinculo quando o valor e zero."""
+        carteira = self._exigir_carteira(id_carteira, id_investidor)
+        vinculo = self.repository.buscar(ticker, id_carteira)
+        if vinculo is None:
+            raise ErroAtivo("Ativo não encontrado nesta carteira.", 404)
+        if dados.quantidade > 0:
+            if not carteira.ativa:
+                raise ErroAtivo("A carteira está desativada.", 400)
+            ativo = self.ativos.buscar_por_codigo(ticker)
+            if ativo is None or not ativo.ativo:
+                raise ErroAtivo("O ativo está desativado ou não existe.", 400)
+        try:
+            if dados.quantidade == 0:
+                self.repository.excluir(vinculo)
+                return None
+            vinculo.quantidade = dados.quantidade
+            return self.repository.salvar(vinculo)
+        except (IntegrityError, StaleDataError) as erro:
+            raise ErroAtivo("Conflito ao atualizar o ativo da carteira.", 409) from erro
+
+    def remover_ativo_carteira(
+        self, id_carteira: int, ticker: str, id_investidor: int,
+    ) -> None:
+        """Remove o vinculo proprio, mesmo com quantidade positiva ou recurso inativo."""
+        self._exigir_carteira(id_carteira, id_investidor)
+        vinculo = self.repository.buscar(ticker, id_carteira)
+        if vinculo is None:
+            raise ErroAtivo("Ativo não encontrado nesta carteira.", 404)
+        try:
+            self.repository.excluir(vinculo)
+        except (IntegrityError, StaleDataError) as erro:
+            raise ErroAtivo("Conflito ao remover o ativo da carteira.", 409) from erro

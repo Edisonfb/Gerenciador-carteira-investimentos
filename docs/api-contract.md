@@ -66,6 +66,20 @@ Responsabilidade:
 
 Observacao: o formato final de autenticacao ainda sera definido no backend.
 
+### 3.1. Recuperacao de senha implementada
+
+`POST /auth/esqueci-senha` recebe o email principal de identificacao da conta:
+
+```json
+{"email": "principal@exemplo.test"}
+```
+
+O email e normalizado para minusculas e sem espacos nas pontas. Para investidores ativos, o link e enviado exclusivamente ao campo `investidor.email_recuperacao`. Se o campo estiver ausente ou vazio, nao ha envio e nao existe alternativa automatica para o email principal. Para analistas ativos, que nao possuem esse campo no modelo atual, o envio permanece no email da conta.
+
+A resposta e generica para contas existentes, inexistentes, inativas ou sem email de recuperacao, sem revelar o destinatario. SMTP ausente retorna `503`; falhas de transporte sao registradas sem expor se a conta existe. A funcao `enviar_link_senha(email, link)` cuida da mensagem de redefinicao; `enviar_token_acesso(email, token)` continua atendendo o convite inicial de investidores.
+
+O link aponta para `/definir-senha?token=...` no frontend, expira em 30 minutos e e invalidado apos a mudanca da senha. `POST /auth/redefinir-senha` recebe `token` e `senha` (minimo de 8 caracteres e maximo de 72 bytes UTF-8), valida assinatura/finalidade/expiracao e altera a senha protegida no banco. O token de redefinicao nao serve como token de login. O email de recuperacao ja existe no modelo, sem necessidade de migracao para esta alteracao.
+
 ## 4. Investidores
 
 Prefixo:
@@ -122,76 +136,74 @@ Responsabilidade:
 
 ## 6. Ativos financeiros
 
-Prefixo:
+As rotas abaixo estao implementadas e exigem `Authorization: Bearer <token>` de um investidor ativo.
 
 ```text
-/assets
+GET  /assets
+GET  /assets/setor/{setor}
+GET  /assets/{ticker}
+POST /assets/carteira
+GET  /assets/carteira/{id_carteira}
+PATCH /assets/carteira/{id_carteira}/{ticker}
+DELETE /assets/carteira/{id_carteira}/{ticker}
 ```
 
-Endpoints planejados:
+### 6.1. Catalogo e consulta por setor
 
-```text
-GET    /assets
-GET    /assets/setor/{setor}
-GET    /assets/{asset_id}
-POST   /assets
-PUT    /assets/{asset_id}
-DELETE /assets/{asset_id}
-```
+`GET /assets` retorna o catalogo ordenado por ticker. Aceita `?ticker=PETR4` ou o alias anterior `?codigo=PETR4`, com busca exata apos remover espacos das pontas e converter para maiusculas. Se os dois parametros forem enviados com valores diferentes, retorna `422`.
 
-Responsabilidade:
+`GET /assets/{ticker}` consulta um ativo pelo ticker e retorna `404` se nao existir. O identificador publico foi adaptado de ID numerico para ticker na integracao com a implementacao do colega. A resposta passou a usar os campos `ticker`, `nome`, `setor`, `subsetor`, `segmento`, `ativo` e `data_criacao`.
 
-- cadastrar ativos financeiros;
-- listar ativos;
-- consultar ativo especifico;
-- atualizar dados de ativo;
-- remover ou desativar ativo.
+`GET /assets/setor/{setor}` recupera a funcionalidade da branch backup. Remove espacos das pontas e compara o setor completo por igualdade; a distincao entre maiusculas e minusculas depende da configuracao do banco. A consulta nao e um filtro de query de `GET /assets`.
 
-Exemplos de ativos:
+As consultas retornam tambem ativos desativados, preservando o comportamento anterior do catalogo. Listas sem resultados retornam `200` com `[]`. A consulta individual retorna `200` com um objeto.
 
-- acao;
-- fundo imobiliario;
-- renda fixa;
-- criptoativo;
-- ETF;
-- outro.
+A API do investidor nao oferece cadastro, atualizacao ou exclusao do catalogo global: POST /assets, PUT /assets/{ticker} e DELETE /assets/{ticker} retornam `405`. A manutencao interna usa schemas validados; ticker e uma chave estavel e nao e alterado pela atualizacao descritiva.
 
-### 6.1. Consulta de ativos por setor
+### 6.2. Ativos de uma carteira
 
-Endpoint implementado:
-
-```text
-GET /assets/setor/{setor}
-```
-
-Objetivo: retornar os ativos cadastrados que pertencem ao setor informado.
-
-- Autenticacao: enviar `Authorization: Bearer <token>` de um investidor ativo.
-- Parametro de caminho: `setor`, texto obrigatorio com o nome completo do setor.
-- O service remove espacos das pontas do parametro antes da consulta.
-- O repository compara o campo `Ativo.setor` por igualdade; nao realiza busca parcial. A distincao entre maiusculas e minusculas depende da configuracao do banco.
-- A consulta nao aplica filtro adicional pelo status `ativo`.
-
-Exemplo de requisicao:
-
-```text
-GET /assets/setor/Energia
-```
-
-Resposta de sucesso: `200 OK`, com uma lista de objetos contendo os campos de `AtivoSaida`: `id_ativo`, `codigo`, `setor`, `ativo` e `data_criacao`.
-
-Quando nao houver ativos no setor informado, retorna `200 OK` com uma lista vazia:
+Exemplo de entrada em `POST /assets/carteira`:
 
 ```json
-[]
+{"ticker": "PETR4", "id_carteira": 1, "quantidade": 10}
 ```
 
-Erros de acesso:
+Ticker e normalizado para maiusculas, aceita letras e numeros e tem no maximo 10 caracteres. `quantidade` deve ser um inteiro entre 1 e 2147483647; booleanos, strings, fracionarios, zero e negativos sao rejeitados com `422`. Campos extras sao proibidos, inclusive identificadores de investidor enviados no corpo.
 
-- `401`: token ausente, invalido ou expirado, ou usuario inexistente ou inativo;
-- `403`: usuario autenticado sem perfil do tipo investidor.
+O investidor e identificado pela sessao. A carteira deve pertencer a ele e estar ativa; o ativo deve existir e estar ativo. Cadastro bem-sucedido retorna `201`:
 
-Esta consulta usa uma rota especifica por setor. O parametro `setor` nao e um filtro de query implementado em `GET /assets`.
+```json
+{"ticker": "PETR4", "id_carteira": 1, "quantidade": 10}
+```
+
+Um segundo cadastro do mesmo ticker na mesma carteira retorna `409`, sem somar nem substituir a quantidade. Conflitos de integridade concorrentes tambem retornam `409`, com rollback da transacao.
+
+`GET /assets/carteira/{id_carteira}` retorna somente os vinculos da carteira do investidor, ordenados por ticker; carteira propria vazia retorna `200` com `[]`. Carteiras proprias desativadas continuam consultaveis, mas nao recebem novos ativos.
+
+Erros previstos:
+
+- `401`: token ausente, invalido ou expirado; usuario inexistente ou inativo.
+- `403`: usuario autenticado sem perfil de investidor.
+- `404`: perfil de investidor ausente; carteira inexistente ou alheia; ativo inexistente no cadastro.
+- `400`: carteira ou ativo desativado no cadastro.
+- `409`: vinculo duplicado ou conflito de integridade.
+- `422`: corpo fora do contrato.
+
+Carteira alheia e carteira inexistente retornam a mesma mensagem, `Carteira nao encontrada.` (com acentuacao na API), sem revelar o proprietario ou seus ativos.
+
+### 6.3. Atualizacao e remocao de ativos da carteira
+
+`PATCH /assets/carteira/{id_carteira}/{ticker}` substitui a quantidade atual, sem somar:
+
+```json
+{"quantidade": 7}
+```
+
+Quantidade inteira positiva retorna `200` com `ticker`, `id_carteira` e a nova `quantidade`. O ativo e a carteira devem estar ativos para essa atualizacao. A quantidade zero remove completamente o vinculo e retorna `204` sem corpo; zero nunca e salvo na tabela. O cadastro por POST continua exigindo quantidade positiva.
+
+`DELETE /assets/carteira/{id_carteira}/{ticker}` remove diretamente o vinculo, independentemente da quantidade atual, e retorna `204` sem corpo. A remocao direta ou por zero tambem e permitida em carteira/ativo desativado. O ativo do catalogo e os vinculos de outras carteiras sao preservados.
+
+Ambas as rotas exigem investidor autenticado e verificam a propriedade antes de acessar o vinculo. Carteira alheia/inexistente retorna `404`; vinculo ausente em carteira propria tambem retorna `404`. Ticker e normalizado. Quantidades negativas, booleanos, fracionarios, strings, nulos e campos extras sao rejeitados com `422`. Falhas de integridade concorrentes retornam `409`, com rollback. A estrutura do banco continua exigindo `quantidade > 0`, sem alteracao de tabela ou migration.
 
 ## 7. Transacoes
 

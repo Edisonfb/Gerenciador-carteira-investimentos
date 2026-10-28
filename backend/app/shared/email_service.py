@@ -5,25 +5,17 @@ from email.message import EmailMessage
 from app.core.config import settings
 
 
-def enviar_token_acesso(email: str, token: str) -> None:
+def _enviar_mensagem(email: str, assunto: str, conteudo: str) -> None:
+    """Envia uma mensagem textual usando a configuracao SMTP da aplicacao."""
     if not settings.servidor_smtp or not settings.email_remetente:
         raise RuntimeError("Envio de e-mail não configurado. Defina SMTP_HOST e SMTP_FROM.")
-    
+
     mensagem = EmailMessage()
-    
-    mensagem["Subject"] = "Seu token de acesso"
+
+    mensagem["Subject"] = assunto
     mensagem["From"] = settings.email_remetente
     mensagem["To"] = email
-
-    mensagem.set_content(
-        f"Olá.\n\n"
-        "Sua conta foi cadastrada com sucesso.\n\n"
-        "Seu token de acesso é:\n\n"
-        f"{token}\n\n"
-        "Utilize este token para acessar o sistema.\n"
-        "Não compartilhe este token com outras pessoas."
-    )
-
+    mensagem.set_content(conteudo)
 
     with smtplib.SMTP(settings.servidor_smtp, settings.porta_smtp) as servidor:
         if settings.usar_tls:
@@ -31,3 +23,31 @@ def enviar_token_acesso(email: str, token: str) -> None:
         if settings.usuario_smtp:
             servidor.login(settings.usuario_smtp, settings.senha_smtp)
         servidor.send_message(mensagem)
+
+
+def enviar_token_acesso(email: str, token: str) -> None:
+    """Mantem o envio do token inicial usado no convite de investidores."""
+    _enviar_mensagem(
+        email, "Seu token de acesso",
+        "Olá.\n\n"
+        "Sua conta foi cadastrada com sucesso.\n\n"
+        "Seu token de acesso é:\n\n"
+        f"{token}\n\n"
+        "Na tela de login, selecione Primeiro acesso e informe seu e-mail e este token.\n"
+        "Depois, cadastre sua senha para entrar no sistema.\n"
+        f"{settings.endereco_frontend.rstrip('/')}/primeiro-acesso\n"
+        "Não compartilhe este token com outras pessoas."
+    )
+
+
+def enviar_link_senha(email: str, link: str) -> None:
+    """Envia um link de redefinicao de senha, separado do convite inicial."""
+    _enviar_mensagem(
+        email, "Redefinição de senha",
+        "Olá.\n\n"
+        "Recebemos uma solicitação para redefinir a senha da sua conta.\n"
+        "Acesse o link abaixo para cadastrar uma nova senha:\n\n"
+        f"{link}\n\n"
+        "O link expira em 30 minutos e deixa de funcionar após a troca da senha.\n"
+        "Se você não fez essa solicitação, ignore esta mensagem.",
+    )

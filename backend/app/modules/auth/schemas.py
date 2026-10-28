@@ -1,6 +1,6 @@
 """Schemas de entrada e saida do modulo de autenticacao."""
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 
 
 class LoginEntrada(BaseModel):
@@ -35,8 +35,30 @@ class TokenSaida(BaseModel):
     token_type: str = "bearer"
 
 
+class LogoutSaida(BaseModel):
+    mensagem: str
+
+
 class UsuarioUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     email: str | None = None
     nome_usuario: str | None = None
     ativo: bool | None = None
+
+
+class SolicitarSenhaEntrada(BaseModel):
+    email: str
+
+
+class RedefinirSenhaEntrada(BaseModel):
+    token: str
+    senha: str
+
+
+class PrimeiroAcessoEntrada(BaseModel):
+    email: str = Field(min_length=1, max_length=255)
+    token: str = Field(min_length=1, max_length=255)
+
+
+class PrimeiroAcessoSaida(BaseModel):
+    token_definicao: str

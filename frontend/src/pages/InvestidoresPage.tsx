@@ -32,8 +32,7 @@ export function InvestidoresPage() {
       </main>
     );
   }
-
-  const idAnalistaResponsavel = usuarioAutenticado.id;
+  const idUsuarioAutenticado = usuarioAutenticado.id;
 
   function iniciarCadastro() {
     navigate("/investidores/novo");
@@ -61,7 +60,7 @@ export function InvestidoresPage() {
     const investidorExcluido = excluirInvestidor(id);
 
     if (investidorExcluido) {
-      setInvestidores(buscarInvestidoresPorAnalista(idAnalistaResponsavel));
+      setInvestidores(buscarInvestidoresPorAnalista(idUsuarioAutenticado));
     }
   }
 

@@ -30,6 +30,10 @@ class Investidor(Usuario):
         back_populates="investidores",
         foreign_keys="[Investidor.id_analista_responsavel]",)
 
+    carteiras: Mapped[list["Carteira"]] = relationship(
+        back_populates="investidor", 
+        cascade="all, delete-orphan"
+    )
     __mapper_args__ = {
         "polymorphic_identity": Tipo_Usuario.INVESTIDOR,
     }

@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.db.session import get_db
 from app.modules.investors.repository import InvestidorRepository
@@ -105,7 +106,13 @@ def cadastrar_investidor(
     usuario: Usuario = Depends(exigir_analista),
     db: Session = Depends(get_db),
 ):
+    if usuario.tipo_usuario.value != "analista":
+        raise HTTPException(status_code=403, detail="Apenas analistas podem cadastrar investidores.")
     repository = InvestidorRepository(db)
+    analista = repository.buscar_analista_por_usuario(usuario.id_usuario)
+    if analista is None:
+        raise HTTPException(status_code=404, detail="Perfil de analista não encontrado.")
+    dados = dados.model_copy(update={"id_analista_responsavel": analista.id_analista})
     service = InvestidorService(repository)
 
     analista = AnalistaRepository(db).buscar_por_usuario_id(usuario.id_usuario)
@@ -125,6 +132,7 @@ def cadastrar_investidor(
         )
 
     return {
+        "email_acesso_enviado": service.email_acesso_enviado,
         "id_investidor": investidor.id_investidor,
         "id_usuario": investidor.id_usuario,
         "email": investidor.email,

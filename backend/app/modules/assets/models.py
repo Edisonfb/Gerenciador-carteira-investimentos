@@ -1,23 +1,63 @@
-"""Modelos persistidos do modulo de ativos financeiros."""
+"""Modelos persistidos do modulo de ativos."""
 from datetime import datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship, synonym
 
 from app.db.base import Base
 
+if TYPE_CHECKING:
+    from app.modules.portfolios.models import Carteira
+
+
 class Ativo(Base):
-    """Representa um ativo para se rusado nas carteiras"""
+    """Representa o catalogo de ativos, identificado pelo ticker."""
     __tablename__ = "ativo"
 
-    id_ativo: Mapped[int] = mapped_column(primary_key= True)
-    codigo: Mapped[str] = mapped_column(String(10), unique = True, nullable= False)
-    setor: Mapped[str] = mapped_column(String(80), nullable= False)
-    ativo: Mapped[bool] = mapped_column(Boolean, default = True)
-    data_criacao: Mapped[datetime] = mapped_column(DateTime, default = datetime.utcnow)
+    ticker: Mapped[str] = mapped_column(String(10), primary_key=True)
+    codigo = synonym("ticker")
+    nome: Mapped[str] = mapped_column(String(50), default="")
+    setor: Mapped[str] = mapped_column(String(255))
+    subsetor: Mapped[str] = mapped_column(String(255), default="")
+    segmento: Mapped[str] = mapped_column(String(255), default="")
+    ativo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    data_criacao: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False,
+    )
 
-    def __repr__(self):
+    ativos_carteira: Mapped[list["AtivoCarteira"]] = relationship(
+        back_populates="ativo", foreign_keys="AtivoCarteira.ticker",
+    )
+
+    def __repr__(self) -> str:
+        """Identifica o ativo nos registros de diagnostico."""
+        return f"Ativo(ticker={self.ticker!r}, nome={self.nome!r})"
+
+
+class AtivoCarteira(Base):
+    """Relaciona um ativo a uma carteira com quantidade positiva."""
+    __tablename__ = "ativo_carteira"
+    __table_args__ = (
+        CheckConstraint("quantidade > 0", name="ck_ativo_carteira_quantidade_positiva"),
+    )
+
+    ticker: Mapped[str] = mapped_column(ForeignKey("ativo.ticker"), primary_key=True)
+    id_carteira: Mapped[int] = mapped_column(
+        ForeignKey("carteira.id_carteira"), primary_key=True,
+    )
+    quantidade: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    ativo: Mapped["Ativo"] = relationship(
+        back_populates="ativos_carteira", foreign_keys=[ticker],
+    )
+    carteira: Mapped["Carteira"] = relationship(
+        back_populates="ativos_carteira", foreign_keys=[id_carteira],
+    )
+
+    def __repr__(self) -> str:
+        """Identifica o vinculo e sua quantidade."""
         return (
-            f"Ativo(id_ativo={self.id_ativo!r}, "
-            f"codigo={self.codigo!r}, setor={self.setor!r}, ativo={self.ativo!r})"
+            f"AtivoCarteira(ticker={self.ticker!r}, "
+            f"id_carteira={self.id_carteira!r}, quantidade={self.quantidade!r})"
         )
