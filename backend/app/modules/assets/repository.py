@@ -1,40 +1,30 @@
-"""Acesso a dados do modulo de ativos financeiros."""
 from sqlalchemy.orm import Session
-from app.modules.assets.models import Ativo
+from app.modules.assets.models import Ativo, AtivoCarteira
 
 class AtivoRepository:
-    """Concentra as operações de banco para ativos financeiros."""
-
     def __init__(self, db: Session):
-       self.db = db
+        self.db = db
 
-    def adicionar(self, ativo: Ativo) -> Ativo:
-        """Salva um novo ativo no banco de dados."""
+    def salvar(self, ativo: Ativo) -> Ativo:
         self.db.add(ativo)
         self.db.commit()
         self.db.refresh(ativo)
         return ativo
 
-    def listar_todos(self) -> list[Ativo]:
-        """Lista todos os ativos cadastrados"""
-        return self.db.query(Ativo).order_by(Ativo.codigo).all()
+    def listar_ativos(self) -> list[Ativo]:
+        return self.db.query(Ativo).all()
 
-    def buscar_por_id(self, id_ativo: int) -> Ativo | None:
-        """Lista um ativo pelo id"""
-        return self.db.query(Ativo).filter(Ativo.id_ativo == id_ativo).first()
+class AtivoCarteiraRepository:
+    def __init__(self, db: Session):
+        self.db = db
 
-    def buscar_por_codigo(self, codigo: str) -> Ativo | None:
-        """Busca um ativo pelo codigo"""
-        return self.db.query(Ativo).filter(Ativo.codigo == codigo).first()
-
-    def atualizar(self, ativo: Ativo) -> Ativo:
-        """Atualiza os dados de um ativo existente"""
-        self.db.add(ativo)
+    def salvar(self, ativo_carteira: AtivoCarteira) -> AtivoCarteira:
+        self.db.add(ativo_carteira)
         self.db.commit()
-        self.db.refresh(ativo)
-        return ativo
+        self.db.refresh(ativo_carteira)
+        return ativo_carteira
 
-    def excluir(self, ativo: Ativo) -> None:
-        """Remove um ativo do banco de dados"""
-        self.db.delete(ativo)
-        self.db.commit()
+    def listar_por_carteira(self, id_carteira: int) -> list[AtivoCarteira]:
+        return self.db.query(AtivoCarteira).filter(
+            AtivoCarteira.id_carteira == id_carteira
+        ).all()

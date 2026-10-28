@@ -1,23 +1,56 @@
-"""Modelos persistidos do modulo de ativos financeiros."""
-from datetime import datetime
+"""Modelos persistidos do modulo de ativos."""
+from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
+if TYPE_CHECKING:
+    from app.modules.portfolios.models import Carteira
+
+
 class Ativo(Base):
-    """Representa um ativo para se rusado nas carteiras"""
     __tablename__ = "ativo"
 
-    id_ativo: Mapped[int] = mapped_column(primary_key= True)
-    codigo: Mapped[str] = mapped_column(String(10), unique = True, nullable= False)
-    setor: Mapped[str] = mapped_column(String(80), nullable= False)
-    ativo: Mapped[bool] = mapped_column(Boolean, default = True)
-    data_criacao: Mapped[datetime] = mapped_column(DateTime, default = datetime.utcnow)
+    ticker: Mapped[str] = mapped_column(String(6), primary_key=True)
+    nome: Mapped[str] = mapped_column(String(50))
+    setor: Mapped[str] = mapped_column(String(255))
+    subsetor: Mapped[str] = mapped_column(String(255))
+    segmento: Mapped[str] = mapped_column(String(255))
 
-    def __repr__(self):
+    ativos_carteira: Mapped[list["AtivoCarteira"]] = relationship(
+        back_populates="ativo",
+        foreign_keys="AtivoCarteira.ticker",
+    )
+
+    def __repr__(self) -> str:
+        return f"Ativo(ticker={self.ticker!r}, nome={self.nome!r})"
+
+
+class AtivoCarteira(Base):
+    __tablename__ = "ativo_carteira"
+
+    ticker: Mapped[str] = mapped_column(
+        ForeignKey("ativo.ticker"), primary_key=True
+    )
+    id_carteira: Mapped[int] = mapped_column(
+        ForeignKey("carteira.id_carteira"), primary_key=True
+    )
+    quantidade: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    ativo: Mapped["Ativo"] = relationship(
+        back_populates="ativos_carteira",
+        foreign_keys=[ticker],
+    )
+    carteira: Mapped["Carteira"] = relationship(
+        back_populates="ativos_carteira",
+        foreign_keys=[id_carteira],
+    )
+
+    def __repr__(self) -> str:
         return (
-            f"Ativo(id_ativo={self.id_ativo!r}, "
-            f"codigo={self.codigo!r}, setor={self.setor!r}, ativo={self.ativo!r})"
+            f"AtivoCarteira(ticker={self.ticker!r}, "
+            f"id_carteira={self.id_carteira!r}, "
+            f"quantidade={self.quantidade!r})"
         )

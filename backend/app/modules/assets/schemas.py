@@ -1,28 +1,31 @@
 """Schemas de entrada e saida do modulo de ativos financeiros."""
-from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict
 
-class AtivoCadastroEntrada(BaseModel):
-    """Dados necessarios para cadastrar um ativo"""
-    model_config = ConfigDict(extra="forbid")
-
-    codigo: str
+class CadastroAtivoEntrada(BaseModel):
+    ticker: str
+    nome: str
     setor: str
-
-class AtivoAtualizacaoEntrada(BaseModel):
-    """Dados permitidos para atualizar um ativo"""
-
-    model_config = ConfigDict(extra="forbid")
-
-    codigo: str | None = None
-    setor: str | None = None
-    ativo: bool | None = None
+    subsetor: str
+    segmento: str
 
 class AtivoSaida(BaseModel):
-    """Dados retornados pela API para um ativo financeiro"""
-
-    id_ativo: int
-    codigo: str
+    ticker: str
+    nome: str
     setor: str
-    ativo: bool
-    data_criacao: datetime
+    subsetor: str
+    segmento: str
+
+
+class CadastroAtivoCarteiraEntrada(BaseModel):
+    ticker: str
+    id_carteira: int
+    quantidade: int
+
+class AtivoCarteiraSaida(BaseModel):
+    ticker: str
+    quantidade: int
+
+class AtivoCarteiraUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    quantidade: bool | None = None
