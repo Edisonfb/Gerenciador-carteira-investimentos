@@ -8,7 +8,7 @@ import jwt
 
 from app.core.config import settings
 from app.core.security import hash_senha, verificar_senha
-from app.shared.email_service import enviar_link_senha
+from app.shared.email_service import enviar_token_acesso
 
 
 def assinatura_senha(usuario):
@@ -33,7 +33,7 @@ def solicitar_link(repository, email: str, primeiro_acesso: bool):
         "iat": agora, "exp": agora + timedelta(minutes=30),
     }, settings.secret_key, algorithm="HS256")
     link = settings.endereco_frontend.rstrip("/") + "/definir-senha?" + urlencode({"token": token})
-    enviar_link_senha(usuario.email, link, primeiro_acesso)
+    enviar_token_acesso(usuario.email, link, primeiro_acesso)
 
 
 def validar_primeiro_acesso(repository, email: str, token_inicial: str) -> str:

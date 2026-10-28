@@ -1,6 +1,6 @@
 """Schemas de entrada e saida do modulo de autenticacao."""
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 
 
 class LoginEntrada(BaseModel):

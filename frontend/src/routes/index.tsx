@@ -5,6 +5,8 @@ import { CadastroInvestidorPage } from "../pages/CadastroInvestidorPage";
 import { AcessoSenhaPage } from "../pages/AcessoSenhaPage";
 import { DashboardAnalista } from "../pages/DashboardAnalista";
 import { CarteirasInvestidorPage } from "../pages/CarteirasInvestidorPage";
+import { InvestidoresPage } from "../pages/InvestidoresPage"
+import { EdicaoInvestidorPage } from "../pages/EdicaoInvestidorPage"
 
 import { Login } from "../pages/Login";
 import { MinhaContaInvestidorPage } from "../pages/MinhaContaInvestidorPage";
