@@ -35,7 +35,7 @@ Depois de qualquer reset pelo comando, entre no frontend com:
 - Usuario: `analista`
 - Senha: `12345`
 
-A tela atual de login pede e-mail; a API tambem aceita o nome de usuario. A conta e ativa e tem perfil de analista, pronta para cadastrar investidores pela interface. As credenciais voltam a esses valores em cada reset, com ou sem `--popular-ativos`. A senha e armazenada como hash pelo fluxo normal de cadastro. O seed fica em `database/seeds/analista_teste.py` e nao envia e-mails nem cria investidores automaticamente.
+A tela atual de login pede o nome de usuario; a API tambem aceita e-mail. A conta e ativa e tem perfil de analista, pronta para cadastrar investidores pela interface. As credenciais voltam a esses valores em cada reset, com ou sem `--popular-ativos`. A senha e armazenada como hash pelo fluxo normal de cadastro. O seed fica em `database/seeds/analista_teste.py` e nao envia e-mails nem cria investidores automaticamente.
 
 A rotina fica na classe `GerenciadorBanco`, em `backend/app/db/maintenance.py`. O comando nao recria o servidor nem executa DROP DATABASE; ele trabalha dentro do banco ja existente, usando a conexao do `.env`. A aplicacao nao executa reset durante sua inicializacao.
 
@@ -52,3 +52,20 @@ O comando legado de exclusao isolada agora exige confirmacao:
 ```powershell
 python backend/scripts/drop_tables.py --confirmar
 ```
+
+
+## Atualizar um banco existente sem reset
+
+Primeiro confira o plano, sem alterar o banco:
+
+```powershell
+.\backend\.venv\Scripts\python.exe database/migrations/atualizar_estrutura_atual.py
+```
+
+Depois de conferir e fazer backup, aplique:
+
+```powershell
+.\backend\.venv\Scripts\python.exe database/migrations/atualizar_estrutura_atual.py --aplicar
+```
+
+A migracao contempla nome de usuario, recuperacao/primeiro acesso, objetivo percentual e quantidade zero. Nao apaga dados nem inventa percentuais para carteiras antigas. Se houver pendencias, e necessario resolve-las e repetir a aplicacao antes de considerar a atualizacao concluida. Veja [instrucoes completas e tratamento dos registros legados](migrations/README.md).
