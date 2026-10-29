@@ -1,6 +1,7 @@
 from app.modules.auth.repository import AuthRepository
 from app.core.security import criar_token_acesso, verificar_senha
 from app.modules.auth.models import Usuario
+from app.db.enums import Tipo_Usuario
 from app.modules.auth.schemas import UsuarioUpdate
 from app.shared.usernames import normalizar_nome_usuario
 
@@ -26,6 +27,10 @@ class AuthService:
 
         if not usuario.ativo:
             return False
+
+        if (getattr(usuario, "tipo_usuario", None) == Tipo_Usuario.INVESTIDOR
+            and not getattr(usuario, "primeiro_acesso_concluido", False)):
+            return None
 
         # O token de convite deve ser trocado por uma senha no primeiro acesso.
         inicial = getattr(usuario, "token_acesso", None)

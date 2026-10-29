@@ -27,11 +27,11 @@ export function AcessoSenhaPage({ primeiroAcesso = false, definirSenha = false }
     try {
       if (definirSenha) {
         await redefinirSenha(token, senha);
-        navigate("/", { replace: true, state: { mensagemSucesso: "Senha definida com sucesso. Entre com seu e-mail e sua nova senha." } });
+        navigate("/", { replace: true, state: { mensagemSucesso: "Senha definida com sucesso. Entre com seu nome de usuário e sua nova senha." } });
       } else if (primeiroAcesso) {
         const tokenDefinicao = await validarPrimeiroAcesso(email.trim(), tokenInicial.trim());
         setTokenInicial("");
-        navigate("/primeiro-acesso/definir-senha", { replace: true, state: { tokenDefinicao } });
+        navigate("/primeiro-acesso/cadastro", { replace: true, state: { tokenDefinicao, emailConvite: email.trim() } });
       } else {
         await solicitarAcessoSenha(email.trim());
         setMensagem("Se houver uma conta ativa elegível, enviaremos o link ao e-mail de recuperação cadastrado do investidor. Para analistas, o envio é ao e-mail da conta. Verifique também a caixa de spam.");

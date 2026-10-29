@@ -1,6 +1,8 @@
 """Schemas de entrada e saida do modulo de investidores."""
 
-from pydantic import BaseModel, ConfigDict
+import re
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 class CadastroInvestidorEntrada(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -23,6 +25,7 @@ class PrimeiroAcessoInvestidorEntrada(BaseModel):
     nome_usuario: str
     email_recuperacao: str
     nova_senha: str
+    email_comunicacao: str | None = None
 
 
 class MeuPerfilInvestidorSaida(BaseModel):
@@ -49,6 +52,10 @@ class MeuPerfilInvestidorSaida(BaseModel):
 
 class MeuPerfilInvestidorAtualizacao(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    nome_usuario: str | None = Field(default=None, max_length=50)
+    email_recuperacao: str | None = Field(default=None, max_length=255)
+    senha_atual: str | None = Field(default=None, max_length=72, repr=False)
+    nova_senha: str | None = Field(default=None, max_length=72, repr=False)
     email: str | None = None
     nome: str | None = None
     sobrenome: str | None = None
@@ -59,3 +66,29 @@ class MeuPerfilInvestidorAtualizacao(BaseModel):
     bairro: str | None = None
     logradouro: str | None = None
     numero: str | None = None
+
+
+class CadastroPrimeiroAcessoEntrada(BaseModel):
+    """Conclui o convite usando apenas a autorizacao temporaria validada."""
+    model_config = ConfigDict(extra="forbid")
+
+    token_definicao: str = Field(min_length=1, max_length=2048)
+    nome_usuario: str = Field(min_length=1, max_length=50)
+    email_comunicacao: str = Field(min_length=1, max_length=255)
+    email_recuperacao: str = Field(min_length=1, max_length=255)
+    nova_senha: str = Field(min_length=8, max_length=72)
+
+    @field_validator("email_comunicacao", "email_recuperacao")
+    @classmethod
+    def validar_email(cls, valor: str) -> str:
+        email = valor.strip().lower()
+        if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", email):
+            raise ValueError("Informe um e-mail válido.")
+        return email
+
+    @field_validator("nova_senha")
+    @classmethod
+    def validar_tamanho_senha(cls, valor: str) -> str:
+        if len(valor.encode("utf-8")) > 72:
+            raise ValueError("A senha deve ter no máximo 72 bytes.")
+        return valor

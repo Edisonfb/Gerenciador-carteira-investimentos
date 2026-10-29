@@ -126,23 +126,26 @@ class AtivoCarteiraService:
     def atualizar_quantidade(
         self, id_carteira: int, ticker: str,
         dados: AtivoCarteiraUpdate, id_investidor: int,
-    ) -> AtivoCarteira | None:
-        """Substitui a quantidade e remove o vinculo quando o valor e zero."""
+    ) -> AtivoCarteira:
+        """Atualiza somente os campos enviados, preservando os demais e o vinculo."""
         carteira = self._exigir_carteira(id_carteira, id_investidor)
         vinculo = self.repository.buscar(ticker, id_carteira)
         if vinculo is None:
             raise ErroAtivo("Ativo não encontrado nesta carteira.", 404)
-        if dados.quantidade > 0:
+        campos = dados.model_dump(exclude_unset=True)
+        if not campos:
+            raise ErroAtivo("Informe pelo menos um campo para atualizar.", 400)
+        if any(valor is None for valor in campos.values()):
+            raise ErroAtivo("Os campos enviados não podem ser nulos.", 400)
+        if campos.get("quantidade", 0) > 0 or "objetivo_percentual" in campos:
             if not carteira.ativa:
                 raise ErroAtivo("A carteira está desativada.", 400)
             ativo = self.ativos.buscar_por_codigo(ticker)
             if ativo is None or not ativo.ativo:
                 raise ErroAtivo("O ativo está desativado ou não existe.", 400)
         try:
-            if dados.quantidade == 0:
-                self.repository.excluir(vinculo)
-                return None
-            vinculo.quantidade = dados.quantidade
+            for campo, valor in campos.items():
+                setattr(vinculo, campo, valor)
             return self.repository.salvar(vinculo)
         except (IntegrityError, StaleDataError) as erro:
             raise ErroAtivo("Conflito ao atualizar o ativo da carteira.", 409) from erro

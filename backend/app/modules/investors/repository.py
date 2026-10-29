@@ -63,3 +63,8 @@ class InvestidorRepository:
     def excluir(self, investidor: Investidor) -> None:
         self.db.delete(investidor)
         self.db.commit()
+
+
+    def buscar_por_usuario_id_para_atualizacao(self, id_usuario: int) -> Investidor | None:
+        """Bloqueia a conta durante a conclusao para impedir uso simultaneo do convite."""
+        return self.db.query(Investidor).filter(Investidor.id_usuario == id_usuario).populate_existing().with_for_update().first()

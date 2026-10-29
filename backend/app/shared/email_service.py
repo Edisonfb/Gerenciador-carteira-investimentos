@@ -34,7 +34,7 @@ def enviar_token_acesso(email: str, token: str) -> None:
         "Seu token de acesso é:\n\n"
         f"{token}\n\n"
         "Na tela de login, selecione Primeiro acesso e informe seu e-mail e este token.\n"
-        "Depois, cadastre sua senha para entrar no sistema.\n"
+        "Depois, cadastre seu usuário, e-mails de comunicação e recuperação e sua senha para entrar no sistema.\n"
         f"{settings.endereco_frontend.rstrip('/')}/primeiro-acesso\n"
         "Não compartilhe este token com outras pessoas."
     )

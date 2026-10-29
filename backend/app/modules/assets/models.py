@@ -1,8 +1,9 @@
 """Modelos persistidos do modulo de ativos."""
 from datetime import datetime
 from typing import TYPE_CHECKING
+from decimal import Decimal
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Integer, String, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship, synonym
 
 from app.db.base import Base
@@ -36,10 +37,10 @@ class Ativo(Base):
 
 
 class AtivoCarteira(Base):
-    """Relaciona um ativo a uma carteira com quantidade positiva."""
+    """Relaciona um ativo a uma carteira com quantidade nao negativa."""
     __tablename__ = "ativo_carteira"
     __table_args__ = (
-        CheckConstraint("quantidade > 0", name="ck_ativo_carteira_quantidade_positiva"),
+        CheckConstraint("quantidade >= 0", name="ck_ativo_carteira_quantidade_nao_negativa"),
     )
 
     ticker: Mapped[str] = mapped_column(ForeignKey("ativo.ticker"), primary_key=True)
@@ -47,6 +48,8 @@ class AtivoCarteira(Base):
         ForeignKey("carteira.id_carteira"), primary_key=True,
     )
     quantidade: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    objetivo_percentual: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False)
 
     ativo: Mapped["Ativo"] = relationship(
         back_populates="ativos_carteira", foreign_keys=[ticker],

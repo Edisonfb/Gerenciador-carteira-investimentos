@@ -1,11 +1,10 @@
 export interface AtivoDisponivel {
-  id_ativo: number;
-  codigo: string;
+  ticker: string;
   setor: string;
   ativo: boolean;
 }
 
 export interface AtivoConfigurado extends AtivoDisponivel {
   objetivo: string;
-  readonly quantidade: 0;
+  readonly quantidade: number;
 }
