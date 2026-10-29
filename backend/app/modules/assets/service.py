@@ -126,8 +126,8 @@ class AtivoCarteiraService:
     def atualizar_quantidade(
         self, id_carteira: int, ticker: str,
         dados: AtivoCarteiraUpdate, id_investidor: int,
-    ) -> AtivoCarteira | None:
-        """Substitui a quantidade e remove o vinculo quando o valor e zero."""
+    ) -> AtivoCarteira:
+        """Substitui a quantidade preservando o vinculo e seu objetivo, inclusive com zero."""
         carteira = self._exigir_carteira(id_carteira, id_investidor)
         vinculo = self.repository.buscar(ticker, id_carteira)
         if vinculo is None:
@@ -139,9 +139,6 @@ class AtivoCarteiraService:
             if ativo is None or not ativo.ativo:
                 raise ErroAtivo("O ativo está desativado ou não existe.", 400)
         try:
-            if dados.quantidade == 0:
-                self.repository.excluir(vinculo)
-                return None
             vinculo.quantidade = dados.quantidade
             return self.repository.salvar(vinculo)
         except (IntegrityError, StaleDataError) as erro:

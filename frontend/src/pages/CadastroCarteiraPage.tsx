@@ -62,7 +62,7 @@ export const CadastroCarteiraPage = () => {
     const erro = validarInclusao(codigo, objetivoInicial, catalogo, ativos);
     setErroInclusao(erro ?? "");
     if (erro) return;
-    const ativo = catalogo.find(item => item.codigo.toUpperCase() === codigo.toUpperCase())!;
+    const ativo = catalogo.find(item => item.ticker.toUpperCase() === codigo.toUpperCase())!;
     setAtivos(anteriores => [...anteriores, { ...ativo, objetivo: objetivoInicial, quantidade: 0 }]);
     setCodigo(""); setObjetivoInicial(""); limparValidacao();
   }
@@ -133,9 +133,9 @@ export const CadastroCarteiraPage = () => {
               : erroCatalogo ? <div><p role="alert" className="mb-3 text-sm text-destructive">{erroCatalogo}</p><Button type="button" variant="outline" onClick={() => { setCarregando(true); setTentativa(t => t + 1); }}>Tentar novamente</Button></div>
               : encontrados.length === 0 ? <p role="status" className="m-0 text-sm text-muted-foreground">Nenhum ativo encontrado</p>
               : <><p className="mb-3 text-xs text-muted-foreground">Selecione um código abaixo e informe o objetivo para incluí-lo.</p><ul className="m-0 grid list-none gap-2 p-0 sm:grid-cols-2">
-                {encontrados.slice(0, 8).map(ativo => <li key={ativo.id_ativo}>
-                  <Button type="button" variant="outline" className="h-auto w-full justify-start whitespace-normal py-2 text-left" aria-label={`Selecionar ${ativo.codigo}, setor ${ativo.setor}`} onClick={() => { setCodigo(ativo.codigo); setErroInclusao(""); objetivoRef.current?.focus(); }}>
-                    <span className="font-semibold">{ativo.codigo}</span><span className="text-xs text-muted-foreground">{ativo.setor}</span>
+                {encontrados.slice(0, 8).map(ativo => <li key={ativo.ticker}>
+                  <Button type="button" variant="outline" className="h-auto w-full justify-start whitespace-normal py-2 text-left" aria-label={`Selecionar ${ativo.ticker}, setor ${ativo.setor}`} onClick={() => { setCodigo(ativo.ticker); setErroInclusao(""); objetivoRef.current?.focus(); }}>
+                    <span className="font-semibold">{ativo.ticker}</span><span className="text-xs text-muted-foreground">{ativo.setor}</span>
                   </Button>
                 </li>)}
               </ul>{encontrados.length > 8 && <p className="mb-0 mt-3 text-xs text-muted-foreground">Mostrando 8 de {encontrados.length} ativos. Refine a busca ou selecione um setor.</p>}</>}
@@ -145,10 +145,10 @@ export const CadastroCarteiraPage = () => {
               <TableCaption className="sr-only">Ativos configurados para a nova carteira</TableCaption>
               <TableHeader><TableRow className="bg-muted"><TableHead>Ativo</TableHead><TableHead>Setor</TableHead><TableHead>Objetivo (%)</TableHead><TableHead className="text-right">Remover</TableHead></TableRow></TableHeader>
               <TableBody>
-                {ativos.map(ativo => <TableRow key={ativo.id_ativo} className="even:bg-muted/30">
-                  <TableCell className="font-medium">{ativo.codigo}</TableCell><TableCell>{ativo.setor}</TableCell>
-                  <TableCell><Input className="w-28" inputMode="decimal" aria-label={`Objetivo de ${ativo.codigo} (%)`} aria-invalid={percentualEmCentesimos(ativo.objetivo) === null} value={ativo.objetivo} onChange={evento => { setAtivos(itens => itens.map(item => item.id_ativo === ativo.id_ativo ? { ...item, objetivo: evento.target.value } : item)); limparValidacao(); }} /></TableCell>
-                  <TableCell className="text-right"><Button type="button" size="icon" variant="ghost" aria-label={`Remover ${ativo.codigo} da carteira`} onClick={() => { setAtivos(itens => itens.filter(item => item.id_ativo !== ativo.id_ativo)); limparValidacao(); }}><X aria-hidden="true" /></Button></TableCell>
+                {ativos.map(ativo => <TableRow key={ativo.ticker} className="even:bg-muted/30">
+                  <TableCell className="font-medium">{ativo.ticker}</TableCell><TableCell>{ativo.setor}</TableCell>
+                  <TableCell><Input className="w-28" inputMode="decimal" aria-label={`Objetivo de ${ativo.ticker} (%)`} aria-invalid={percentualEmCentesimos(ativo.objetivo) === null} value={ativo.objetivo} onChange={evento => { setAtivos(itens => itens.map(item => item.ticker === ativo.ticker ? { ...item, objetivo: evento.target.value } : item)); limparValidacao(); }} /></TableCell>
+                  <TableCell className="text-right"><Button type="button" size="icon" variant="ghost" aria-label={`Remover ${ativo.ticker} da carteira`} onClick={() => { setAtivos(itens => itens.filter(item => item.ticker !== ativo.ticker)); limparValidacao(); }}><X aria-hidden="true" /></Button></TableCell>
                 </TableRow>)}
                 {!ativos.length && <TableRow><TableCell colSpan={4} className="py-8 text-center text-muted-foreground">Nenhum ativo incluído na carteira.</TableCell></TableRow>}
               </TableBody>

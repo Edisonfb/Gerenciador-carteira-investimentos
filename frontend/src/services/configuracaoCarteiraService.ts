@@ -22,7 +22,7 @@ async function consultar(caminho: string, signal?: AbortSignal): Promise<unknown
 
 export async function consultarAtivosAceitos(signal?: AbortSignal): Promise<AtivoDisponivel[]> {
   const dados = await consultar("/assets", signal);
-  if (!Array.isArray(dados) || dados.some(a => typeof a?.id_ativo !== "number" || typeof a?.codigo !== "string" || typeof a?.setor !== "string" || typeof a?.ativo !== "boolean")) throw new Error("A API retornou um catálogo de ativos inválido.");
+  if (!Array.isArray(dados) || dados.some(a => typeof a?.ticker !== "string" || !a.ticker.trim() || typeof a?.setor !== "string" || typeof a?.ativo !== "boolean")) throw new Error("A API retornou um catálogo de ativos inválido.");
   return (dados as AtivoDisponivel[]).filter(ativo => ativo.ativo);
 }
 

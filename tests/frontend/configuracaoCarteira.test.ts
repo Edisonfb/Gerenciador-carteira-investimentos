@@ -4,10 +4,10 @@ import type { AtivoConfigurado, AtivoDisponivel } from "../../frontend/src/types
 
 // Fixtures somente de teste; nenhum dado é incluído no catálogo da aplicação.
 const catalogo: AtivoDisponivel[] = [
-  { id_ativo: 1, codigo: "ITUB4", setor: "Financeiro", ativo: true },
-  { id_ativo: 2, codigo: "ITUB3", setor: "Financeiro", ativo: true },
-  { id_ativo: 3, codigo: "EGIE3", setor: "Energia", ativo: true },
-  { id_ativo: 4, codigo: "ABEV3", setor: "Consumo", ativo: false },
+  { ticker: "ITUB4", setor: "Financeiro", ativo: true },
+  { ticker: "ITUB3", setor: "Financeiro", ativo: true },
+  { ticker: "EGIE3", setor: "Energia", ativo: true },
+  { ticker: "ABEV3", setor: "Consumo", ativo: false },
 ];
 const configurar = (indice: number, objetivo: string): AtivoConfigurado => ({ ...catalogo[indice], objetivo, quantidade: 0 });
 
@@ -28,7 +28,7 @@ describe("Configuração da carteira", () => {
     expect(validarInclusao("ITUB3", "20", catalogo, [configurar(0, "10")])).toBeNull();
   });
   it("combina busca parcial com filtro por setor", () => {
-    expect(filtrarAtivos(catalogo, "itub", "Financeiro").map(a => a.codigo)).toEqual(["ITUB4", "ITUB3"]);
+    expect(filtrarAtivos(catalogo, "itub", "Financeiro").map(a => a.ticker)).toEqual(["ITUB4", "ITUB3"]);
     expect(filtrarAtivos(catalogo, "ITUB", "Energia")).toEqual([]);
     expect(filtrarAtivos(catalogo, "QQQQ9", "")).toEqual([]);
   });

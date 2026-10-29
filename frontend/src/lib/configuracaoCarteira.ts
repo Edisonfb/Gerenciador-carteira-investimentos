@@ -15,14 +15,14 @@ export function formatarPercentual(centesimos: number): string {
 }
 
 export function filtrarAtivos(catalogo: AtivoDisponivel[], busca: string, setor: string) {
-  return catalogo.filter(ativo => ativo.ativo && ativo.codigo.toUpperCase().includes(busca.trim().toUpperCase()) && (!setor || ativo.setor === setor));
+  return catalogo.filter(ativo => ativo.ativo && ativo.ticker.toUpperCase().includes(busca.trim().toUpperCase()) && (!setor || ativo.setor === setor));
 }
 
 export function validarInclusao(codigo: string, objetivo: string, catalogo: AtivoDisponivel[], selecionados: AtivoConfigurado[]): string | null {
   const normalizado = codigo.toUpperCase();
   if (!/^[A-Z]{4}\d$/.test(normalizado)) return ERRO_CODIGO;
-  if (!catalogo.some(ativo => ativo.ativo && ativo.codigo.toUpperCase() === normalizado)) return "Ativo não encontrado na lista de ativos aceitos";
-  if (selecionados.some(ativo => ativo.codigo.toUpperCase() === normalizado)) return "Ativo já incluído nesta carteira";
+  if (!catalogo.some(ativo => ativo.ativo && ativo.ticker.toUpperCase() === normalizado)) return "Ativo não encontrado na lista de ativos aceitos";
+  if (selecionados.some(ativo => ativo.ticker.toUpperCase() === normalizado)) return "Ativo já incluído nesta carteira";
   if (percentualEmCentesimos(objetivo) === null) return "Informe um objetivo entre 0 e 100%, com até duas casas decimais";
   return null;
 }

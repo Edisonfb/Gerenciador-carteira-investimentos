@@ -1,6 +1,5 @@
 export interface AtivoDisponivel {
-  id_ativo: number;
-  codigo: string;
+  ticker: string;
   setor: string;
   ativo: boolean;
 }

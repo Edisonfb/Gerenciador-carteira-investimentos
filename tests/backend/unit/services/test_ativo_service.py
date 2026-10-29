@@ -73,11 +73,11 @@ def test_atualizacao_preserva_campos_omitidos_e_rejeita_null(repository):
     assert ativo.nome is None
 
 
-@pytest.mark.parametrize("quantidade", [True, False, -1, 0, 1.5, "2", None, 2147483648])
+@pytest.mark.parametrize("quantidade", [True, False, -1, 1.5, "2", None, 2147483648])
 def test_quantidade_invalida_em_cadastro_e_atualizacao(quantidade):
-    """Cadastro exige positivo; atualizacao aceita zero para remover o vinculo."""
+    """Cadastro e atualizacao rejeitam quantidades invalidas."""
     with pytest.raises(ValidationError):
-        CadastroAtivoCarteiraEntrada(ticker="PETR4", id_carteira=1, quantidade=quantidade)
+        CadastroAtivoCarteiraEntrada(ticker="PETR4", id_carteira=1, quantidade=quantidade, objetivo_percentual="20.00")
     if type(quantidade) is int and quantidade == 0:
         assert AtivoCarteiraUpdate(quantidade=quantidade).quantidade == 0
     else:
@@ -94,7 +94,7 @@ def test_carteira_alheia_nao_consulta_nem_persiste_ativos():
     service = AtivoCarteiraService(vinculos, carteiras, ativos)
     with pytest.raises(ErroAtivo) as erro:
         service.cadastrar_ativo_carteira(
-            CadastroAtivoCarteiraEntrada(ticker="PETR4", id_carteira=2, quantidade=1), 7,
+            CadastroAtivoCarteiraEntrada(ticker="PETR4", id_carteira=2, quantidade=1, objetivo_percentual="20.00"), 7,
         )
     assert erro.value.status_code == 404
     ativos.buscar_por_codigo.assert_not_called()
@@ -113,7 +113,7 @@ def test_conflito_concorrente_de_vinculo_e_traduzido():
     service = AtivoCarteiraService(vinculos, carteiras, ativos)
     with pytest.raises(ErroAtivo) as erro:
         service.cadastrar_ativo_carteira(
-            CadastroAtivoCarteiraEntrada(ticker="PETR4", id_carteira=2, quantidade=1), 7,
+            CadastroAtivoCarteiraEntrada(ticker="PETR4", id_carteira=2, quantidade=1, objetivo_percentual="20.00"), 7,
         )
     assert erro.value.status_code == 409
 
@@ -129,3 +129,51 @@ def test_exclusao_interna_preserva_ativos_com_posicoes(repository):
     repository.buscar_por_codigo.return_value = ativo
     assert AtivoService(repository).excluir_ativo("PETR4") is False
     repository.excluir.assert_not_called()
+
+
+@pytest.mark.parametrize("quantidade", [0, 1])
+def test_cadastro_preserva_percentual_e_aceita_quantidade_zero(quantidade):
+    from decimal import Decimal
+    vinculos = Mock(spec=AtivoCarteiraRepository)
+    carteiras = Mock(spec=CarteiraRepository)
+    ativos = Mock(spec=AtivoRepository)
+    carteiras.buscar_por_id_e_investidor.return_value = SimpleNamespace(ativa=True)
+    ativos.buscar_por_codigo.return_value = SimpleNamespace(ativo=True)
+    vinculos.buscar.return_value = None
+    vinculos.salvar.side_effect = lambda vinculo: vinculo
+    service = AtivoCarteiraService(vinculos, carteiras, ativos)
+    resultado = service.cadastrar_ativo_carteira(CadastroAtivoCarteiraEntrada(
+        ticker="ITUB4", id_carteira=1, quantidade=quantidade, objetivo_percentual="20.50",
+    ), 7)
+    assert resultado.quantidade == quantidade
+    assert resultado.objetivo_percentual == Decimal("20.50")
+    vinculos.excluir.assert_not_called()
+
+
+def test_atualizar_para_zero_preserva_vinculo_e_objetivo():
+    from decimal import Decimal
+    vinculo = AtivoCarteira(ticker="ITUB4", id_carteira=1, quantidade=10, objetivo_percentual=Decimal("20.50"))
+    vinculos = Mock(spec=AtivoCarteiraRepository)
+    carteiras = Mock(spec=CarteiraRepository)
+    ativos = Mock(spec=AtivoRepository)
+    carteiras.buscar_por_id_e_investidor.return_value = SimpleNamespace(ativa=True)
+    vinculos.buscar.return_value = vinculo
+    vinculos.salvar.side_effect = lambda item: item
+    service = AtivoCarteiraService(vinculos, carteiras, ativos)
+    assert service.atualizar_quantidade(1, "ITUB4", AtivoCarteiraUpdate(quantidade=0), 7) is vinculo
+    assert vinculo.quantidade == 0
+    assert vinculo.objetivo_percentual == Decimal("20.50")
+    vinculos.excluir.assert_not_called()
+    vinculos.salvar.assert_called_once_with(vinculo)
+
+
+def test_quantidade_zero_nao_permite_alterar_carteira_alheia():
+    vinculos = Mock(spec=AtivoCarteiraRepository)
+    carteiras = Mock(spec=CarteiraRepository)
+    carteiras.buscar_por_id_e_investidor.return_value = None
+    service = AtivoCarteiraService(vinculos, carteiras, Mock(spec=AtivoRepository))
+    with pytest.raises(ErroAtivo) as erro:
+        service.atualizar_quantidade(1, "ITUB4", AtivoCarteiraUpdate(quantidade=0), 7)
+    assert erro.value.status_code == 404
+    vinculos.buscar.assert_not_called()
+    vinculos.salvar.assert_not_called()
