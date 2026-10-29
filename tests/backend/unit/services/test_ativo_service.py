@@ -78,8 +78,9 @@ def test_quantidade_invalida_em_cadastro_e_atualizacao(quantidade):
     """Cadastro e atualizacao rejeitam quantidades invalidas."""
     with pytest.raises(ValidationError):
         CadastroAtivoCarteiraEntrada(ticker="PETR4", id_carteira=1, quantidade=quantidade, objetivo_percentual="20.00")
-    if type(quantidade) is int and quantidade == 0:
-        assert AtivoCarteiraUpdate(quantidade=quantidade).quantidade == 0
+    if quantidade is None:
+        # O schema permite omissao; null explicito e rejeitado pelo servico.
+        assert AtivoCarteiraUpdate(quantidade=None).model_dump(exclude_unset=True) == {"quantidade": None}
     else:
         with pytest.raises(ValidationError):
             AtivoCarteiraUpdate(quantidade=quantidade)
@@ -177,3 +178,61 @@ def test_quantidade_zero_nao_permite_alterar_carteira_alheia():
     assert erro.value.status_code == 404
     vinculos.buscar.assert_not_called()
     vinculos.salvar.assert_not_called()
+
+
+@pytest.fixture
+def contexto_atualizacao():
+    from decimal import Decimal
+    vinculo = AtivoCarteira(ticker="ITUB4", id_carteira=1, quantidade=10, objetivo_percentual=Decimal("20.50"))
+    vinculos = Mock(spec=AtivoCarteiraRepository)
+    carteiras = Mock(spec=CarteiraRepository)
+    ativos = Mock(spec=AtivoRepository)
+    carteiras.buscar_por_id_e_investidor.return_value = SimpleNamespace(ativa=True)
+    ativos.buscar_por_codigo.return_value = SimpleNamespace(ativo=True)
+    vinculos.buscar.return_value = vinculo
+    vinculos.salvar.side_effect = lambda item: item
+    return AtivoCarteiraService(vinculos, carteiras, ativos), vinculo
+
+
+def test_atualiza_somente_percentual_sem_alterar_quantidade(contexto_atualizacao):
+    from decimal import Decimal
+    service, vinculo = contexto_atualizacao
+    resultado = service.atualizar_quantidade(1, "ITUB4", AtivoCarteiraUpdate(objetivo_percentual="25.00"), 7)
+    assert resultado is vinculo
+    assert vinculo.quantidade == 10
+    assert vinculo.objetivo_percentual == Decimal("25.00")
+    service.repository.excluir.assert_not_called()
+
+
+def test_atualiza_quantidade_e_percentual_juntos(contexto_atualizacao):
+    from decimal import Decimal
+    service, vinculo = contexto_atualizacao
+    service.atualizar_quantidade(1, "ITUB4", AtivoCarteiraUpdate(quantidade=0, objetivo_percentual="30.25"), 7)
+    assert vinculo.quantidade == 0
+    assert vinculo.objetivo_percentual == Decimal("30.25")
+
+
+@pytest.mark.parametrize("campos", [{}, {"quantidade": None}, {"objetivo_percentual": None}, {"quantidade": 5, "objetivo_percentual": None}])
+def test_rejeita_campos_vazios_ou_nulos_sem_alterar_vinculo(contexto_atualizacao, campos):
+    from decimal import Decimal
+    service, vinculo = contexto_atualizacao
+    with pytest.raises(ErroAtivo) as erro:
+        service.atualizar_quantidade(1, "ITUB4", AtivoCarteiraUpdate(**campos), 7)
+    assert erro.value.status_code == 400
+    assert vinculo.quantidade == 10
+    assert vinculo.objetivo_percentual == Decimal("20.50")
+    service.repository.salvar.assert_not_called()
+
+
+@pytest.mark.parametrize("alvo", ["carteira", "ativo"])
+def test_percentual_nao_altera_recurso_desativado(contexto_atualizacao, alvo):
+    service, vinculo = contexto_atualizacao
+    if alvo == "carteira":
+        service.carteiras.buscar_por_id_e_investidor.return_value.ativa = False
+    else:
+        service.ativos.buscar_por_codigo.return_value.ativo = False
+    with pytest.raises(ErroAtivo) as erro:
+        service.atualizar_quantidade(1, "ITUB4", AtivoCarteiraUpdate(objetivo_percentual="25"), 7)
+    assert erro.value.status_code == 400
+    assert vinculo.quantidade == 10
+    service.repository.salvar.assert_not_called()

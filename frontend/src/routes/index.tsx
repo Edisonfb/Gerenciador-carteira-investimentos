@@ -4,9 +4,11 @@ import { LayoutPadrao } from "../components/LayoutPadrao";
 import { InvestidoresPage } from "../pages/InvestidoresPage";
 import { EdicaoInvestidorPage } from "../pages/EdicaoInvestidorPage";
 import { CadastroInvestidorPage } from "../pages/CadastroInvestidorPage";
+import { CadastroPrimeiroAcessoPage } from "../pages/CadastroPrimeiroAcessoPage";
 import { AcessoSenhaPage } from "../pages/AcessoSenhaPage";
 import { MinhaContaPage } from "../pages/MinhaContaPage";
 import { CarteirasInvestidorPage } from "../pages/CarteirasInvestidorPage";
+import { DetalheCarteiraPage } from "../pages/DetalheCarteiraPage";
 import { CadastroCarteiraPage } from "../pages/CadastroCarteiraPage";
 
 import { Login } from "../pages/Login";
@@ -19,7 +21,8 @@ export const Rotas = () => (
       <Route index element={<Login />} />
       <Route path="esqueci-senha" element={<AcessoSenhaPage />} />
       <Route path="primeiro-acesso" element={<AcessoSenhaPage primeiroAcesso />} />
-      <Route path="primeiro-acesso/definir-senha" element={<AcessoSenhaPage primeiroAcesso definirSenha />} />
+      <Route path="primeiro-acesso/cadastro" element={<CadastroPrimeiroAcessoPage />} />
+      <Route path="primeiro-acesso/definir-senha" element={<CadastroPrimeiroAcessoPage />} />
       <Route path="definir-senha" element={<AcessoSenhaPage definirSenha />} />
     </Route>
 
@@ -29,6 +32,12 @@ export const Rotas = () => (
       </Route>
       <Route path="/carteiras-investidor" element={<LayoutPadrao />}>
         <Route index element={<CarteirasInvestidorPage />} />
+      </Route>
+      <Route path="/carteiras-investidor/:id" element={<LayoutPadrao />}>
+        <Route index element={<DetalheCarteiraPage />} />
+      </Route>
+      <Route path="/carteiras-investidor/:id/editar" element={<LayoutPadrao />}>
+        <Route index element={<CadastroCarteiraPage />} />
       </Route>
       <Route path="/carteiras-nova" element={<LayoutPadrao />}>
         <Route index element={<CadastroCarteiraPage />} />

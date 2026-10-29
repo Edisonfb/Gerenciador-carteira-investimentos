@@ -19,7 +19,8 @@ export const LayoutPadrao: React.FC = () => {
       {/* Cabeçalho de Navegação */}
       <header style={{ background: '#1e293b', color: '#fff', padding: '1rem 2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Meta Ações</h2>
+          {/*<h2 style={{ margin: 0, fontSize: '1.25rem' }}>Meta Ações</h2>*/}
+          <img src="/public/meta-acoes-logo-escuro.svg" alt="Meta Ações" style={{ height: "48px", width: "auto" }}/>
           <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
             {usuario?.perfil === 'analista' && (
               <>

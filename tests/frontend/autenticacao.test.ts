@@ -1,65 +1,51 @@
-import { beforeEach, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { buscarUsuarioAutenticado, realizarLogin } from "../../frontend/src/services/autenticacaoService";
 
 let fetchMock: ReturnType<typeof vi.fn>;
-
+let armazenamento: Map<string, string>;
 beforeEach(() => {
-  vi.resetModules();
-  fetchMock = vi.fn();
-  vi.stubGlobal("fetch", fetchMock);
+  armazenamento = new Map();
+  vi.stubGlobal("localStorage", {
+    getItem: (chave: string) => armazenamento.get(chave) ?? null,
+    setItem: (chave: string, valor: string) => armazenamento.set(chave, valor),
+    removeItem: (chave: string) => armazenamento.delete(chave),
+  });
+  fetchMock = vi.fn(); vi.stubGlobal("fetch", fetchMock);
+});
+afterEach(() => vi.unstubAllGlobals());
+const resposta = (dados: unknown, status = 200) => new Response(JSON.stringify(dados), { status });
+
+test.each(["analista", "investidor"])("login com nome de usuário recupera o perfil %s", async perfil => {
+  fetchMock.mockResolvedValueOnce(resposta({ access_token: "sessao-teste", token_type: "bearer" }))
+    .mockResolvedValueOnce(resposta({ id_usuario: 2, nome_usuario: "ana", email: "ana@example.test", tipo_usuario: perfil, ativo: true }));
+  expect(await realizarLogin(" ana ", "senha123")).toEqual({ id: 2, email: "ana@example.test", perfil });
+  expect(fetchMock.mock.calls[0]).toEqual(["http://127.0.0.1:8000/auth/login", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nome_usuario: "ana", senha: "senha123" }),
+  }]);
+  expect(fetchMock.mock.calls[1]).toEqual(["http://127.0.0.1:8000/auth/me", { headers: { Authorization: "Bearer sessao-teste" } }]);
+  expect(buscarUsuarioAutenticado()?.perfil).toBe(perfil);
 });
 
-test("login de analista e investidor devolve o token de acesso", async () => {
-  fetchMock.mockResolvedValue({
-    ok: true,
-    json: async () => ({ access_token: "10", token_type: "bearer" }),
-  });
-
-  const { realizarLogin } = await import("../../frontend/src/services/autenticacaoService");
-  const resposta = await realizarLogin("ana@email.com", "senha123");
-
-  expect(resposta).toEqual({ access_token: "10", token_type: "bearer" });
-  expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:8000/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: "ana@email.com", senha: "senha123" }),
-  });
+test("login repassa a mensagem de erro da API", async () => {
+  fetchMock.mockResolvedValueOnce(resposta({ detail: "Nome de usuário ou senha inválidos" }, 401));
+  await expect(realizarLogin("ana", "errada")).rejects.toThrow("Nome de usuário ou senha inválidos");
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(armazenamento.has("access_token")).toBe(false);
 });
 
-test("login repassa a mensagem de erro da api", async () => {
-  fetchMock.mockResolvedValue({
-    ok: false,
-    json: async () => ({ detail: "Email ou senha inválidos" }),
-  });
-
-  const { realizarLogin } = await import("../../frontend/src/services/autenticacaoService");
-
-  await expect(realizarLogin("ana@email.com", "errada")).rejects.toThrow(
-    "Email ou senha inválidos",
-  );
+test("login usa mensagem padrão quando a API não explica o erro", async () => {
+  fetchMock.mockResolvedValueOnce(new Response("sem corpo", { status: 500 }));
+  await expect(realizarLogin("ana", "errada")).rejects.toThrow("Não foi possível realizar o login.");
 });
 
-test("login usa a mensagem padrao quando a api nao explica o erro", async () => {
-  fetchMock.mockResolvedValue({
-    ok: false,
-    json: async () => {
-      throw new Error("sem corpo");
-    },
-  });
-
-  const { realizarLogin } = await import("../../frontend/src/services/autenticacaoService");
-
-  await expect(realizarLogin("ana@email.com", "errada")).rejects.toThrow(
-    "Não foi possível realizar o login.",
-  );
+test("descarta sessão se não conseguir recuperar o perfil autenticado", async () => {
+  fetchMock.mockResolvedValueOnce(resposta({ access_token: "sessao-teste", token_type: "bearer" }))
+    .mockResolvedValueOnce(resposta({}, 401));
+  await expect(realizarLogin("ana", "senha123")).rejects.toThrow("Sessão inválida");
+  expect(armazenamento.size).toBe(0);
 });
 
-test("usuario autenticado do analista abre a area do analista", async () => {
-  const { buscarUsuarioAutenticado } = await import(
-    "../../frontend/src/services/autenticacaoService"
-  );
-
-  expect(buscarUsuarioAutenticado()).toMatchObject({
-    id: 2,
-    perfil: "analista",
-  });
+test("sem sessão não inventa um usuário autenticado", () => {
+  expect(buscarUsuarioAutenticado()).toBeNull();
 });

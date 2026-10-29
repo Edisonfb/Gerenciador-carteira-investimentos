@@ -77,4 +77,5 @@ class AtivoCarteiraUpdate(BaseModel):
     """Atualiza a quantidade sem remover o vinculo quando ela e zero."""
     model_config = ConfigDict(extra="forbid")
 
-    quantidade: QuantidadeAtualizacao
+    quantidade: QuantidadeAtualizacao | None = None
+    objetivo_percentual: Annotated[Decimal, Field(gt=0, le=100, max_digits=5, decimal_places=2)] | None = None

@@ -6,5 +6,5 @@ export interface AtivoDisponivel {
 
 export interface AtivoConfigurado extends AtivoDisponivel {
   objetivo: string;
-  readonly quantidade: 0;
+  readonly quantidade: number;
 }

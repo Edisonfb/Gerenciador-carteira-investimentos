@@ -8,12 +8,13 @@ export const LayoutLogin: React.FC = () => {
       {/* Cabeçalho de Navegação */}
       <header style={{ background: '#1e293b', color: '#fff', padding: '1rem 2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Meta Ações</h2>
+          {/*<h2 style={{ margin: 0, fontSize: '1.25rem' }}>Meta Ações</h2>*/}
+          <img src="/public/meta-acoes-logo-escuro.svg" alt="Meta Ações" style={{ height: "48px", width: "auto" }}/>
         </div>
       </header>
 
       {/* Renderização da parte principal, das páginas filhas */}
-      <main style={{ flex: 1, padding: '2rem', background: '#f8fafc' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '2rem', background: '#f8fafc' }}>
 
         <Outlet />
       </main>

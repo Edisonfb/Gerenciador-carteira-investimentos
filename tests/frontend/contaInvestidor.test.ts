@@ -1,114 +1,36 @@
-import { beforeEach, expect, test, vi } from "vitest";
-
-let fetchMock: ReturnType<typeof vi.fn>;
-
-beforeEach(() => {
-  vi.resetModules();
-  fetchMock = vi.fn();
-  vi.stubGlobal("fetch", fetchMock);
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { buscarContaInvestidor, salvarContaInvestidor } from "../../frontend/src/services/contaInvestidorService";
+import { validarEdicaoConta } from "../../frontend/src/types/contaInvestidor";
+const perfil = { id_investidor: 3, nome_usuario: "ana", email: "contato@example.test", email_recuperacao: "recuperar@example.test", ativo: true };
+const dados = { nomeUsuario: " Ana ", emailComunicacao: " Contato@example.test ", emailRecuperacao: "recuperar@example.test", senhaAtual: "senha-atual", novaSenha: "", confirmacaoSenha: "" };
+beforeEach(() => vi.stubGlobal("localStorage", { getItem: () => "sessao-teste" }));
+afterEach(() => vi.unstubAllGlobals());
+it("carrega somente os dados da conta necessários para a tela", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(perfil))));
+  expect(await buscarContaInvestidor()).toEqual({ id: 3, nomeUsuario: "ana", emailComunicacao: "contato@example.test", emailRecuperacao: "recuperar@example.test", ativo: true });
 });
-
-function dadosInvestidor() {
-  return {
-    idAnalistaResponsavel: 1,
-    nome: "Ana",
-    sobrenome: "Silva",
-    email: "ana@email.com",
-    cpf: "123.456.789-01",
-    celular: "(51) 99999-9999",
-    rua: "Rua A",
-    numero: "10",
-    bairro: "Centro",
-    cep: "90000-000",
-    cidade: "Porto Alegre",
-    uf: "RS",
-    perfil: "investidor" as const,
-    status: "ativo" as const,
-  };
-}
-
-test("lista somente os investidores do analista responsavel", async () => {
-  const { buscarInvestidoresPorAnalista } = await import(
-    "../../frontend/src/services/investidorService"
-  );
-
-  const investidores = buscarInvestidoresPorAnalista(1);
-
-  expect(investidores.map((investidor) => investidor.email)).toEqual([
-    "lucas.mendes@email.com",
-    "camila.oliveira@email.com",
-    "bruno.ferreira@email.com",
-  ]);
-  expect(buscarInvestidoresPorAnalista(99)).toHaveLength(1);
+it("salva somente os campos da conta, sem enviar senha nova vazia", async () => {
+  const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(perfil))); vi.stubGlobal("fetch", fetchMock);
+  await salvarContaInvestidor(dados);
+  expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ nome_usuario: "Ana", email: "contato@example.test", email_recuperacao: "recuperar@example.test", senha_atual: "senha-atual" });
+  expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe("Bearer sessao-teste");
 });
-
-test("atualiza a conta do investidor sem trocar o id nem o perfil", async () => {
-  const { atualizarInvestidor, buscarInvestidorPorId } = await import(
-    "../../frontend/src/services/investidorService"
-  );
-
-  const atualizado = atualizarInvestidor(1, {
-    nome: "Lucas Souza",
-    email: "lucas.souza@email.com",
-  });
-
-  expect(atualizado).toMatchObject({
-    id: 1,
-    nome: "Lucas Souza",
-    email: "lucas.souza@email.com",
-    perfil: "investidor",
-    idAnalistaResponsavel: 1,
-  });
-  expect(buscarInvestidorPorId(1)?.nome).toBe("Lucas Souza");
-  expect(atualizarInvestidor(999, { nome: "Ninguem" })).toBeUndefined();
+it("envia nova senha somente quando confirmada", async () => {
+  const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(perfil))); vi.stubGlobal("fetch", fetchMock);
+  await salvarContaInvestidor({ ...dados, novaSenha: "senha-nova", confirmacaoSenha: "senha-nova" });
+  expect(JSON.parse(fetchMock.mock.calls[0][1].body).nova_senha).toBe("senha-nova");
+  expect(JSON.parse(fetchMock.mock.calls[0][1].body)).not.toHaveProperty("confirmacaoSenha");
 });
-
-test("cadastro envia os dados limpos e devolve o id criado pela api", async () => {
-  fetchMock.mockResolvedValue({
-    ok: true,
-    json: async () => ({
-      id_investidor: 15,
-      cpf: "12345678901",
-      telefone: "51999999999",
-    }),
-  });
-
-  const { criarInvestidor } = await import("../../frontend/src/services/investidorService");
-  const criado = await criarInvestidor(dadosInvestidor());
-
-  expect(criado).toMatchObject({
-    id: 15,
-    nome: "Ana",
-    cpf: "12345678901",
-    celular: "51999999999",
-    perfil: "investidor",
-  });
-  expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:8000/investors", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      id_analista_responsavel: 1,
-      nome: "Ana",
-      sobrenome: "Silva",
-      email: "ana@email.com",
-      cpf: "12345678901",
-      telefone: "51999999999",
-      cep: "90000000",
-      uf: "RS",
-      cidade: "Porto Alegre",
-      bairro: "Centro",
-      logradouro: "Rua A",
-      numero: "10",
-    }),
-  });
+it.each([{ nomeUsuario: "" }, { emailComunicacao: "invalido" }, { emailRecuperacao: "contato@example.test" }, { senhaAtual: "" }, { novaSenha: "curta", confirmacaoSenha: "curta" }, { novaSenha: "senha-valida", confirmacaoSenha: "outra" }])("valida antes de enviar %j", alteracoes => {
+  expect(validarEdicaoConta({ ...dados, ...alteracoes })).not.toBeNull();
 });
-
-test("cadastro falha quando a api recusa o investidor", async () => {
-  fetchMock.mockResolvedValue({ ok: false, json: async () => ({}) });
-
-  const { criarInvestidor } = await import("../../frontend/src/services/investidorService");
-
-  await expect(criarInvestidor(dadosInvestidor())).rejects.toThrow(
-    "Não foi possível cadastrar o investidor.",
-  );
+it("mostra o erro de senha atual sem indicar sucesso", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ detail: "Senha atual inválida." }), { status: 400 })));
+  await expect(salvarContaInvestidor(dados)).rejects.toThrow("Senha atual inválida");
+});
+it("não consulta sem sessão", async () => {
+  vi.stubGlobal("localStorage", { getItem: () => null });
+  const fetchMock = vi.fn(); vi.stubGlobal("fetch", fetchMock);
+  await expect(buscarContaInvestidor()).rejects.toThrow("sessão expirou");
+  expect(fetchMock).not.toHaveBeenCalled();
 });
