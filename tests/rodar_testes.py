@@ -3,11 +3,10 @@
 Uso, na raiz do projeto:
     backend\\.venv\\Scripts\\python.exe tests\\rodar_testes.py
 
-Gera tests/relatorios/relatorio_testes.html com cada teste marcado como
+Gera tests/relatorios/relatorio_testes.txt com cada teste marcado como
 PASSOU ou FALHOU, e mostra o resumo no terminal.
 """
 
-import html
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -18,7 +17,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 PASTA = RAIZ / "tests" / "relatorios"
 XML_BACKEND = PASTA / "backend.xml"
 XML_FRONTEND = PASTA / "frontend.xml"
-RELATORIO = PASTA / "relatorio_testes.html"
+RELATORIO = PASTA / "relatorio_testes.txt"
 
 
 def rodar_backend():
@@ -64,36 +63,24 @@ def ler_resultados(arquivo, camada):
     return resultados
 
 
-def gerar_html(resultados):
-    total = len(resultados)
+def gerar_texto(resultados):
     passou = sum(r["situacao"] == "PASSOU" for r in resultados)
     falhou = sum(r["situacao"] == "FALHOU" for r in resultados)
-    linhas = []
+    linhas = [
+        "RELATORIO DE TESTES - SPRINT 1 E SPRINT 2",
+        f"Gerado em {datetime.now():%d/%m/%Y %H:%M}",
+        f"Total: {len(resultados)} | Passaram: {passou} | Falharam: {falhou}",
+    ]
+    grupo_atual = None
     for r in sorted(resultados, key=lambda r: (r["sprint"], r["camada"], r["arquivo"])):
-        cor = {"PASSOU": "#15803d", "FALHOU": "#b91c1c"}.get(r["situacao"], "#a16207")
-        linhas.append(
-            f"<tr><td>{r['sprint']}</td><td>{r['camada']}</td><td>{html.escape(r['arquivo'])}</td>"
-            f"<td>{html.escape(r['teste'])}</td><td style='color:{cor};font-weight:bold'>{r['situacao']}</td>"
-            f"<td><pre>{html.escape(r['detalhe'][:500])}</pre></td></tr>"
-        )
-    return f"""<!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório de testes</title>
-<style>
-  body {{ font-family: Arial, sans-serif; margin: 2rem; color: #0f172a; }}
-  table {{ border-collapse: collapse; width: 100%; font-size: 14px; }}
-  th, td {{ border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; vertical-align: top; }}
-  th {{ background: #1e293b; color: #fff; }}
-  pre {{ margin: 0; white-space: pre-wrap; font-size: 12px; }}
-  .resumo span {{ margin-right: 1.5rem; font-size: 18px; }}
-</style></head><body>
-<h1>Relatório de testes - Sprint 1 e Sprint 2</h1>
-<p>Gerado em {datetime.now():%d/%m/%Y %H:%M}</p>
-<p class="resumo"><span>Total: <b>{total}</b></span>
-<span style="color:#15803d">Passaram: <b>{passou}</b></span>
-<span style="color:#b91c1c">Falharam: <b>{falhou}</b></span></p>
-<table><tr><th>Sprint</th><th>Camada</th><th>Arquivo</th><th>Teste</th><th>Resultado</th><th>Detalhe da falha</th></tr>
-{''.join(linhas)}
-</table></body></html>"""
+        grupo = (r["sprint"], r["camada"], r["arquivo"])
+        if grupo != grupo_atual:
+            grupo_atual = grupo
+            linhas += ["", f"== {r['sprint']} | {r['camada']} | {r['arquivo']} =="]
+        linhas.append(f"[{r['situacao']}] {r['teste']}")
+        if r["detalhe"]:
+            linhas.append(f"    motivo: {r['detalhe'][:500]}")
+    return "\n".join(linhas) + "\n"
 
 
 def main():
@@ -105,7 +92,9 @@ def main():
     rodar_frontend()
 
     resultados = ler_resultados(XML_BACKEND, "Backend") + ler_resultados(XML_FRONTEND, "Frontend")
-    RELATORIO.write_text(gerar_html(resultados), encoding="utf-8")
+    RELATORIO.write_text(gerar_texto(resultados), encoding="utf-8")
+    for arquivo in (XML_BACKEND, XML_FRONTEND):
+        arquivo.unlink(missing_ok=True)  # so o .txt fica na pasta
 
     print("\n== Resumo ==")
     for camada in ("Backend", "Frontend"):
