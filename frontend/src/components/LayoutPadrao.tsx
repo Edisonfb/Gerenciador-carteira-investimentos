@@ -32,8 +32,7 @@ export const LayoutPadrao: React.FC = () => {
             {usuario?.perfil === 'investidor' && (
               <>
                 <Link to="/carteiras-investidor" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Carteira</Link>
-                <Link to="/transacoes-investidor" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Transações</Link>
-                <Link to="/historico-transacoes" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Histórico</Link>
+                <Link to="/transacoes-investidor" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Transação</Link>
                 <Link to="/minha-conta" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Minha Conta</Link>
               
               </>  
