@@ -205,7 +205,29 @@ Quantidade inteira positiva retorna `200` com `ticker`, `id_carteira` e a nova `
 
 Ambas as rotas exigem investidor autenticado e verificam a propriedade antes de acessar o vinculo. Carteira alheia/inexistente retorna `404`; vinculo ausente em carteira propria tambem retorna `404`. Ticker e normalizado. Quantidades negativas, booleanos, fracionarios, strings, nulos e campos extras sao rejeitados com `422`. Falhas de integridade concorrentes retornam `409`, com rollback. A estrutura do banco continua exigindo `quantidade > 0`, sem alteracao de tabela ou migration.
 
-## 7. Transacoes
+## 7. Cotacoes
+
+```text
+GET /quotes/{ticker}
+```
+
+Exige `Authorization: Bearer <token>` de um investidor ativo. Retorna o preco atual do ativo, consultado no Yahoo Finance (`{ticker}.SA`):
+
+```json
+{"ticker": "PETR4", "preco": "47.12", "data_atualizacao": "2026-11-05T01:36:47"}
+```
+
+A cotacao fica salva na tabela `cotacao`. Por 15 minutos o valor salvo e devolvido sem nova consulta ao Yahoo. Depois disso, o Yahoo e consultado de novo e o banco e atualizado. Se o Yahoo nao responder, a API devolve a ultima cotacao salva; `data_atualizacao` (UTC) indica a idade do valor.
+
+Erros:
+
+- `401`/`403`: sem login de investidor.
+- `404`: ticker fora do catalogo de ativos (o Yahoo nao e consultado).
+- `503`: Yahoo indisponivel e nenhuma cotacao salva para o ativo.
+
+Para mostrar o valor total antes de confirmar uma compra ou venda, o frontend consulta esta rota e multiplica `preco` pela quantidade.
+
+## 8. Transacoes
 
 Prefixo:
 
@@ -213,33 +235,58 @@ Prefixo:
 /transactions
 ```
 
-Endpoints planejados:
+Endpoints implementados (investidor autenticado):
 
 ```text
-GET    /transactions
-GET    /transactions/{transaction_id}
-POST   /transactions
-PUT    /transactions/{transaction_id}
-DELETE /transactions/{transaction_id}
+POST /transactions
+GET  /transactions
 ```
 
-Responsabilidade:
+Somente compra e venda. Nao ha edicao nem exclusao de transacoes.
 
-- registrar compras;
-- registrar vendas;
-- consultar historico de transacoes;
-- corrigir ou remover registros, se permitido pela regra de negocio.
+### 8.1. Registro de transacao
 
-Tipos iniciais de transacao:
+Entrada de `POST /transactions`:
 
-- compra;
-- venda;
-- deposito;
-- retirada;
-- rendimento;
-- taxa.
+```json
+{"id_carteira": 1, "ticker": "PETR4", "tipo": "compra", "quantidade": 200}
+```
 
-## 8. Padrao inicial de erro
+O investidor informa apenas a quantidade. O preco unitario e a cotacao atual (`GET /quotes/{ticker}`), e a data e o momento do registro (UTC). Resposta `201`:
+
+```json
+{
+  "id_transacao": 1, "id_carteira": 1, "nome_carteira": "Aposentadoria",
+  "ticker": "PETR4", "tipo": "compra", "quantidade": 200,
+  "preco_unitario": "47.12", "valor_total": "9424.00",
+  "data_transacao": "2026-11-05T01:40:00"
+}
+```
+
+Regras:
+
+- `quantidade` em lotes de 100 acoes (100, 200, 300...). Outros valores retornam `400`.
+- A carteira deve pertencer ao investidor e estar ativa.
+- O ativo precisa ja estar na carteira (incluido com objetivo); a compra so altera a quantidade.
+- Compra soma a quantidade em `ativo_carteira`; venda subtrai. Venda maior que a quantidade atual retorna `400`.
+- A transacao e a nova quantidade sao gravadas juntas: se uma falhar, nenhuma e salva.
+
+Erros:
+
+- `400`: lote invalido, carteira desativada, ativo desativado (compra) ou quantidade insuficiente (venda).
+- `401`/`403`: sem login de investidor.
+- `404`: carteira inexistente ou alheia, ativo inexistente, ativo fora da carteira.
+- `409`: conflito ao gravar.
+- `422`: corpo fora do contrato (tipo diferente de compra/venda, quantidade nao inteira ou nao positiva, campos extras).
+- `503`: cotacao indisponivel; nada e registrado.
+
+### 8.2. Historico de transacoes
+
+`GET /transactions` lista somente as transacoes do investidor logado, das mais recentes para as mais antigas. Filtros opcionais por query: `id_carteira`, `ticker` e `tipo` (`compra` ou `venda`). Lista vazia retorna `200` com `[]`.
+
+Cada item tem o mesmo formato da resposta do registro. Se a carteira for excluida, as transacoes continuam no historico com `nome_carteira` preenchido e `id_carteira` nulo.
+
+## 9. Padrao inicial de erro
 
 Formato sugerido:
 
@@ -257,7 +304,7 @@ Codigos comuns:
 - `404`: recurso nao encontrado;
 - `500`: erro inesperado no servidor.
 
-## 9. Observacoes para o frontend
+## 10. Observacoes para o frontend
 
 O frontend deve consumir endpoints definidos neste documento.
 

@@ -225,3 +225,37 @@ A conta fixa de desenvolvimento tem nome `Analista de Teste`, e-mail `analista@t
 O banco local e iniciado por `docker compose up -d mysql`; o nome e definido em `MYSQL_DATABASE` no Compose e no script de `database/init/`. Quando o banco ja existe, basta executar a criacao de tabelas, as migrations apropriadas ou o reset. Os comandos existentes `create_tables.py` e `drop_tables.py` agora delegam a classe de manutencao; a exclusao isolada tambem exige `--confirmar`.
 
 Os testes de manutencao usam bancos SQLite temporarios com chaves estrangeiras habilitadas. Verificam dados relacionados de usuario/analista/investidor/carteira/ativo, remocao de estrutura legada, correspondencia das colunas com os modelos, recriacao repetida, bloqueio sem confirmacao, importacao opcional do catalogo e criacao do analista padrao. A conta gerada tambem foi validada pelos endpoints reais de login e perfil, usando e-mail e usuario. Nenhum reset foi executado no MySQL configurado durante esta implementacao.
+
+## 9. Cotacoes e transacoes
+
+### cotacao
+
+Guarda a ultima cotacao consultada no Yahoo Finance para cada ativo:
+
+- `ticker`: chave primaria e FK para `ativo.ticker`;
+- `preco`: DECIMAL(12,2);
+- `data_atualizacao`: DATETIME em UTC.
+
+### transacao
+
+Registra compras e vendas:
+
+- `id_transacao`: chave primaria;
+- `id_investidor`: FK para `investidor`. Impede excluir um investidor que tenha transacoes;
+- `id_carteira`: FK para `carteira` com `ON DELETE SET NULL`. Ao excluir a carteira, o historico permanece;
+- `nome_carteira`: nome da carteira no momento da transacao, usado no historico;
+- `ticker`: FK para `ativo.ticker`;
+- `tipo`: `compra` ou `venda` (CHECK `ck_transacao_tipo`);
+- `quantidade`: inteiro positivo (CHECK `ck_transacao_quantidade_positiva`); a regra do lote de 100 fica no backend;
+- `preco_unitario` DECIMAL(12,2) e `valor_total` DECIMAL(14,2): cotacao usada no registro e o total da operacao;
+- `data_transacao`: DATETIME em UTC.
+
+Cada transacao atualiza `ativo_carteira.quantidade` na mesma transacao do banco.
+
+### Como criar as tabelas
+
+As duas tabelas sao novas. Em um banco existente, basta criar as tabelas ausentes, sem apagar dados:
+
+```powershell
+.\backend\.venv\Scripts\python.exe .\database\migrations\create_tables.py
+```
