@@ -12,13 +12,13 @@ from app.db import registrar_modelos
 from app.modules.assets.models import Ativo
 from app.modules.assets.schemas import CadastroAtivoEntrada
 
-ARQUIVO_ATIVOS = Path(__file__).resolve().parents[1] / "seeds" / "ativos.csv"
+ARQUIVO_ATIVOS = Path(__file__).resolve().parents[1] / "seeds" / "acoes-b3.csv"
 
 
 def carregar_ativos(arquivo: Path = ARQUIVO_ATIVOS) -> list[CadastroAtivoEntrada]:
     """Valida o catalogo completo antes de qualquer alteracao no banco."""
     with Path(arquivo).open(encoding="utf-8-sig", newline="") as entrada:
-        dados = [CadastroAtivoEntrada.model_validate(linha) for linha in csv.DictReader(entrada)]
+        dados = [CadastroAtivoEntrada.model_validate(linha) for linha in csv.DictReader(entrada, delimiter=";")]
     tickers = [ativo.ticker for ativo in dados]
     if len(tickers) != len(set(tickers)):
         raise ValueError("O CSV possui tickers duplicados.")
