@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, LoaderCircle, Pencil, RefreshCw, Search, Trash2 } from "lucide-react";
+import { ArrowLeft, Eye, LoaderCircle, Pencil, RefreshCw, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -63,6 +63,7 @@ function DetalheCarteira({ id }: { id: number }) {
             <ul className="m-0 flex list-none flex-col gap-3 p-0">{fatias.map(f => <li key={f.ticker} className="flex items-center justify-between gap-3 text-sm"><span className="flex items-center gap-2"><span className="size-3 shrink-0 rounded-full" style={{ background: f.cor }} aria-hidden="true" />{f.ticker}</span><span>{percentual(f.percentual)}</span></li>)}</ul>
           </CardContent></Card>
           <Card className="min-w-0"><CardHeader><div className="flex flex-wrap items-center justify-between gap-3"><CardTitle>Ativos da carteira</CardTitle><div className="flex gap-2">
+            <Button asChild variant="outline" size="sm"><Link to={`/carteiras-investidor/${id}/editar`} className="no-underline hover:no-underline"><Eye aria-hidden="true" />Historico de transação</Link></Button>
             <Button asChild variant="outline" size="sm"><Link to={`/carteiras-investidor/${id}/editar`} className="no-underline hover:no-underline"><Pencil aria-hidden="true" />Editar</Link></Button>
             <Button variant="destructive" size="sm" onClick={() => setExcluindo(true)}><Trash2 aria-hidden="true" />Excluir</Button>
           </div></div><CardDescription>Consulte a composição e filtre os ativos abaixo.</CardDescription></CardHeader><CardContent>
