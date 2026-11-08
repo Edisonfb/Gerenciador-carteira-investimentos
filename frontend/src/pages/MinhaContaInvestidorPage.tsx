@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LoaderCircle, Pencil, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FormularioInvestidor, type DadosFormularioInvestidor } from "../components/FormularioInvestidor";
-import { atualizarMeuPerfilInvestidor, buscarMeuPerfilInvestidor } from "../services/investidorService";
-import type { Investidor } from "../types/investidor";
+import { FormularioContaInvestidor } from "../components/FormularioContaInvestidor";
+import { buscarContaInvestidor, salvarContaInvestidor } from "../services/contaInvestidorService";
+import type { ContaInvestidor, EdicaoContaInvestidor } from "../types/contaInvestidor";
 
 function DadoConta({ titulo, valor }: { titulo: string; valor: string }) {
   return <div className="min-w-0 space-y-1">
@@ -14,17 +14,18 @@ function DadoConta({ titulo, valor }: { titulo: string; valor: string }) {
 }
 
 export function MinhaContaInvestidorPage() {
-  const [investidor, setInvestidor] = useState<Investidor | null>(null);
+  const [investidor, setInvestidor] = useState<ContaInvestidor | null>(null);
   const [estaEditando, setEstaEditando] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const requisicaoAtiva = useRef(false);
   const [mensagemErro, setMensagemErro] = useState("");
   const [erroEdicao, setErroEdicao] = useState("");
   const [mensagemSucesso, setMensagemSucesso] = useState("");
 
   useEffect(() => {
     let ativo = true;
-    buscarMeuPerfilInvestidor()
+    buscarContaInvestidor()
       .then(dados => { if (ativo) setInvestidor(dados); })
       .catch((erro: unknown) => {
         if (ativo) setMensagemErro(erro instanceof Error ? erro.message : "Não foi possível carregar o perfil.");
@@ -33,18 +34,19 @@ export function MinhaContaInvestidorPage() {
     return () => { ativo = false; };
   }, []);
 
-  async function salvarMinhaConta(dados: DadosFormularioInvestidor) {
-    if (salvando) return;
+  async function salvarMinhaConta(dados: EdicaoContaInvestidor) {
+    if (requisicaoAtiva.current) return;
+    requisicaoAtiva.current = true;
     setSalvando(true);
     setErroEdicao("");
     try {
-      const atualizado = await atualizarMeuPerfilInvestidor(dados);
+      const atualizado = await salvarContaInvestidor(dados);
       setInvestidor(atualizado);
       setEstaEditando(false);
       setMensagemSucesso("Conta atualizada com sucesso.");
     } catch (erro) {
       setErroEdicao(erro instanceof Error ? erro.message : "Não foi possível atualizar sua conta.");
-    } finally { setSalvando(false); }
+    } finally { requisicaoAtiva.current = false; setSalvando(false); }
   }
 
   if (carregando) {
@@ -73,7 +75,7 @@ export function MinhaContaInvestidorPage() {
         <h1 id="titulo-conta" className="mb-2 text-3xl font-semibold tracking-tight text-foreground">
           {estaEditando ? "Editar Minha Conta" : "Minha Conta"}
         </h1>
-        <p className="m-0 text-sm text-muted-foreground">Consulte e atualize seus dados pessoais e de contato.</p>
+        <p className="m-0 text-sm text-muted-foreground">Consulte e atualize seu usuário, e-mails e senha.</p>
       </div>
       {!estaEditando && <Button onClick={() => { setEstaEditando(true); setErroEdicao(""); setMensagemSucesso(""); }}>
         <Pencil aria-hidden="true" /> Editar dados
@@ -84,43 +86,30 @@ export function MinhaContaInvestidorPage() {
 
     {estaEditando ? <Card>
       <CardHeader>
-        <CardTitle>Dados cadastrais</CardTitle>
-        <CardDescription>O CPF permanece vinculado à sua conta e não pode ser alterado aqui.</CardDescription>
+        <CardTitle>Dados da conta</CardTitle>
+        <CardDescription>Atualize seu usuário e seus e-mails. Para trocar a senha, preencha também a nova senha e a confirmação.</CardDescription>
       </CardHeader>
       <CardContent>
         {erroEdicao && <p role="alert" className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-destructive">{erroEdicao}</p>}
-        <FormularioInvestidor key={investidor.id} investidor={investidor} onSalvar={salvarMinhaConta}
-          onCancelar={() => { setEstaEditando(false); setErroEdicao(""); }} permitirAlterarCpf={false}
-          textoBotaoSalvar="Salvar alterações" usarShadcn salvando={salvando} />
+        <FormularioContaInvestidor key={investidor.id} conta={investidor} onSalvar={salvarMinhaConta}
+          onCancelar={() => { setEstaEditando(false); setErroEdicao(""); }} salvando={salvando} />
       </CardContent>
     </Card> : <div className="grid gap-6">
       <Card>
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <div className="flex size-11 items-center justify-center rounded-xl bg-secondary text-muted-foreground"><UserRound aria-hidden="true" className="size-5" /></div>
-            <div><CardTitle>Dados pessoais</CardTitle><CardDescription className="mb-0 mt-1">Perfil de investidor</CardDescription></div>
+            <div><CardTitle>Dados da conta</CardTitle><CardDescription className="mb-0 mt-1">Perfil de investidor</CardDescription></div>
           </div>
-          <span className={investidor.status === "ativo" ? "w-fit rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800" : "w-fit rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-800"}>
-            {investidor.status === "ativo" ? "Conta ativa" : "Conta bloqueada"}
+          <span className={investidor.ativo ? "w-fit rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800" : "w-fit rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-800"}>
+            {investidor.ativo ? "Conta ativa" : "Conta bloqueada"}
           </span>
         </CardHeader>
         <CardContent><dl className="m-0 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <DadoConta titulo="Nome" valor={investidor.nome} />
-          <DadoConta titulo="Sobrenome" valor={investidor.sobrenome} />
-          <DadoConta titulo="CPF" valor={investidor.cpf} />
-          <DadoConta titulo="E-mail" valor={investidor.email} />
-          <DadoConta titulo="Celular" valor={investidor.celular} />
-        </dl></CardContent>
-      </Card>
-      <Card>
-        <CardHeader><CardTitle>Endereço</CardTitle><CardDescription>Endereço informado no seu cadastro.</CardDescription></CardHeader>
-        <CardContent><dl className="m-0 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <DadoConta titulo="Rua" valor={investidor.rua} />
-          <DadoConta titulo="Número" valor={investidor.numero} />
-          <DadoConta titulo="Bairro" valor={investidor.bairro} />
-          <DadoConta titulo="CEP" valor={investidor.cep} />
-          <DadoConta titulo="Cidade" valor={investidor.cidade} />
-          <DadoConta titulo="UF" valor={investidor.uf} />
+          <DadoConta titulo="Usuário" valor={investidor.nomeUsuario} />
+          <DadoConta titulo="E-mail comunicação" valor={investidor.emailComunicacao} />
+          <DadoConta titulo="E-mail recuperação" valor={investidor.emailRecuperacao} />
+          <DadoConta titulo="Senha" valor="**************" />
         </dl></CardContent>
       </Card>
     </div>}

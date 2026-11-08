@@ -5,8 +5,10 @@ export type StatusUsuario = "ativo" | "bloqueado";
 export interface Usuario {
   id: number;
   nome: string;
+  nomeUsuario?: string;
   sobrenome: string;
   email: string;
+  emailRecuperacao?: string;
   cpf: string;
   celular: string;
   rua: string;

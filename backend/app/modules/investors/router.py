@@ -8,12 +8,14 @@ from app.db.session import get_db
 from app.modules.investors.repository import InvestidorRepository
 from app.modules.investors.schemas import (
     CadastroInvestidorEntrada,
+    CadastroPrimeiroAcessoEntrada,
     InvestidorSaida,
     MeuPerfilInvestidorAtualizacao,
     MeuPerfilInvestidorSaida,
     PrimeiroAcessoInvestidorEntrada,
 )
 from app.modules.investors.service import InvestidorService
+from app.modules.investors.primeiro_acesso_service import concluir_cadastro_com_token
 from app.modules.auth.models import Usuario
 from app.core.dependencies import exigir_investidor, exigir_analista
 from app.modules.analysts.repository import AnalistaRepository
@@ -63,19 +65,33 @@ def atualizar_meu_perfil(
     db: Session = Depends(get_db),
 ):
     repository = InvestidorRepository(db)
-    investidor = repository.buscar_por_usuario_id(usuario.id_usuario)
-    if investidor is None:
-        raise HTTPException(status_code=404, detail="Perfil de investidor não encontrado.")
-
-    atualizacoes = dados.model_dump(exclude_unset=True)
-    email = atualizacoes.pop("email", None)
-    if email is not None:
-        usuario.email = email
-    for campo, valor in atualizacoes.items():
-        if valor is not None:
-            setattr(investidor, campo, valor)
-    repository.atualizar(investidor)
+    try:
+        investidor = InvestidorService(repository).atualizar_minha_conta(usuario.id_usuario, dados)
+    except LookupError as erro:
+        repository.desfazer()
+        raise HTTPException(status_code=404, detail=str(erro)) from erro
+    except ValueError as erro:
+        repository.desfazer()
+        raise HTTPException(status_code=400, detail=str(erro)) from erro
+    except IntegrityError as erro:
+        repository.desfazer()
+        raise HTTPException(status_code=409, detail="Usuário ou e-mail já cadastrado. Confira os dados informados.") from erro
     return _perfil_para_resposta(investidor)
+
+
+@router.post("/first-access", status_code=status.HTTP_200_OK)
+def concluir_cadastro_por_convite(dados: CadastroPrimeiroAcessoEntrada, db: Session = Depends(get_db)):
+    """Salva os dados do investidor mediante prova do convite, sem emitir login."""
+    repository = InvestidorRepository(db)
+    try:
+        concluir_cadastro_com_token(repository, dados)
+    except ValueError as erro:
+        repository.desfazer()
+        raise HTTPException(status_code=400, detail=str(erro)) from erro
+    except IntegrityError as erro:
+        repository.desfazer()
+        raise HTTPException(status_code=409, detail="Usuário ou e-mail já cadastrado. Confira os dados informados.") from erro
+    return {"message": "Cadastro concluído com sucesso. Entre com seu usuário e senha."}
 
 
 @router.post("/me/first-access", response_model=MeuPerfilInvestidorSaida)

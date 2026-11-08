@@ -5,6 +5,8 @@ token inicial por e-mail e, no primeiro acesso, troca esse token por uma
 senha definitiva e informa um e-mail de recuperacao.
 """
 
+from types import SimpleNamespace
+
 import pytest
 
 from app.core.security import hash_senha, verificar_senha
@@ -27,8 +29,11 @@ class RepositorioInvestidorFalso:
 
     def buscar_usuario_por_email(self, email):
         if email in self.outros_emails:
-            return object()
+            return SimpleNamespace(id_usuario=-1)
         return next((i for i in self.investidores if i.email == email), None)
+
+    def buscar_usuario_por_nome_usuario(self, nome_usuario):
+        return next((i for i in self.investidores if i.nome_usuario == nome_usuario), None)
 
     def buscar_por_email_recuperacao(self, email_recuperacao):
         return next(
@@ -85,7 +90,7 @@ def _investidor_convidado(repositorio, email="investidor@teste.com", token="toke
 
 def _primeiro_acesso(email_recuperacao="recuperacao@teste.com", nova_senha="NovaSenha123"):
     return PrimeiroAcessoInvestidorEntrada(
-        email_recuperacao=email_recuperacao, nova_senha=nova_senha
+        nome_usuario="investidor", email_recuperacao=email_recuperacao, nova_senha=nova_senha
     )
 
 

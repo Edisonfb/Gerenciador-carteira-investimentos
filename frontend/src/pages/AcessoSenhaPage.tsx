@@ -27,14 +27,14 @@ export function AcessoSenhaPage({ primeiroAcesso = false, definirSenha = false }
     try {
       if (definirSenha) {
         await redefinirSenha(token, senha);
-        navigate("/", { replace: true, state: { mensagemSucesso: "Senha definida com sucesso. Entre com seu e-mail e sua nova senha." } });
+        navigate("/", { replace: true, state: { mensagemSucesso: "Senha definida com sucesso. Entre com seu nome de usuário e sua nova senha." } });
       } else if (primeiroAcesso) {
         const tokenDefinicao = await validarPrimeiroAcesso(email.trim(), tokenInicial.trim());
         setTokenInicial("");
-        navigate("/primeiro-acesso/definir-senha", { replace: true, state: { tokenDefinicao } });
+        navigate("/primeiro-acesso/cadastro", { replace: true, state: { tokenDefinicao, emailConvite: email.trim() } });
       } else {
         await solicitarAcessoSenha(email.trim());
-        setMensagem("Se houver uma conta ativa elegível para este e-mail, você receberá um link para definir sua senha. Verifique também a caixa de spam.");
+        setMensagem("Se houver uma conta ativa elegível, enviaremos o link ao e-mail de recuperação cadastrado do investidor. Para analistas, o envio é ao e-mail da conta. Verifique também a caixa de spam.");
       }
     } catch (falha) {
       setErro(falha instanceof Error ? falha.message : "Não foi possível concluir a solicitação.");
@@ -43,7 +43,7 @@ export function AcessoSenhaPage({ primeiroAcesso = false, definirSenha = false }
 
   return <section className="acesso-cartao" aria-labelledby="titulo-acesso">
     <h1 id="titulo-acesso">{titulo}</h1>
-    <p>{definirSenha ? "Crie uma senha de 8 a 72 caracteres." : primeiroAcesso ? "Informe seu e-mail e o token recebido quando o analista cadastrou sua conta." : "Informe o e-mail da sua conta para receber o link de recuperação."}</p>
+    <p>{definirSenha ? "Crie uma senha de 8 a 72 caracteres." : primeiroAcesso ? "Informe seu e-mail e o token recebido quando o analista cadastrou sua conta." : "Informe o e-mail principal da sua conta. Investidores recebem o link no e-mail de recuperação cadastrado; analistas, no e-mail da conta."}</p>
     <form onSubmit={enviar} className="acesso-formulario">
       {definirSenha ? <>
         <label htmlFor="nova-senha">Nova senha</label>

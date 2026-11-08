@@ -8,4 +8,6 @@ os.environ["DATABASE_URL"] = "sqlite://"
 os.environ["SECRET_KEY"] = "chave-de-teste-com-tamanho-suficiente-para-hs256"
 os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "60"
 
-import app.db  # noqa: E402,F401  registra todos os modelos no mapper
+from app.db import registrar_modelos  # noqa: E402
+
+registrar_modelos()

@@ -17,13 +17,13 @@ interface UsuarioApi {
 }
 
 export async function realizarLogin(
-  email: string,
+  nomeUsuario: string,
   senha: string,
 ): Promise<UsuarioAutenticado> {
   const resposta = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, senha }),
+    body: JSON.stringify({ nome_usuario: nomeUsuario.trim(), senha }),
   });
 
   if (!resposta.ok) {

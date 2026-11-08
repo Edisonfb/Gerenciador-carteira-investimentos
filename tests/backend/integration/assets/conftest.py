@@ -3,7 +3,7 @@
 import httpx
 import pytest
 from fastapi import FastAPI
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -23,6 +23,11 @@ def sessao_banco():
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
+    @event.listens_for(engine, "connect")
+    def habilitar_chaves_estrangeiras(conexao, registro):
+        """Faz o SQLite verificar as mesmas referencias exigidas no MySQL."""
+        conexao.execute("PRAGMA foreign_keys=ON")
+
     Base.metadata.create_all(engine)
     with sessionmaker(bind=engine)() as sessao:
         yield sessao
@@ -66,11 +71,11 @@ def criar_analista(sessao_banco):
 @pytest.fixture
 def criar_investidor(sessao_banco, criar_analista):
     """Prepara um investidor ativo para autenticação por token real."""
-    def criar():
+    def criar(email="investidor@teste.com"):
         """Persiste o investidor e seu analista responsável."""
-        analista = criar_analista()
+        analista = sessao_banco.query(Analista).first() or criar_analista()
         investidor = Investidor(
-            email="investidor@teste.com", senha_hash="hash-de-teste",
+            email=email, senha_hash="hash-de-teste",
             tipo_usuario=Tipo_Usuario.INVESTIDOR,
             id_analista_responsavel=analista.id_analista,
             primeiro_acesso_concluido=True, ativo=True,

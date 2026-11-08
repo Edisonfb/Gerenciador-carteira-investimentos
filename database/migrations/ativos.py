@@ -1,13 +1,16 @@
+"""Importa o catalogo CSV de forma transacional e sem duplicar tickers."""
+import csv
 import sys
 from pathlib import Path
 
-BACKEND_DIR = Path(__file__).resolve().parents[2] / "backend"
-sys.path.insert(0, str(BACKEND_DIR))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "backend"))
 
-import pandas
-from app.db.session import engine
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-df = pandas.read_csv('..//database/seeds/ativos.csv')
+from app.db import registrar_modelos
+from app.modules.assets.models import Ativo
+from app.modules.assets.schemas import CadastroAtivoEntrada
 
 ARQUIVO_ATIVOS = Path(__file__).resolve().parents[1] / "seeds" / "acoes-b3.csv"
 

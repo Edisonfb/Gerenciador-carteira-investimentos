@@ -19,20 +19,20 @@ export const LayoutPadrao: React.FC = () => {
       {/* Cabeçalho de Navegação */}
       <header style={{ background: '#1e293b', color: '#fff', padding: '1rem 2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Meta Ações</h2>
+          {/*<h2 style={{ margin: 0, fontSize: '1.25rem' }}>Meta Ações</h2>*/}
+          <img src="/public/meta-acoes-logo-escuro.svg" alt="Meta Ações" style={{ height: "48px", width: "auto" }}/>
           <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
             {usuario?.perfil === 'analista' && (
               <>
-                <Link to="/dashboard" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Dashboard</Link>
                 <Link to="/investidores" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Investidores</Link>
-                <Link to="/investidores/novo" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Cadastrar investidor</Link>  
+                <Link to="/investidores/novo" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Gerar token</Link>  
+                <Link to="/minha-conta-analista" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Minha Conta</Link>
               </>
             )}
             {usuario?.perfil === 'investidor' && (
               <>
                 <Link to="/carteiras-investidor" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Carteira</Link>
-                <Link to="/transacoes-investidor" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Transações</Link>
-                <Link to="/historico-transacoes" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Histórico</Link>
+                <Link to="/transacoes-investidor" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Transação</Link>
                 <Link to="/minha-conta" style={{ color: '#e2e8f0', textDecoration: 'none' }}>Minha Conta</Link>
               
               </>  

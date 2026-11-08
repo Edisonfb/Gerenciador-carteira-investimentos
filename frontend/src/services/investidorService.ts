@@ -5,8 +5,10 @@ interface MeuPerfilInvestidorApi {
   id_investidor: number;
   id_analista_responsavel: number;
   nome: string;
+  nome_usuario: string;
   sobrenome: string;
   email: string;
+  email_recuperacao: string;
   cpf: string;
   telefone: string;
   logradouro: string;
@@ -23,8 +25,10 @@ function converterPerfilInvestidor(perfil: MeuPerfilInvestidorApi): Investidor {
     id: perfil.id_investidor,
     idAnalistaResponsavel: perfil.id_analista_responsavel,
     nome: perfil.nome,
+    nomeUsuario: perfil.nome_usuario,
     sobrenome: perfil.sobrenome,
     email: perfil.email,
+    emailRecuperacao: perfil.email_recuperacao,
     cpf: perfil.cpf,
     celular: perfil.telefone,
     rua: perfil.logradouro,

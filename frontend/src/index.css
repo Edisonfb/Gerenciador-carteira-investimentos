@@ -24,8 +24,11 @@ body {
   background: #f8fafc;
 }
 
-a {
-  color: inherit;
+/* A regra base de links não deve sobrescrever as cores dos componentes. */
+@layer base {
+  a {
+    color: inherit;
+  }
 }
 
 button, input, select, textarea {
