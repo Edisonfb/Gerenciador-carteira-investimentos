@@ -1,6 +1,7 @@
 """Schemas de entrada e saida do modulo de carteiras."""
 
 from datetime import datetime
+from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -21,3 +22,22 @@ class CarteiraSaida(BaseModel):
     nome: str
     ativa: bool
     data_criacao: datetime
+
+
+class PosicaoResumoSaida(BaseModel):
+    """Apresenta valor e peso atual de um ativo na carteira."""
+
+    ticker: str
+    quantidade: int
+    cotacao: Decimal | None
+    data_atualizacao: datetime | None
+    valor_atual: Decimal
+    participacao_percentual: Decimal
+
+
+class CarteiraResumoSaida(BaseModel):
+    """Apresenta o patrimonio total e a composicao financeira da carteira."""
+
+    id_carteira: int
+    patrimonio_total: Decimal
+    ativos: list[PosicaoResumoSaida]

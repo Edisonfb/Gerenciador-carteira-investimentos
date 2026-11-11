@@ -8,8 +8,6 @@ from app.modules.assets.repository import AtivoRepository
 from app.modules.auth.models import Usuario
 from app.modules.investors.repository import InvestidorRepository
 from app.modules.portfolios.repository import CarteiraRepository
-from app.modules.quotes.repository import CotacaoRepository
-from app.modules.quotes.service import CotacaoService
 from app.modules.transactions.repository import TransacaoRepository
 from app.modules.transactions.schemas import TipoTransacao, TransacaoEntrada, TransacaoSaida
 from app.modules.transactions.service import ErroTransacao, TransacaoService
@@ -32,7 +30,6 @@ def obter_servico(db: Session = Depends(get_db)) -> TransacaoService:
     """Monta o servico com os repositorios da mesma sessao."""
     return TransacaoService(
         TransacaoRepository(db), CarteiraRepository(db), AtivoRepository(db),
-        CotacaoService(CotacaoRepository(db), AtivoRepository(db)),
     )
 
 

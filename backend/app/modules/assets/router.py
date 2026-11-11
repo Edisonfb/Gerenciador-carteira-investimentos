@@ -83,14 +83,14 @@ def listar_ativos_carteira(
 @router.patch(
     "/carteira/{id_carteira}/{ticker}", response_model=AtivoCarteiraSaida,
 )
-def atualizar_quantidade_ativo(
+def atualizar_objetivo_ativo(
     id_carteira: int, ticker: Ticker, dados: AtivoCarteiraUpdate,
     id_investidor: int = Depends(obter_id_investidor),
     service: AtivoCarteiraService = Depends(obter_servico_carteira),
 ):
-    """Atualiza a quantidade na carteira propria, preservando o vinculo com zero."""
+    """Atualiza a meta do ativo sem modificar sua quantidade."""
     try:
-        vinculo = service.atualizar_quantidade(id_carteira, ticker, dados, id_investidor)
+        vinculo = service.atualizar_objetivo(id_carteira, ticker, dados, id_investidor)
     except ErroAtivo as erro:
         raise HTTPException(status_code=erro.status_code, detail=str(erro)) from erro
     return vinculo

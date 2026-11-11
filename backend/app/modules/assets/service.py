@@ -110,6 +110,8 @@ class AtivoCarteiraService:
             raise ErroAtivo("O ativo está desativado.", 400)
         if self.repository.buscar(dados.ticker, dados.id_carteira) is not None:
             raise ErroAtivo("O ativo já está cadastrado nesta carteira.", 409)
+        if dados.quantidade != 0:
+            raise ErroAtivo("Registre uma compra para aumentar a quantidade do ativo.", 400)
         try:
             return self.repository.salvar(AtivoCarteira(**dados.model_dump()))
         except IntegrityError as erro:
@@ -123,11 +125,11 @@ class AtivoCarteiraService:
         self._exigir_carteira(id_carteira, id_investidor)
         return self.repository.listar_por_carteira(id_carteira)
 
-    def atualizar_quantidade(
+    def atualizar_objetivo(
         self, id_carteira: int, ticker: str,
         dados: AtivoCarteiraUpdate, id_investidor: int,
     ) -> AtivoCarteira:
-        """Atualiza somente os campos enviados, preservando os demais e o vinculo."""
+        """Atualiza somente a meta, preservando a quantidade da posicao."""
         carteira = self._exigir_carteira(id_carteira, id_investidor)
         vinculo = self.repository.buscar(ticker, id_carteira)
         if vinculo is None:
@@ -137,12 +139,11 @@ class AtivoCarteiraService:
             raise ErroAtivo("Informe pelo menos um campo para atualizar.", 400)
         if any(valor is None for valor in campos.values()):
             raise ErroAtivo("Os campos enviados não podem ser nulos.", 400)
-        if campos.get("quantidade", 0) > 0 or "objetivo_percentual" in campos:
-            if not carteira.ativa:
-                raise ErroAtivo("A carteira está desativada.", 400)
-            ativo = self.ativos.buscar_por_codigo(ticker)
-            if ativo is None or not ativo.ativo:
-                raise ErroAtivo("O ativo está desativado ou não existe.", 400)
+        if not carteira.ativa:
+            raise ErroAtivo("A carteira está desativada.", 400)
+        ativo = self.ativos.buscar_por_codigo(ticker)
+        if ativo is None or not ativo.ativo:
+            raise ErroAtivo("O ativo está desativado ou não existe.", 400)
         try:
             for campo, valor in campos.items():
                 setattr(vinculo, campo, valor)
@@ -153,11 +154,13 @@ class AtivoCarteiraService:
     def remover_ativo_carteira(
         self, id_carteira: int, ticker: str, id_investidor: int,
     ) -> None:
-        """Remove o vinculo proprio, mesmo com quantidade positiva ou recurso inativo."""
+        """Remove somente vinculo vazio, preservando posicoes com historico."""
         self._exigir_carteira(id_carteira, id_investidor)
         vinculo = self.repository.buscar(ticker, id_carteira)
         if vinculo is None:
             raise ErroAtivo("Ativo não encontrado nesta carteira.", 404)
+        if vinculo.quantidade != 0:
+            raise ErroAtivo("Registre a venda das unidades antes de remover o ativo da carteira.", 400)
         try:
             self.repository.excluir(vinculo)
         except (IntegrityError, StaleDataError) as erro:

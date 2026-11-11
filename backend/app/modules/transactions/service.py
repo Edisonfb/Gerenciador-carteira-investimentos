@@ -1,12 +1,12 @@
 """Regras de negocio do modulo de transacoes."""
-from datetime import datetime
+from datetime import datetime, timezone
+from decimal import Decimal
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import StaleDataError
 
 from app.modules.assets.repository import AtivoRepository
 from app.modules.portfolios.repository import CarteiraRepository
-from app.modules.quotes.service import CotacaoService, ErroCotacao
 from app.modules.transactions.models import Transacao
 from app.modules.transactions.repository import TransacaoRepository
 from app.modules.transactions.schemas import TransacaoEntrada
@@ -14,6 +14,7 @@ from app.modules.transactions.schemas import TransacaoEntrada
 
 LOTE_PADRAO = 100
 QUANTIDADE_MAXIMA = 2147483647
+VALOR_TOTAL_MAXIMO = Decimal("999999999999.99")
 
 
 class ErroTransacao(ValueError):
@@ -29,12 +30,11 @@ class TransacaoService:
 
     def __init__(
         self, repository: TransacaoRepository, carteiras: CarteiraRepository,
-        ativos: AtivoRepository, cotacoes: CotacaoService,
+        ativos: AtivoRepository,
     ):
         self.repository = repository
         self.carteiras = carteiras
         self.ativos = ativos
-        self.cotacoes = cotacoes
 
     def registrar_transacao(self, dados: TransacaoEntrada, id_investidor: int) -> Transacao:
         if dados.quantidade % LOTE_PADRAO != 0:
@@ -52,11 +52,13 @@ class TransacaoService:
         if dados.tipo == "compra" and not ativo.ativo:
             raise ErroTransacao("O ativo está desativado.", 400)
 
-        # A cotacao e consultada antes de bloquear a linha do ativo na carteira.
-        try:
-            cotacao = self.cotacoes.consultar_cotacao(dados.ticker)
-        except ErroCotacao as erro:
-            raise ErroTransacao(str(erro), erro.status_code) from erro
+        valor_total = dados.preco_unitario * dados.quantidade
+        if valor_total > VALOR_TOTAL_MAXIMO:
+            raise ErroTransacao("Valor total acima do limite permitido.", 400)
+        agora = datetime.now(timezone.utc)
+        data_transacao = dados.data_transacao or agora
+        if data_transacao > agora:
+            raise ErroTransacao("A data da transação não pode ser futura.", 400)
 
         ativo_carteira = self.repository.buscar_ativo_carteira_para_atualizacao(
             dados.ticker, dados.id_carteira,
@@ -84,9 +86,9 @@ class TransacaoService:
             ticker=dados.ticker,
             tipo=dados.tipo,
             quantidade=dados.quantidade,
-            preco_unitario=cotacao.preco,
-            valor_total=cotacao.preco * dados.quantidade,
-            data_transacao=datetime.utcnow(),
+            preco_unitario=dados.preco_unitario,
+            valor_total=valor_total,
+            data_transacao=data_transacao.astimezone(timezone.utc).replace(tzinfo=None),
         )
         try:
             return self.repository.salvar(transacao, ativo_carteira)
