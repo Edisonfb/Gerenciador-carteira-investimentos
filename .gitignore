@@ -85,3 +85,9 @@ temp/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Relatorios gerados pelos testes (tests/rodar_testes.py)
+tests/relatorios/
+
+# Configuracao local de MCP
+.mcp.json
