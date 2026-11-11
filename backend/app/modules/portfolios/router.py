@@ -6,14 +6,17 @@ from sqlalchemy.orm import Session
 from app.core.dependencies import exigir_investidor
 from app.db.session import get_db
 from app.modules.auth.models import Usuario
+from app.modules.assets.repository import AtivoCarteiraRepository, AtivoRepository
 from app.modules.investors.repository import InvestidorRepository
 from app.modules.portfolios.repository import CarteiraRepository
 from app.modules.portfolios.schemas import (
     CarteiraAtualizacaoEntrada,
     CarteiraCadastroEntrada,
-    CarteiraSaida
+    CarteiraSaida, CarteiraResumoSaida,
 )
-from app.modules.portfolios.service import CarteiraService
+from app.modules.portfolios.service import CarteiraService, ErroResumoCarteira
+from app.modules.quotes.repository import CotacaoRepository
+from app.modules.quotes.service import CotacaoService
 
 
 router = APIRouter(prefix="/portfolios", tags=["portfolios"])
@@ -54,6 +57,24 @@ def listar_carteiras(
 
     service = CarteiraService(CarteiraRepository(db))
     return service.listar_carteiras(id_investidor)
+
+
+@router.get("/{id_carteira}/summary", response_model=CarteiraResumoSaida)
+def consultar_resumo_carteira(
+    id_carteira: int,
+    usuario: Usuario = Depends(exigir_investidor),
+    db: Session = Depends(get_db),
+):
+    """Retorna patrimonio e participacao atual dos ativos da carteira propria."""
+    id_investidor = obter_id_investidor_logado(usuario, db)
+    service = CarteiraService(CarteiraRepository(db))
+    cotacoes = CotacaoService(CotacaoRepository(db), AtivoRepository(db))
+    try:
+        return service.calcular_resumo(
+            id_carteira, id_investidor, AtivoCarteiraRepository(db), cotacoes,
+        )
+    except ErroResumoCarteira as erro:
+        raise HTTPException(status_code=erro.status_code, detail=str(erro)) from erro
 
 @router.get("/{id_carteira}", response_model = CarteiraSaida)
 def buscar_carteira(

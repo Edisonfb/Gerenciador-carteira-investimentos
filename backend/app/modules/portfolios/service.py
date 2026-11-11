@@ -1,7 +1,23 @@
 """Regras de negocio do modulo de carteiras."""
+from decimal import Decimal
+
+from app.modules.assets.repository import AtivoCarteiraRepository
+from app.modules.portfolios.calculos import CalculosCarteira
 from app.modules.portfolios.models import Carteira
 from app.modules.portfolios.repository import CarteiraRepository
-from app.modules.portfolios.schemas import( CarteiraAtualizacaoEntrada, CarteiraCadastroEntrada)
+from app.modules.portfolios.schemas import (
+    CarteiraAtualizacaoEntrada, CarteiraCadastroEntrada,
+    CarteiraResumoSaida, PosicaoResumoSaida,
+)
+from app.modules.quotes.service import CotacaoService, ErroCotacao
+
+
+class ErroResumoCarteira(ValueError):
+    """Indica carteira ausente ou cotacao que impede o resumo completo."""
+
+    def __init__(self, mensagem: str, status_code: int):
+        super().__init__(mensagem)
+        self.status_code = status_code
 
 class CarteiraService:
     """Concentra as regras de negocio das carteiras."""
@@ -26,6 +42,42 @@ class CarteiraService:
 
     def buscar_carteira(self, id_carteira: int, id_investidor: int) -> Carteira | None:
         return self.repository.buscar_por_id_e_investidor(id_carteira, id_investidor)
+
+    def calcular_resumo(
+        self, id_carteira: int, id_investidor: int,
+        vinculos: AtivoCarteiraRepository, cotacoes: CotacaoService,
+    ) -> CarteiraResumoSaida:
+        """Calcula patrimonio e participacoes apenas da carteira autorizada."""
+        if self.buscar_carteira(id_carteira, id_investidor) is None:
+            raise ErroResumoCarteira("Carteira não encontrada.", 404)
+
+        posicoes = []
+        for vinculo in vinculos.listar_por_carteira(id_carteira):
+            if vinculo.quantidade == 0:
+                posicoes.append(PosicaoResumoSaida(
+                    ticker=vinculo.ticker, quantidade=0, cotacao=None,
+                    data_atualizacao=None, valor_atual=Decimal("0.00"),
+                    participacao_percentual=Decimal("0.00"),
+                ))
+                continue
+            try:
+                cotacao = cotacoes.consultar_cotacao(vinculo.ticker)
+            except ErroCotacao as erro:
+                raise ErroResumoCarteira(
+                    f"Não foi possível calcular o patrimônio: cotação de {vinculo.ticker} indisponível.",
+                    503,
+                ) from erro
+            posicoes.append(PosicaoResumoSaida(
+                ticker=vinculo.ticker, quantidade=vinculo.quantidade,
+                cotacao=cotacao.preco, data_atualizacao=cotacao.data_atualizacao,
+                valor_atual=CalculosCarteira.valor_posicao(vinculo.quantidade, cotacao.preco),
+                participacao_percentual=Decimal("0.00"),
+            ))
+
+        total = CalculosCarteira.patrimonio_total([posicao.valor_atual for posicao in posicoes])
+        for posicao in posicoes:
+            posicao.participacao_percentual = CalculosCarteira.participacao(posicao.valor_atual, total)
+        return CarteiraResumoSaida(id_carteira=id_carteira, patrimonio_total=total, ativos=posicoes)
 
     def atualizar_carteira(self, id_carteira: int, id_investidor: int, dados: CarteiraAtualizacaoEntrada
                             ) -> tuple[Carteira |None, str | None]:

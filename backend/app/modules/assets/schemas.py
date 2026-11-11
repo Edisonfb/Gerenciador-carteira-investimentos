@@ -10,8 +10,7 @@ Ticker = Annotated[
     str, StringConstraints(strip_whitespace=True, to_upper=True, min_length=1,
                            max_length=10, pattern=r"^[A-Za-z0-9]+$"),
 ]
-Quantidade = Annotated[int, Field(strict=True, ge=0, le=2147483647)]
-QuantidadeAtualizacao = Annotated[int, Field(strict=True, ge=0, le=2147483647)]
+QuantidadeInicial = Annotated[int, Field(strict=True, ge=0, le=0)]
 TextoSetor = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=255)]
 
 
@@ -54,12 +53,12 @@ class AtivoSaida(BaseModel):
 
 
 class CadastroAtivoCarteiraEntrada(BaseModel):
-    """Identifica a carteira e aceita quantidade inteira nao negativa."""
+    """Inclui o ativo sem posicao; compras sao registradas por transacao."""
     model_config = ConfigDict(extra="forbid")
 
     ticker: Ticker
     id_carteira: Annotated[int, Field(strict=True, gt=0)]
-    quantidade: Quantidade
+    quantidade: QuantidadeInicial
     objetivo_percentual: Annotated[Decimal, Field(gt=0, le=100, max_digits=5, decimal_places=2)]
 
 
@@ -74,8 +73,7 @@ class AtivoCarteiraSaida(BaseModel):
 
 
 class AtivoCarteiraUpdate(BaseModel):
-    """Atualiza a quantidade sem remover o vinculo quando ela e zero."""
+    """Permite alterar somente a meta, preservando a quantidade comprada."""
     model_config = ConfigDict(extra="forbid")
 
-    quantidade: QuantidadeAtualizacao | None = None
     objetivo_percentual: Annotated[Decimal, Field(gt=0, le=100, max_digits=5, decimal_places=2)] | None = None
