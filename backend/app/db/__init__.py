@@ -10,3 +10,5 @@ def registrar_modelos() -> None:
     from app.modules.investors.models import Investidor
     from app.modules.portfolios.models import Carteira
     from app.modules.assets.models import Ativo, AtivoCarteira
+    from app.modules.quotes.models import Cotacao
+    from app.modules.transactions.models import Transacao
