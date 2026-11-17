@@ -147,6 +147,44 @@ export interface ConfiguracaoCarteira {
   ativos: AtivoConfigurado[];
 }
 
+export interface PosicaoResumoCarteira {
+  ticker: string;
+  quantidade: number;
+  cotacao: number | null;
+  data_atualizacao: string | null;
+  valor_atual: number;
+  participacao_percentual: number;
+}
+
+export interface ResumoFinanceiroCarteira {
+  id_carteira: number;
+  patrimonio_total: number;
+  ativos: PosicaoResumoCarteira[];
+}
+
+export async function consultarResumoFinanceiroCarteira(id: number, signal?: AbortSignal): Promise<ResumoFinanceiroCarteira> {
+  if (!Number.isInteger(id) || id <= 0) throw new Error("Carteira inválida.");
+  const dados = await consultar(`/portfolios/${id}/summary`, signal) as Partial<ResumoFinanceiroCarteira> | null;
+  const patrimonio = Number(dados?.patrimonio_total);
+  if (dados?.id_carteira !== id || !Number.isFinite(patrimonio) || !Array.isArray(dados.ativos)) {
+    throw new Error("A API retornou um resumo financeiro inválido.");
+  }
+  const ativos = dados.ativos.map((posicao) => {
+    const cotacao = posicao?.cotacao === null ? null : Number(posicao?.cotacao);
+    const valorAtual = Number(posicao?.valor_atual);
+    const participacao = Number(posicao?.participacao_percentual);
+    if (typeof posicao?.ticker !== "string" || !Number.isInteger(posicao.quantidade) || posicao.quantidade < 0
+      || (cotacao !== null && (!Number.isFinite(cotacao) || cotacao < 0))
+      || posicao.valor_atual == null || !Number.isFinite(valorAtual)
+      || posicao.participacao_percentual == null || !Number.isFinite(participacao)
+      || !(posicao.data_atualizacao === null || typeof posicao.data_atualizacao === "string")) {
+      throw new Error("A API retornou uma posição financeira inválida.");
+    }
+    return { ...posicao, cotacao, valor_atual: valorAtual, participacao_percentual: participacao };
+  });
+  return { id_carteira: id, patrimonio_total: patrimonio, ativos };
+}
+
 export async function consultarConfiguracaoCarteira(id: number, signal?: AbortSignal): Promise<ConfiguracaoCarteira> {
   if (!Number.isInteger(id) || id <= 0) throw new Error("Carteira inválida.");
   const [carteira, vinculos, catalogo] = await Promise.all([
