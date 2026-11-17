@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AcaoCarteiraDialog } from "../components/AcaoCarteiraDialog";
-import { RecomendacaoCompraCarteira } from "../components/RecomendacaoCompraCarteira";
 import { consultarConfiguracaoCarteira, consultarResumoFinanceiroCarteira } from "../services/configuracaoCarteiraService";
 import type { ConfiguracaoCarteira, ResumoFinanceiroCarteira } from "../services/configuracaoCarteiraService";
 import { distribuicaoObjetivos, filtrarAtivosCarteira } from "../lib/detalheCarteira";
@@ -95,7 +94,6 @@ function DetalheCarteira({ id }: { id: number }) {
             <p role="status" className="mb-0 mt-4 text-xs text-muted-foreground">{filtrados.length} de {ativos.length} ativo(s). O gráfico e os totais representam a carteira completa.{resumo?.ativos.some(posicao => posicao.data_atualizacao) && <> Cotações atualizadas até {new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(Math.max(...resumo.ativos.flatMap(posicao => posicao.data_atualizacao ? [dataCotacao(posicao.data_atualizacao).getTime()] : []))))}.</>}</p>
           </CardContent></Card>
         </div>
-        <RecomendacaoCompraCarteira idCarteira={id} ativos={ativos} resumo={resumo} onRegistrado={atualizar} />
         {excluindo && <AcaoCarteiraDialog carteira={dados.carteira} acao="excluir" onFechar={() => setExcluindo(false)} onConcluido={() => navigate("/carteiras-investidor", { replace: true })} />}
       </>}
   </section>;
