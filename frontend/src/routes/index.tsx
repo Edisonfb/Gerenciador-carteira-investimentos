@@ -10,6 +10,8 @@ import { MinhaContaPage } from "../pages/MinhaContaPage";
 import { CarteirasInvestidorPage } from "../pages/CarteirasInvestidorPage";
 import { DetalheCarteiraPage } from "../pages/DetalheCarteiraPage";
 import { CadastroCarteiraPage } from "../pages/CadastroCarteiraPage";
+import { TransacaoPage } from "../pages/TransacaoPage";
+import { HistoricoTransacoesPage } from "../pages/HistoricoTransacoesPage";
 
 import { Login } from "../pages/Login";
 import { MinhaContaInvestidorPage } from "../pages/MinhaContaInvestidorPage";
@@ -35,6 +37,12 @@ export const Rotas = () => (
       </Route>
       <Route path="/carteiras-investidor/:id" element={<LayoutPadrao />}>
         <Route index element={<DetalheCarteiraPage />} />
+      </Route>
+      <Route path="/carteiras-investidor/:id/historico" element={<LayoutPadrao />}>
+        <Route index element={<HistoricoTransacoesPage />} />
+      </Route>
+      <Route path="/transacoes-investidor" element={<LayoutPadrao />}>
+        <Route index element={<TransacaoPage />} />
       </Route>
       <Route path="/carteiras-investidor/:id/editar" element={<LayoutPadrao />}>
         <Route index element={<CadastroCarteiraPage />} />
