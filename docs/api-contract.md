@@ -123,6 +123,7 @@ POST   /portfolios
 PUT    /portfolios/{portfolio_id}
 DELETE /portfolios/{portfolio_id}
 GET    /portfolios/{portfolio_id}/summary
+POST   /portfolios/{portfolio_id}/contribution-simulation
 ```
 
 Responsabilidade:
@@ -133,6 +134,59 @@ Responsabilidade:
 - atualizar uma carteira;
 - remover ou desativar uma carteira;
 - consultar resumo consolidado da carteira.
+
+### 5.1. Simulacao de aporte
+
+`POST /portfolios/{portfolio_id}/contribution-simulation` exige investidor autenticado
+e recebe `{"aporte": "1200.00"}`. O aporte deve ser positivo, em reais e com no
+maximo duas casas decimais. A rota nao grava compras, vendas ou saldo financeiro.
+
+Para cada ativo vinculado, o backend consulta a cotacao atual (ou a ultima salva,
+conforme a regra de `GET /quotes/{ticker}`), multiplica pela quantidade atual e
+calcula sua participacao no patrimonio. Com as metas percentuais da carteira,
+sugere compras em lotes de **100 acoes**, sem ultrapassar o aporte. O custo de um
+lote e `100 * cotacao`, nao R$ 100. A sugestao pode deixar saldo se outro lote
+nao couber ou nao aproximar a carteira das metas.
+
+As distancias sao calculadas em pontos percentuais como `participacao - objetivo`:
+negativas abaixo da meta, positivas acima e zero quando a meta e atingida.
+Essa convencao vale para `distancia_atual` e `distancia_projetada`.
+
+Resposta `200` (valores ilustrativos):
+
+```json
+{
+  "id_carteira": 1, "patrimonio_atual": "1000.00", "aporte": "1000.00",
+  "valor_investido": "1000.00", "saldo_restante": "0.00",
+  "patrimonio_projetado": "2000.00",
+  "ativos": [
+    {
+      "ticker": "AAAA3", "cotacao": "10.00", "data_atualizacao": "2026-11-16T12:00:00",
+      "objetivo_percentual": "50.00", "quantidade_atual": 100,
+      "valor_atual": "1000.00", "participacao_atual": "100.00",
+      "distancia_atual": "50.00", "quantidade_sugerida": 0,
+      "custo_sugerido": "0.00", "quantidade_projetada": 100,
+      "valor_projetado": "1000.00", "participacao_projetada": "50.00",
+      "distancia_projetada": "0.00"
+    },
+    {
+      "ticker": "BBBB4", "cotacao": "10.00", "data_atualizacao": "2026-11-16T12:00:00",
+      "objetivo_percentual": "50.00", "quantidade_atual": 0,
+      "valor_atual": "0.00", "participacao_atual": "0.00",
+      "distancia_atual": "-50.00", "quantidade_sugerida": 100,
+      "custo_sugerido": "1000.00", "quantidade_projetada": 100,
+      "valor_projetado": "1000.00", "participacao_projetada": "50.00",
+      "distancia_projetada": "0.00"
+    }
+  ]
+}
+```
+
+`404` indica carteira inexistente ou de outro investidor. `400` indica carteira
+desativada, vazia, ativo desativado ou metas que nao somam 100%. `422` indica
+aporte invalido ou campos extras. `503` indica cotacao indisponivel. As cotacoes
+e as sugestoes sao uma estimativa do momento da consulta; registrar a compra
+continua exigindo que o investidor informe o preco efetivamente pago.
 
 ## 6. Ativos financeiros
 
@@ -249,16 +303,16 @@ Somente compra e venda. Nao ha edicao nem exclusao de transacoes.
 Entrada de `POST /transactions`:
 
 ```json
-{"id_carteira": 1, "ticker": "PETR4", "tipo": "compra", "quantidade": 200}
+{"id_carteira": 1, "ticker": "PETR4", "tipo": "compra", "quantidade": 200, "preco_unitario": "47.10"}
 ```
 
-O investidor informa apenas a quantidade. O preco unitario e a cotacao atual (`GET /quotes/{ticker}`), e a data e o momento do registro (UTC). Resposta `201`:
+O investidor informa a quantidade e o preco unitario efetivamente pago; a cotacao atual nao substitui esse preco. Opcionalmente, pode informar `data_transacao` com fuso horario, desde que nao seja futura. Sem esse campo, a data e o momento do registro (UTC). Resposta `201`:
 
 ```json
 {
   "id_transacao": 1, "id_carteira": 1, "nome_carteira": "Aposentadoria",
   "ticker": "PETR4", "tipo": "compra", "quantidade": 200,
-  "preco_unitario": "47.12", "valor_total": "9424.00",
+  "preco_unitario": "47.10", "valor_total": "9420.00",
   "data_transacao": "2026-11-05T01:40:00"
 }
 ```
@@ -277,8 +331,7 @@ Erros:
 - `401`/`403`: sem login de investidor.
 - `404`: carteira inexistente ou alheia, ativo inexistente, ativo fora da carteira.
 - `409`: conflito ao gravar.
-- `422`: corpo fora do contrato (tipo diferente de compra/venda, quantidade nao inteira ou nao positiva, campos extras).
-- `503`: cotacao indisponivel; nada e registrado.
+- `422`: corpo fora do contrato (tipo diferente de compra/venda, quantidade nao inteira ou nao positiva, preco ausente ou invalido, campos extras).
 
 ### 8.2. Historico de transacoes
 
