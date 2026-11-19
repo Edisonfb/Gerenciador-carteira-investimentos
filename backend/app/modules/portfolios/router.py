@@ -13,8 +13,11 @@ from app.modules.portfolios.schemas import (
     CarteiraAtualizacaoEntrada,
     CarteiraCadastroEntrada,
     CarteiraSaida, CarteiraResumoSaida,
+    SimulacaoAporteEntrada, SimulacaoAporteSaida,
 )
-from app.modules.portfolios.service import CarteiraService, ErroResumoCarteira
+from app.modules.portfolios.service import (
+    CarteiraService, ErroResumoCarteira, ErroSimulacaoAporte,
+)
 from app.modules.quotes.repository import CotacaoRepository
 from app.modules.quotes.service import CotacaoService
 
@@ -74,6 +77,27 @@ def consultar_resumo_carteira(
             id_carteira, id_investidor, AtivoCarteiraRepository(db), cotacoes,
         )
     except ErroResumoCarteira as erro:
+        raise HTTPException(status_code=erro.status_code, detail=str(erro)) from erro
+
+
+@router.post("/{id_carteira}/contribution-simulation", response_model=SimulacaoAporteSaida)
+def simular_aporte(
+    id_carteira: int,
+    dados: SimulacaoAporteEntrada,
+    usuario: Usuario = Depends(exigir_investidor),
+    db: Session = Depends(get_db),
+):
+    """Sugere compras com o aporte informado sem alterar a carteira."""
+    id_investidor = obter_id_investidor_logado(usuario, db)
+    ativos = AtivoRepository(db)
+    cotacoes = CotacaoService(CotacaoRepository(db), ativos)
+    service = CarteiraService(CarteiraRepository(db))
+    try:
+        return service.simular_aporte(
+            id_carteira, id_investidor, dados.aporte,
+            AtivoCarteiraRepository(db), ativos, cotacoes,
+        )
+    except ErroSimulacaoAporte as erro:
         raise HTTPException(status_code=erro.status_code, detail=str(erro)) from erro
 
 @router.get("/{id_carteira}", response_model = CarteiraSaida)

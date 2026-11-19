@@ -86,7 +86,7 @@ class TestCalculosCarteira(unittest.TestCase):
             Decimal("50.20"), Decimal("24.90"), Decimal("24.90"),
         ])
         self.assertEqual([a.distancia_projetada for a in resultado.ativos], [
-            Decimal("-0.20"), Decimal("0.10"), Decimal("0.10"),
+            Decimal("0.20"), Decimal("-0.10"), Decimal("-0.10"),
         ])
         self.assertEqual([p.quantidade for p in posicoes], [0, 0, 0])
 
@@ -107,8 +107,25 @@ class TestCalculosCarteira(unittest.TestCase):
         self.assertEqual([a.quantidade_sugerida for a in resultado.ativos], [0, 0, 0, 700])
         self.assertEqual(resultado.valor_investido, Decimal("931.00"))
         self.assertEqual(resultado.saldo_restante, Decimal("69.00"))
-        self.assertEqual(resultado.ativos[-1].distancia_atual, Decimal("13.00"))
-        self.assertGreater(resultado.ativos[-1].distancia_projetada, Decimal(0))
+        self.assertEqual(resultado.ativos[-1].distancia_atual, Decimal("-13.00"))
+        self.assertLess(resultado.ativos[-1].distancia_projetada, Decimal(0))
+
+    def test_distancias_indicam_excesso_falta_e_meta_atingida(self):
+        """Distancia positiva indica excesso; negativa indica falta na meta."""
+        posicoes = [
+            PosicaoParaRebalanceamento("A", 100, Decimal("10.00"), Decimal("50")),
+            PosicaoParaRebalanceamento("B", 0, Decimal("10.00"), Decimal("50")),
+        ]
+
+        resultado = CalculosCarteira.simular_rebalanceamento(posicoes, Decimal("1000.00"))
+
+        self.assertEqual([a.distancia_atual for a in resultado.ativos], [
+            Decimal("50.00"), Decimal("-50.00"),
+        ])
+        self.assertEqual([a.distancia_projetada for a in resultado.ativos], [
+            Decimal("0.00"), Decimal("0.00"),
+        ])
+        self.assertEqual([a.quantidade_sugerida for a in resultado.ativos], [0, 100])
 
     def test_lote_inviavel_deixa_aporte_intacto(self):
         posicoes = [PosicaoParaRebalanceamento("A", 0, Decimal("1.01"), Decimal("100"))]

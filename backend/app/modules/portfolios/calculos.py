@@ -171,13 +171,13 @@ class CalculosCarteira:
                 objetivo_percentual=posicao.objetivo_percentual,
                 quantidade_atual=posicao.quantidade,
                 participacao_atual=participacao_atual,
-                distancia_atual=posicao.objetivo_percentual - participacao_atual,
+                distancia_atual=participacao_atual - posicao.objetivo_percentual,
                 quantidade_sugerida=quantidade_sugerida,
                 custo_sugerido=CalculosCarteira.valor_posicao(quantidade_sugerida, posicao.cotacao),
                 quantidade_projetada=posicao.quantidade + quantidade_sugerida,
                 valor_projetado=valores[posicao.ticker],
                 participacao_projetada=projetada,
-                distancia_projetada=posicao.objetivo_percentual - projetada,
+                distancia_projetada=projetada - posicao.objetivo_percentual,
             ))
         return SimulacaoRebalanceamento(
             patrimonio_atual=patrimonio_atual,

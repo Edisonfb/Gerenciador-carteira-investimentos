@@ -1,19 +1,28 @@
 """Regras de negocio do modulo de carteiras."""
 from decimal import Decimal
 
-from app.modules.assets.repository import AtivoCarteiraRepository
-from app.modules.portfolios.calculos import CalculosCarteira
+from app.modules.assets.repository import AtivoCarteiraRepository, AtivoRepository
+from app.modules.portfolios.calculos import CalculosCarteira, PosicaoParaRebalanceamento
 from app.modules.portfolios.models import Carteira
 from app.modules.portfolios.repository import CarteiraRepository
 from app.modules.portfolios.schemas import (
     CarteiraAtualizacaoEntrada, CarteiraCadastroEntrada,
-    CarteiraResumoSaida, PosicaoResumoSaida,
+    AtivoSimulacaoAporteSaida, CarteiraResumoSaida, PosicaoResumoSaida,
+    SimulacaoAporteSaida,
 )
 from app.modules.quotes.service import CotacaoService, ErroCotacao
 
 
 class ErroResumoCarteira(ValueError):
     """Indica carteira ausente ou cotacao que impede o resumo completo."""
+
+    def __init__(self, mensagem: str, status_code: int):
+        super().__init__(mensagem)
+        self.status_code = status_code
+
+
+class ErroSimulacaoAporte(ValueError):
+    """Indica uma carteira ou cotação que impede sugerir compras."""
 
     def __init__(self, mensagem: str, status_code: int):
         super().__init__(mensagem)
@@ -78,6 +87,73 @@ class CarteiraService:
         for posicao in posicoes:
             posicao.participacao_percentual = CalculosCarteira.participacao(posicao.valor_atual, total)
         return CarteiraResumoSaida(id_carteira=id_carteira, patrimonio_total=total, ativos=posicoes)
+
+    def simular_aporte(
+        self, id_carteira: int, id_investidor: int, aporte: Decimal,
+        vinculos: AtivoCarteiraRepository, ativos: AtivoRepository,
+        cotacoes: CotacaoService,
+    ) -> SimulacaoAporteSaida:
+        """Sugere compras em lotes de 100 para aproximar a carteira das metas."""
+        carteira = self.buscar_carteira(id_carteira, id_investidor)
+        if carteira is None:
+            raise ErroSimulacaoAporte("Carteira não encontrada.", 404)
+        if not carteira.ativa:
+            raise ErroSimulacaoAporte("A carteira está desativada.", 400)
+
+        vinculos_carteira = vinculos.listar_por_carteira(id_carteira)
+        if not vinculos_carteira:
+            raise ErroSimulacaoAporte("Inclua ativos na carteira antes de simular o aporte.", 400)
+
+        posicoes = []
+        cotacoes_usadas = {}
+        for vinculo in vinculos_carteira:
+            ativo = ativos.buscar_por_codigo(vinculo.ticker)
+            if ativo is None or not ativo.ativo:
+                raise ErroSimulacaoAporte(
+                    f"O ativo {vinculo.ticker} está desativado e não pode receber sugestões de compra.",
+                    400,
+                )
+            try:
+                cotacao = cotacoes.consultar_cotacao(vinculo.ticker)
+            except ErroCotacao as erro:
+                raise ErroSimulacaoAporte(
+                    f"Não foi possível simular o aporte: cotação de {vinculo.ticker} indisponível.",
+                    503,
+                ) from erro
+            cotacoes_usadas[vinculo.ticker] = cotacao
+            posicoes.append(PosicaoParaRebalanceamento(
+                ticker=vinculo.ticker,
+                quantidade=vinculo.quantidade,
+                cotacao=cotacao.preco,
+                objetivo_percentual=vinculo.objetivo_percentual,
+            ))
+
+        try:
+            simulacao = CalculosCarteira.simular_rebalanceamento(posicoes, aporte)
+        except ValueError as erro:
+            raise ErroSimulacaoAporte(str(erro), 400) from erro
+
+        posicoes_por_ticker = {posicao.ticker: posicao for posicao in posicoes}
+        return SimulacaoAporteSaida(
+            id_carteira=id_carteira,
+            patrimonio_atual=simulacao.patrimonio_atual,
+            aporte=simulacao.aporte,
+            valor_investido=simulacao.valor_investido,
+            saldo_restante=simulacao.saldo_restante,
+            patrimonio_projetado=simulacao.patrimonio_projetado,
+            ativos=[
+                AtivoSimulacaoAporteSaida(
+                    **vars(projecao),
+                    cotacao=cotacoes_usadas[projecao.ticker].preco,
+                    data_atualizacao=cotacoes_usadas[projecao.ticker].data_atualizacao,
+                    valor_atual=CalculosCarteira.valor_posicao(
+                        posicoes_por_ticker[projecao.ticker].quantidade,
+                        cotacoes_usadas[projecao.ticker].preco,
+                    ),
+                )
+                for projecao in simulacao.ativos
+            ],
+        )
 
     def atualizar_carteira(self, id_carteira: int, id_investidor: int, dados: CarteiraAtualizacaoEntrada
                             ) -> tuple[Carteira |None, str | None]:
