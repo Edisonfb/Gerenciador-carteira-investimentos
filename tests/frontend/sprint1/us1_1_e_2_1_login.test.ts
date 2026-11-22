@@ -35,9 +35,11 @@ describe("US 1.1 - Login do investidor", () => {
     expect(buscarUsuarioAutenticado()?.perfil).toBe("investidor");
   });
 
-  test("Cenário 1: menu do investidor tem Carteira, Transações, Histórico, Minha Conta e Sair", () => {
+  test("Cenário 1: menu do investidor tem Carteira, Transação, Minha Conta e Sair", () => {
     const html = menuDo("investidor");
-    for (const opcao of ["Carteira", "Transações", "Histórico", "Minha Conta", "Sair"]) expect(html).toContain(opcao);
+    for (const opcao of ["Carteira", "Transação", "Minha Conta", "Sair"]) expect(html).toContain(opcao);
+    // SCRUM-65: o histórico saiu do menu e é aberto pelo detalhe da carteira.
+    expect(html).not.toContain("Histórico");
   });
 
   test("Cenário 2: senha incorreta mostra a mensagem da API e não guarda sessão", async () => {
@@ -79,10 +81,10 @@ describe("US 2.1 - Login do analista", () => {
     await expect(realizarLogin("paulo.ramos", "SenhaErrada1")).rejects.toThrow("inválidos");
   });
 
-  test("Cenário 3: menu do analista não tem Carteira, Transações nem Histórico", () => {
+  test("Cenário 3: menu do analista não tem Carteira, Transação nem Histórico", () => {
     const html = menuDo("analista");
     expect(html).toContain("Investidores");
     expect(html).toContain("Gerar token");
-    for (const opcao of ["Carteira", "Transações", "Histórico"]) expect(html).not.toContain(opcao);
+    for (const opcao of ["Carteira", "Transação", "Histórico"]) expect(html).not.toContain(opcao);
   });
 });

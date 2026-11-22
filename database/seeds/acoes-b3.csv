@@ -36,9 +36,7 @@ AZUL97;AZUL S.A.;Transportation;;
 AZUL98;AZUL S.A.;Transportation;;
 AZUL99;AZUL S.A.;Transportation;;
 AZZA3;AZZAS 2154 S.A.;Consumo Cíclico;Tecidos, Vestuário e Calçados;Tecidos, Vestuário e Calçados
-B1003F;B100 S.A.;Finance;;
 B3SA3;B3 S.A. - BRASIL. BOLSA. BALCÃO;Serviços Financeiros;Dados Financeiros e Bolsas de Valores;Dados Financeiros e Bolsas de Valores
-B3SA3F;B3 S.A. - BRASIL. BOLSA. BALCÃO;Finance;;
 BALM3;BAUMER S.A.;Bens Industriais;Equipamentos;Equipamentos
 BALM4;BAUMER S.A.;Health Technology;;
 BAZA3;BCO AMAZONIA S.A.;Serviços Financeiros;Bancos;Bancos
@@ -153,7 +151,6 @@ ENMT3;ENERGISA MATO GROSSO-DISTRIBUIDORA DE ENERGIA S/A;Energia;Energia Elétric
 ENMT4;ENERGISA MATO GROSSO-DISTRIBUIDORA DE ENERGIA S/A;Utilities;;
 EPAR3;EMBPAR PARTICIPACOES S.A.;Consumo Cíclico;Material de Transporte;Material de Transporte
 EQMA3B;EQUATORIAL MARANHÃO DISTRIBUIDORA DE ENERGIA S.A.;Energia Elétrica;Energia Elétrica;Energia Elétrica
-EQMA3BF;EQUATORIAL MARANHÃO DISTRIBUIDORA DE ENERGIA S.A.;Utilities;;
 EQPA3;EQUATORIAL PARA DISTRIBUIDORA DE ENERGIA S.A.;Energia;Energia Elétrica;Energia Elétrica
 EQPA5;EQUATORIAL PARA DISTRIBUIDORA DE ENERGIA S.A.;Utilities;;
 EQPA6;EQUATORIAL PARA DISTRIBUIDORA DE ENERGIA S.A.;Utilities;;
@@ -245,11 +242,8 @@ MNPR3;MINUPAR PARTICIPACOES S.A.;Consumo Não Cíclico;Carnes e Derivados;Carnes
 MOTV3;MOTIVA INFRAESTRUTURA DE MOBILIDADE S.A.;Infraestrutura;Exploração de Rodovias;Exploração de Rodovias
 MOVI3;MOVIDA PARTICIPACOES SA;Consumo Cíclico;Aluguel de carros;Aluguel de carros
 MRSA3B;MRS LOGISTICA S.A.;Serviços Transporte e Logística;Serviços Transporte e Logística;Serviços Transporte e Logística
-MRSA3BF;MRS LOGISTICA S.A.;Transportation;;
 MRSA5B;MRS LOGISTICA S.A.;Transportation;;
-MRSA5BF;MRS LOGISTICA S.A.;Transportation;;
 MRSA6B;MRS LOGISTICA S.A.;Transportation;;
-MRSA6BF;MRS LOGISTICA S.A.;Transportation;;
 MRVE3;MRV ENGENHARIA E PARTICIPACOES S.A.;Construção e Imobiliário;Incorporações;Incorporações
 MSPA4;CIA MELHORAMENTOS DE SAO PAULO;Process Industries;;
 MTRE3;MITRE REALTY EMPREENDIMENTOS E PARTICIPAÇÕES S.A.;Construção e Imobiliário;Incorporações;Incorporações

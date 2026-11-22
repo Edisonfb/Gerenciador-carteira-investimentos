@@ -4,6 +4,8 @@ Banco falso: SQLite em memoria no lugar do MySQL (get_db sobrescrito).
 E-mail falso: as funcoes de envio guardam as mensagens numa lista.
 """
 
+from decimal import Decimal
+
 import httpx
 import pytest
 from sqlalchemy import create_engine
@@ -21,7 +23,7 @@ from app.modules.assets.models import Ativo, AtivoCarteira
 from app.modules.auth import password_service
 from app.modules.investors.models import Investidor
 from app.modules.portfolios.models import Carteira
-from app.shared import email_service
+from app.shared import email_service, yahoo_finance
 
 
 # Ativos usados nas historias, com o setor do cadastro da B3.
@@ -171,3 +173,46 @@ def criar_carteira(banco):
         return carteira
 
     return _criar
+
+
+class YahooFalso:
+    """Guarda os precos que o Yahoo falso devolve e os tickers consultados."""
+
+    def __init__(self):
+        self.precos = {}
+        self.consultas = []
+
+    def buscar_preco(self, ticker):
+        self.consultas.append(ticker)
+        if ticker not in self.precos:
+            raise RuntimeError(f"Cotação de {ticker} indisponível no Yahoo Finance.")
+        return Decimal(self.precos[ticker])
+
+
+@pytest.fixture
+def yahoo(monkeypatch):
+    """Yahoo Finance falso: sem internet, com os precos definidos no teste."""
+    falso = YahooFalso()
+    monkeypatch.setattr(yahoo_finance, "buscar_preco", falso.buscar_preco)
+    return falso
+
+
+# Cotacoes de 17/11/2026 usadas nas historias da Sprint 3.
+COTACOES_17_11 = {"ABEV3": "15.93", "BBDC4": "14.41", "EGIE3": "25.83", "ITUB4": "40.89"}
+
+
+@pytest.fixture
+def cotacoes_17_11(yahoo):
+    yahoo.precos.update(COTACOES_17_11)
+    return yahoo
+
+
+@pytest.fixture
+def transacao(cliente):
+    """Envia POST /transactions; o preco padrao e a cotacao de 17/11/2026."""
+    async def _registrar(cabecalho, id_carteira, ticker, tipo, quantidade, preco=None, **extras):
+        corpo = {"id_carteira": id_carteira, "ticker": ticker, "tipo": tipo, "quantidade": quantidade,
+                 "preco_unitario": preco or COTACOES_17_11.get(ticker.upper(), "10.00"), **extras}
+        return await cliente.post("/transactions", headers=cabecalho, json=corpo)
+
+    return _registrar

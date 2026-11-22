@@ -8,7 +8,7 @@ from app.modules.investors.models import Investidor
 @pytest.fixture
 async def aposentadoria(banco, investidor_logado, criar_carteira):
     investidor = banco.query(Investidor).first()
-    return criar_carteira(investidor.id_investidor, "Aposentadoria", [("AALR3", 20, 5), ("ITUB4", 80, 25)])
+    return criar_carteira(investidor.id_investidor, "Aposentadoria", [("AALR3", 20, 500), ("ITUB4", 80, 2500)])
 
 
 async def test_cenario1_alteracao_do_nome_mantem_os_ativos(cliente, investidor_logado, aposentadoria):
@@ -18,7 +18,7 @@ async def test_cenario1_alteracao_do_nome_mantem_os_ativos(cliente, investidor_l
     assert resposta.json()["nome"] == "Aposentadoria 2040"
 
     ativos = (await cliente.get(f"/assets/carteira/{id_carteira}", headers=investidor_logado)).json()
-    assert {(a["ticker"], a["quantidade"]) for a in ativos} == {("AALR3", 5), ("ITUB4", 25)}
+    assert {(a["ticker"], a["quantidade"]) for a in ativos} == {("AALR3", 500), ("ITUB4", 2500)}
 
 
 async def test_cenario2_nome_em_branco_nao_salva(cliente, investidor_logado, aposentadoria):
