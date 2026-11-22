@@ -46,11 +46,13 @@ function token(): string {
 }
 
 async function requisitar<T>(caminho: string, opcoes: RequestInit = {}): Promise<T> {
+  // Fora do try: sem sessao, a mensagem de sessao expirada nao vira erro de conexao.
+  const acesso = token();
   let resposta: Response;
   try {
     resposta = await fetch(`${API_BASE}${caminho}`, {
       ...opcoes,
-      headers: { Authorization: `Bearer ${token()}`, ...(opcoes.body ? { "Content-Type": "application/json" } : {}), ...opcoes.headers },
+      headers: { Authorization: `Bearer ${acesso}`, ...(opcoes.body ? { "Content-Type": "application/json" } : {}), ...opcoes.headers },
     });
   } catch (erro) {
     if (erro instanceof Error && erro.name === "AbortError") throw erro;
