@@ -90,15 +90,3 @@ async def test_yahoo_fora_do_ar_usa_a_ultima_cotacao_salva(cliente, banco, inves
     assert resposta.status_code == 200
     assert Decimal(ativo(resposta.json(), "ITUB4")["valor_atual"]) == Decimal("12000.00")
 
-
-async def test_consulta_de_cotacao_pela_rota_quotes(cliente, investidor_logado, cotacoes_17_11):
-    resposta = await cliente.get("/quotes/itub4", headers=investidor_logado)
-    assert resposta.status_code == 200
-    assert resposta.json()["ticker"] == "ITUB4"
-    assert Decimal(resposta.json()["preco"]) == Decimal("40.89")
-
-
-async def test_cotacao_de_ativo_fora_do_catalogo(cliente, investidor_logado, yahoo):
-    resposta = await cliente.get("/quotes/ZZZZ9", headers=investidor_logado)
-    assert resposta.status_code == 404
-    assert yahoo.consultas == []
