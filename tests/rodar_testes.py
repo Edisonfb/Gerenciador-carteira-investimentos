@@ -1,4 +1,4 @@
-"""Roda os testes da Sprint 1 e 2 (backend e frontend) e gera o relatorio.
+"""Roda os testes das Sprints 1, 2 e 3 (backend e frontend) e gera o relatorio.
 
 Uso, na raiz do projeto:
     backend\\.venv\\Scripts\\python.exe tests\\rodar_testes.py
@@ -23,7 +23,7 @@ RELATORIO = PASTA / "relatorio_testes.txt"
 def rodar_backend():
     print("== Backend (pytest + httpx + pytest-asyncio) ==")
     subprocess.run([
-        sys.executable, "-m", "pytest", "tests/backend/sprint1", "tests/backend/sprint2",
+        sys.executable, "-m", "pytest", "tests/backend/sprint1", "tests/backend/sprint2", "tests/backend/sprint3",
         "-q", "-p", "no:cacheprovider", f"--junitxml={XML_BACKEND}",
     ], cwd=RAIZ)
 
@@ -54,7 +54,7 @@ def ler_resultados(arquivo, camada):
             situacao = "PASSOU"
         resultados.append({
             "camada": camada,
-            "sprint": "Sprint 1" if "sprint1" in origem else "Sprint 2" if "sprint2" in origem else "-",
+            "sprint": next((f"Sprint {n}" for n in "123" if f"sprint{n}" in origem), "-"),
             "arquivo": origem.replace("\\", "/").split("/")[-1].split(".")[-1 if camada == "Backend" else 0],
             "teste": caso.get("name", ""),
             "situacao": situacao,
@@ -67,7 +67,7 @@ def gerar_texto(resultados):
     passou = sum(r["situacao"] == "PASSOU" for r in resultados)
     falhou = sum(r["situacao"] == "FALHOU" for r in resultados)
     linhas = [
-        "RELATORIO DE TESTES - SPRINT 1 E SPRINT 2",
+        "RELATORIO DE TESTES - SPRINTS 1, 2 E 3",
         f"Gerado em {datetime.now():%d/%m/%Y %H:%M}",
         f"Total: {len(resultados)} | Passaram: {passou} | Falharam: {falhou}",
     ]

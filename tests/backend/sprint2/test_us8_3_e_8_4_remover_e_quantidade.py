@@ -9,12 +9,22 @@ from app.modules.investors.models import Investidor
 async def aposentadoria(banco, investidor_logado, criar_carteira):
     investidor = banco.query(Investidor).first()
     return criar_carteira(investidor.id_investidor, "Aposentadoria", [
-        ("ABEV3", 10, 0), ("BBDC3", 10, 0), ("CRFB3", 40, 0), ("EGIE3", 20, 0), ("ITUB4", 20, 25),
+        ("ABEV3", 10, 0), ("BBDC3", 10, 0), ("CRFB3", 40, 0), ("EGIE3", 20, 0), ("ITUB4", 20, 200),
     ])
+
+
+async def vender_tudo(cliente, cabecalho, id_carteira, ticker, quantidade):
+    """Registra a venda de todas as acoes; so assim o ativo pode sair da carteira."""
+    resposta = await cliente.post("/transactions", headers=cabecalho, json={
+        "id_carteira": id_carteira, "ticker": ticker, "tipo": "venda",
+        "quantidade": quantidade, "preco_unitario": "35.00",
+    })
+    assert resposta.status_code == 201, resposta.text
 
 
 async def test_us8_3_cenario1_remocao_bem_sucedida(cliente, investidor_logado, aposentadoria):
     id_carteira = aposentadoria.id_carteira
+    await vender_tudo(cliente, investidor_logado, id_carteira, "ITUB4", 200)
     resposta = await cliente.delete(f"/assets/carteira/{id_carteira}/ITUB4", headers=investidor_logado)
     assert resposta.status_code == 204
 
@@ -22,6 +32,17 @@ async def test_us8_3_cenario1_remocao_bem_sucedida(cliente, investidor_logado, a
     assert [a["ticker"] for a in ativos] == ["ABEV3", "BBDC3", "CRFB3", "EGIE3"]
     # Sem o ITUB4 os objetivos restantes somam 80% e precisam ser redistribuidos.
     assert sum(float(a["objetivo_percentual"]) for a in ativos) == 80
+
+
+async def test_us8_3_ativo_com_acoes_nao_pode_ser_removido(cliente, investidor_logado, aposentadoria):
+    id_carteira = aposentadoria.id_carteira
+    resposta = await cliente.delete(f"/assets/carteira/{id_carteira}/ITUB4", headers=investidor_logado)
+    assert resposta.status_code == 400
+    assert resposta.json()["detail"] == "Registre a venda das unidades antes de remover o ativo da carteira."
+
+    ativos = (await cliente.get(f"/assets/carteira/{id_carteira}", headers=investidor_logado)).json()
+    itub4 = next(a for a in ativos if a["ticker"] == "ITUB4")
+    assert itub4["quantidade"] == 200
 
 
 async def test_us8_3_remover_ativo_que_nao_esta_na_carteira(cliente, investidor_logado, aposentadoria):
@@ -32,6 +53,7 @@ async def test_us8_3_remover_ativo_que_nao_esta_na_carteira(cliente, investidor_
 
 async def test_us8_3_redistribuir_objetivo_depois_da_remocao(cliente, investidor_logado, aposentadoria):
     id_carteira = aposentadoria.id_carteira
+    await vender_tudo(cliente, investidor_logado, id_carteira, "ITUB4", 200)
     await cliente.delete(f"/assets/carteira/{id_carteira}/ITUB4", headers=investidor_logado)
     resposta = await cliente.patch(f"/assets/carteira/{id_carteira}/ABEV3", json={"objetivo_percentual": "30"}, headers=investidor_logado)
     assert resposta.status_code == 200
@@ -44,7 +66,7 @@ async def test_us8_4_cenario2_editar_objetivo_preserva_a_quantidade(cliente, inv
     id_carteira = aposentadoria.id_carteira
     resposta = await cliente.patch(f"/assets/carteira/{id_carteira}/ITUB4", json={"objetivo_percentual": "25"}, headers=investidor_logado)
     assert resposta.status_code == 200
-    assert resposta.json()["quantidade"] == 25
+    assert resposta.json()["quantidade"] == 200
 
 
 async def test_us8_4_campos_desconhecidos_sao_recusados(cliente, investidor_logado, aposentadoria):
