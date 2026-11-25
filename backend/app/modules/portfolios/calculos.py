@@ -137,23 +137,30 @@ class CalculosCarteira:
         sugestoes = {p.ticker: 0 for p in posicoes}
         saldo = aporte
 
-        # A cada rodada, escolhe o lote que mais reduz a soma dos desvios
-        # quadrados em reais em relacao ao patrimonio apos todo o aporte.
+        # A cada rodada, escolhe o lote que representa o maior déficit (prioridade)
         while True:
             melhor_ticker = None
             melhor_melhoria = Decimal(0)
             melhor_custo = Decimal(0)
-            for posicao in sorted(posicoes, key=lambda p: p.ticker):
+            
+            for posicao in posicoes: 
                 custo = CalculosCarteira.valor_posicao(LOTE_COMPRA, posicao.cotacao)
                 if custo > saldo:
                     continue
+                    
                 alvo = patrimonio_planejado * posicao.objetivo_percentual / 100
                 desvio = alvo - valores[posicao.ticker]
-                melhoria = desvio * desvio - (desvio - custo) * (desvio - custo)
-                if melhoria > melhor_melhoria:
-                    melhor_ticker, melhor_melhoria, melhor_custo = posicao.ticker, melhoria, custo
+                
+                # Força a compra de um lote se a carteira estiver zerada
+                if patrimonio_atual == 0 and sugestoes[posicao.ticker] == 0 and desvio > 0:
+                    desvio = max(desvio, custo)
+                
+                if desvio > melhor_melhoria:
+                    melhor_ticker, melhor_melhoria, melhor_custo = posicao.ticker, desvio, custo
+                    
             if melhor_ticker is None:
                 break
+                
             sugestoes[melhor_ticker] += LOTE_COMPRA
             valores[melhor_ticker] += melhor_custo
             saldo -= melhor_custo
@@ -179,6 +186,7 @@ class CalculosCarteira:
                 participacao_projetada=projetada,
                 distancia_projetada=projetada - posicao.objetivo_percentual,
             ))
+            
         return SimulacaoRebalanceamento(
             patrimonio_atual=patrimonio_atual,
             aporte=aporte,
