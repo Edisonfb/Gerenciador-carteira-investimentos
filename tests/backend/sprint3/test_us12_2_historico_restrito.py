@@ -49,9 +49,11 @@ async def test_historico_continua_depois_de_excluir_a_carteira(cliente, banco, i
     banco.execute(text("PRAGMA foreign_keys=ON"))  # o SQLite so aplica ON DELETE SET NULL com isso ligado
     carro = criar_carteira(banco.query(Investidor).first().id_investidor, "Carro", [("ITUB4", 100, 0)])
     await transacao(investidor_logado, carro.id_carteira, "ITUB4", "compra", 100)
+    # US 8.3 cenario 2.1: a carteira so pode ser excluida depois de vender as acoes.
+    await transacao(investidor_logado, carro.id_carteira, "ITUB4", "venda", 100)
     assert (await cliente.delete(f"/portfolios/{carro.id_carteira}", headers=investidor_logado)).status_code == 204
 
     lista = await historico(cliente, investidor_logado)
-    assert len(lista) == 1
-    assert lista[0]["nome_carteira"] == "Carro"
-    assert lista[0]["id_carteira"] is None
+    assert len(lista) == 2
+    assert all(item["nome_carteira"] == "Carro" for item in lista)
+    assert all(item["id_carteira"] is None for item in lista)
