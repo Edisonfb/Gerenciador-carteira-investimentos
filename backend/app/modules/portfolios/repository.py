@@ -1,6 +1,7 @@
 """Acesso a dados do modulo de carteiras."""
 from sqlalchemy.orm import Session
 
+from app.modules.assets.models import AtivoCarteira
 from app.modules.portfolios.models import Carteira
 
 class CarteiraRepository:
@@ -36,6 +37,13 @@ class CarteiraRepository:
         self.db.commit()
         self.db.refresh(carteira)
         return carteira
+
+    def possui_ativo_com_quantidade(self, id_carteira: int) -> bool:
+        return (
+            self.db.query(AtivoCarteira)
+            .filter(AtivoCarteira.id_carteira == id_carteira, AtivoCarteira.quantidade > 0)
+            .first()
+        ) is not None
 
     def excluir(self, carteira: Carteira) -> None:
         self.db.delete(carteira)

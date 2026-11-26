@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { filtrarAtivos, formatarPercentual, percentualEmCentesimos, validarConfiguracao, validarInclusao } from "../lib/configuracaoCarteira";
-import { consultarAtivosAceitos, consultarNomesCarteiras, ErroSalvarCarteira, salvarCarteira, consultarCarteiras, consultarConfiguracaoCarteira, editarComposicaoCarteira } from "../services/configuracaoCarteiraService";
+import { consultarAtivosAceitos, consultarNomesCarteiras, ErroSalvarCarteira, MENSAGEM_ATIVO_COM_QUANTIDADE, salvarCarteira, consultarCarteiras, consultarConfiguracaoCarteira, editarComposicaoCarteira } from "../services/configuracaoCarteiraService";
 import type { ConfiguracaoCarteira } from "../services/configuracaoCarteiraService";
 import type { AtivoConfigurado, AtivoDisponivel } from "../types/configuracaoCarteira";
+import { AvisoDialog } from "../components/AvisoDialog";
 
 export const CadastroCarteiraPage = () => {
   const { id } = useParams();
@@ -27,6 +28,8 @@ const FormularioCarteira = ({ idEdicao }: { idEdicao?: number }) => {
   const [setor, setSetor] = useState("");
   const [catalogo, setCatalogo] = useState<AtivoDisponivel[]>([]);
   const [ativos, setAtivos] = useState<AtivoConfigurado[]>([]);
+  // US 8.3 cenario 2: ativo com quantidade fica na carteira ate o registro de venda.
+  const [avisoQuantidade, setAvisoQuantidade] = useState(false);
   const [nomesExistentes, setNomesExistentes] = useState<string[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [conferindo, setConferindo] = useState(false);
@@ -172,7 +175,10 @@ const FormularioCarteira = ({ idEdicao }: { idEdicao?: number }) => {
                   <TableCell className="font-medium">{ativo.ticker}</TableCell><TableCell>{ativo.setor}</TableCell>
                   {editando && <TableCell>{ativo.quantidade}</TableCell>}
                   <TableCell><Input className="w-28" inputMode="decimal" aria-label={`Objetivo de ${ativo.ticker} (%)`} aria-invalid={percentualEmCentesimos(ativo.objetivo) === null} value={ativo.objetivo} onChange={evento => { setAtivos(itens => itens.map(item => item.ticker === ativo.ticker ? { ...item, objetivo: evento.target.value } : item)); limparValidacao(); }} /></TableCell>
-                  <TableCell className="text-right"><Button type="button" size="icon" variant="ghost" aria-label={`Remover ${ativo.ticker} da carteira`} onClick={() => { setAtivos(itens => itens.filter(item => item.ticker !== ativo.ticker)); limparValidacao(); }}><X aria-hidden="true" /></Button></TableCell>
+                  <TableCell className="text-right"><Button type="button" size="icon" variant="ghost" aria-label={`Remover ${ativo.ticker} da carteira`} onClick={() => {
+                    if (ativo.quantidade > 0) { setAvisoQuantidade(true); return; }
+                    setAtivos(itens => itens.filter(item => item.ticker !== ativo.ticker)); limparValidacao();
+                  }}><X aria-hidden="true" /></Button></TableCell>
                 </TableRow>)}
                 {!ativos.length && <TableRow><TableCell colSpan={editando ? 5 : 4} className="py-8 text-center text-muted-foreground">Nenhum ativo incluído na carteira.</TableCell></TableRow>}
               </TableBody>
@@ -190,6 +196,7 @@ const FormularioCarteira = ({ idEdicao }: { idEdicao?: number }) => {
           <Button type="submit" disabled={conferindo || impedirReenvio || carregando || !!erroEdicao}>{conferindo ? "Salvando..." : editando ? "Salvar alterações" : "Confirmar"}</Button>
         </div>
       </form>
+      {avisoQuantidade && <AvisoDialog titulo="Remover ativo" mensagem={MENSAGEM_ATIVO_COM_QUANTIDADE} onFechar={() => setAvisoQuantidade(false)} />}
     </section>
   );
 };

@@ -28,6 +28,19 @@ class ErroSimulacaoAporte(ValueError):
         super().__init__(mensagem)
         self.status_code = status_code
 
+class ErroExclusaoCarteira(ValueError):
+    """Impede excluir carteira que ainda tem ativos com quantidade."""
+
+    def __init__(self, mensagem: str, status_code: int):
+        super().__init__(mensagem)
+        self.status_code = status_code
+
+
+MENSAGEM_CARTEIRA_COM_QUANTIDADE = (
+    "Você possui ativo(s) nessa carteira que possuem quantidade, faça registro de venda do(s) ativo(s)."
+)
+
+
 class CarteiraService:
     """Concentra as regras de negocio das carteiras."""
     def __init__(self, repository: CarteiraRepository):
@@ -199,6 +212,10 @@ class CarteiraService:
 
         if carteira is None:
             return False
+
+        # US 8.3 cenario 2.1: so exclui depois de vender todas as quantidades.
+        if self.repository.possui_ativo_com_quantidade(id_carteira):
+            raise ErroExclusaoCarteira(MENSAGEM_CARTEIRA_COM_QUANTIDADE, 400)
 
         self.repository.excluir(carteira)
 

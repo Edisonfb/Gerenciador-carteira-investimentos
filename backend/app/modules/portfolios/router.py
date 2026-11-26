@@ -16,7 +16,7 @@ from app.modules.portfolios.schemas import (
     SimulacaoAporteEntrada, SimulacaoAporteSaida,
 )
 from app.modules.portfolios.service import (
-    CarteiraService, ErroResumoCarteira, ErroSimulacaoAporte,
+    CarteiraService, ErroExclusaoCarteira, ErroResumoCarteira, ErroSimulacaoAporte,
 )
 from app.modules.quotes.repository import CotacaoRepository
 from app.modules.quotes.service import CotacaoService
@@ -154,7 +154,10 @@ def excluir_carteira(
     id_investidor = obter_id_investidor_logado(usuario, db)
 
     service = CarteiraService(CarteiraRepository(db))
-    carteira_excluida = service.excluir_carteira(id_carteira, id_investidor)
+    try:
+        carteira_excluida = service.excluir_carteira(id_carteira, id_investidor)
+    except ErroExclusaoCarteira as erro:
+        raise HTTPException(status_code=erro.status_code, detail=str(erro)) from erro
 
     if not carteira_excluida:
         raise HTTPException(

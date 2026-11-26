@@ -160,7 +160,7 @@ class AtivoCarteiraService:
         if vinculo is None:
             raise ErroAtivo("Ativo não encontrado nesta carteira.", 404)
         if vinculo.quantidade != 0:
-            raise ErroAtivo("Registre a venda das unidades antes de remover o ativo da carteira.", 400)
+            raise ErroAtivo("Você possui quantidade desse ativo, faça um registro de venda para removê-lo da carteira.", 400)
         try:
             self.repository.excluir(vinculo)
         except (IntegrityError, StaleDataError) as erro:
