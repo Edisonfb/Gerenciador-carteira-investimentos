@@ -181,9 +181,12 @@ class YahooFalso:
     def __init__(self):
         self.precos = {}
         self.consultas = []
+        self.sem_negociacao = set()  # tickers que o Yahoo responde como fora de negociacao
 
     def buscar_preco(self, ticker):
         self.consultas.append(ticker)
+        if ticker in self.sem_negociacao:
+            raise yahoo_finance.AtivoSemNegociacao(f"O ativo {ticker} não está em negociação.")
         if ticker not in self.precos:
             raise RuntimeError(f"Cotação de {ticker} indisponível no Yahoo Finance.")
         return Decimal(self.precos[ticker])

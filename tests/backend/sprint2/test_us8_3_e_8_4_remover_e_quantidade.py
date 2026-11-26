@@ -38,7 +38,9 @@ async def test_us8_3_ativo_com_acoes_nao_pode_ser_removido(cliente, investidor_l
     id_carteira = aposentadoria.id_carteira
     resposta = await cliente.delete(f"/assets/carteira/{id_carteira}/ITUB4", headers=investidor_logado)
     assert resposta.status_code == 400
-    assert resposta.json()["detail"] == "Registre a venda das unidades antes de remover o ativo da carteira."
+    assert resposta.json()["detail"] == (
+        "Você possui quantidade desse ativo, faça um registro de venda para removê-lo da carteira."
+    )
 
     ativos = (await cliente.get(f"/assets/carteira/{id_carteira}", headers=investidor_logado)).json()
     itub4 = next(a for a in ativos if a["ticker"] == "ITUB4")

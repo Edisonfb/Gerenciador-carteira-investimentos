@@ -138,6 +138,17 @@ export async function renomearCarteira(id: number, nome: string): Promise<void> 
   await alterarCarteira(id, "PATCH", { nome: nomeLimpo });
 }
 
+// US 8.3 cenarios 2 e 2.1: so remove ativo ou exclui carteira sem quantidade (venda antes).
+export const MENSAGEM_ATIVO_COM_QUANTIDADE = "Você possui quantidade desse ativo, faça um registro de venda para removê-lo da carteira.";
+export const MENSAGEM_CARTEIRA_COM_QUANTIDADE = "Você possui ativo(s) nessa carteira que possuem quantidade, faça registro de venda do(s) ativo(s).";
+
+export async function carteiraPossuiAtivoComQuantidade(id: number, signal?: AbortSignal): Promise<boolean> {
+  if (!Number.isInteger(id) || id <= 0) throw new Error("Carteira inválida.");
+  const vinculos = await consultar(`/assets/carteira/${id}`, signal);
+  if (!Array.isArray(vinculos) || vinculos.some(v => !Number.isInteger(v?.quantidade))) throw new Error("A API retornou uma composição inválida.");
+  return vinculos.some(v => v.quantidade > 0);
+}
+
 export async function excluirCarteira(id: number): Promise<void> {
   await alterarCarteira(id, "DELETE");
 }
