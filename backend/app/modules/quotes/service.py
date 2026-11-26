@@ -12,6 +12,8 @@ from app.shared import yahoo_finance
 # Dentro desse tempo a cotacao salva no banco e usada sem consultar o Yahoo.
 VALIDADE_COTACAO = timedelta(minutes=15)
 
+MENSAGEM_SEM_NEGOCIACAO = "Esse ativo não está em negociação."
+
 
 class ErroCotacao(ValueError):
     """Representa uma falha prevista sem depender da camada HTTP."""
@@ -40,6 +42,8 @@ class CotacaoService:
 
         try:
             preco = yahoo_finance.buscar_preco(ticker)
+        except yahoo_finance.AtivoSemNegociacao:
+            raise ErroCotacao(MENSAGEM_SEM_NEGOCIACAO, 422)
         except RuntimeError:
             # Sem resposta do Yahoo, usa a ultima cotacao salva, se existir.
             if cotacao is not None:

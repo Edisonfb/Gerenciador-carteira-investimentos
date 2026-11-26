@@ -72,6 +72,11 @@ class CarteiraService:
             try:
                 cotacao = cotacoes.consultar_cotacao(vinculo.ticker)
             except ErroCotacao as erro:
+                if erro.status_code == 422:
+                    raise ErroResumoCarteira(
+                        f"Não foi possível calcular o patrimônio: o ativo {vinculo.ticker} não está em negociação.",
+                        422,
+                    ) from erro
                 raise ErroResumoCarteira(
                     f"Não foi possível calcular o patrimônio: cotação de {vinculo.ticker} indisponível.",
                     503,
@@ -116,6 +121,11 @@ class CarteiraService:
             try:
                 cotacao = cotacoes.consultar_cotacao(vinculo.ticker)
             except ErroCotacao as erro:
+                if erro.status_code == 422:
+                    raise ErroSimulacaoAporte(
+                        f"Não foi possível simular o aporte: o ativo {vinculo.ticker} não está em negociação.",
+                        422,
+                    ) from erro
                 raise ErroSimulacaoAporte(
                     f"Não foi possível simular o aporte: cotação de {vinculo.ticker} indisponível.",
                     503,
