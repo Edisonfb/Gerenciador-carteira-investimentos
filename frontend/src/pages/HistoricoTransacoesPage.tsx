@@ -13,7 +13,12 @@ const dataUtc = (valor: string) => new Date(/(?:Z|[+-]\d{2}:?\d{2})$/i.test(valo
 
 export function HistoricoTransacoesPage() {
   const { id } = useParams();
-  const idCarteira = Number(id);
+  return <HistoricoTransacoes key={id} idCarteira={Number(id)} />;
+}
+
+// Reinicia os dados ao navegar para o historico de outra carteira.
+function HistoricoTransacoes({ idCarteira }: { idCarteira: number }) {
+  const id = idCarteira;
   const location = useLocation();
   const mensagem = (location.state as { mensagem?: string } | null)?.mensagem;
   const [nomeCarteira, setNomeCarteira] = useState("");
@@ -25,7 +30,6 @@ export function HistoricoTransacoesPage() {
 
   useEffect(() => {
     const controller = new AbortController();
-    setCarregando(true); setErro("");
     async function carregar() {
       try {
         // A leitura da carteira valida propriedade antes da consulta do histórico.
@@ -47,7 +51,7 @@ export function HistoricoTransacoesPage() {
   return <section className="mx-auto w-full max-w-6xl py-4 sm:py-8" aria-labelledby="titulo-historico-transacoes">
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <Button asChild variant="outline"><Link to={`/carteiras-investidor/${id}`} className="no-underline hover:no-underline"><ArrowLeft aria-hidden="true" />Voltar à carteira</Link></Button>
-      <Button type="button" variant="outline" disabled={carregando} onClick={() => setTentativa(valor => valor + 1)}><RefreshCw className={carregando ? "animate-spin" : undefined} aria-hidden="true" />Atualizar</Button>
+      <Button type="button" variant="outline" disabled={carregando} onClick={() => { setCarregando(true); setErro(""); setTentativa(valor => valor + 1); }}><RefreshCw className={carregando ? "animate-spin" : undefined} aria-hidden="true" />Atualizar</Button>
     </div>
     <Card>
       <CardHeader><CardTitle id="titulo-historico-transacoes" className="text-2xl">Histórico de transações</CardTitle><CardDescription>{nomeCarteira ? `Movimentações da carteira ${nomeCarteira}.` : "Consulta somente leitura das compras e vendas desta carteira."}</CardDescription></CardHeader>

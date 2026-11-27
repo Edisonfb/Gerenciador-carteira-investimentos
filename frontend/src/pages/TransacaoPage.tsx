@@ -22,8 +22,9 @@ export function TransacaoPage() {
   const [quantidadeTexto, setQuantidadeTexto] = useState("");
   const [tipo, setTipo] = useState<"compra" | "venda" | null>(null);
   const [cotacao, setCotacao] = useState<CotacaoTransacao | null>(null);
+  const [precoTexto, setPrecoTexto] = useState("");
   const [carregandoInicial, setCarregandoInicial] = useState(true);
-  const [carregandoAtivos, setCarregandoAtivos] = useState(false);
+  const [carregandoAtivos, setCarregandoAtivos] = useState(!!carteiraInicial);
   const [carregandoCotacao, setCarregandoCotacao] = useState(false);
   const [registrando, setRegistrando] = useState(false);
   const [erro, setErro] = useState("");
@@ -44,9 +45,8 @@ export function TransacaoPage() {
   }, []);
 
   useEffect(() => {
-    if (!carteiraId) { setAtivos([]); setTicker(""); return; }
+    if (!carteiraId) return;
     const controller = new AbortController();
-    setCarregandoAtivos(true); setAtivos([]); setTicker(""); setErro("");
     listarAtivosDaCarteira(Number(carteiraId), controller.signal)
       .then(lista => { if (!controller.signal.aborted) setAtivos(lista); })
       .catch(falha => { if (!controller.signal.aborted) setErro(falha instanceof Error ? falha.message : "Não foi possível consultar os ativos da carteira."); })
@@ -55,11 +55,10 @@ export function TransacaoPage() {
   }, [carteiraId]);
 
   useEffect(() => {
-    if (!ticker) { setCotacao(null); setErroCotacao(""); return; }
+    if (!ticker) return;
     const controller = new AbortController();
-    setCotacao(null); setErroCotacao(""); setCarregandoCotacao(true);
     consultarCotacaoTransacao(ticker, controller.signal)
-      .then(dado => { if (!controller.signal.aborted) setCotacao(dado); })
+      .then(dado => { if (!controller.signal.aborted) { setCotacao(dado); setPrecoTexto(atual => atual || String(dado.preco)); } })
       .catch(falha => { if (!controller.signal.aborted) setErroCotacao(falha instanceof Error ? falha.message : "Cotação indisponível."); })
       .finally(() => { if (!controller.signal.aborted) setCarregandoCotacao(false); });
     return () => controller.abort();
@@ -67,8 +66,18 @@ export function TransacaoPage() {
 
   const quantidadeAtual = ativos.find(ativo => ativo.ticker === ticker)?.quantidade;
   const quantidade = /^\d+$/.test(quantidadeTexto) ? Number(quantidadeTexto) : NaN;
-  const valorTotal = cotacao && Number.isSafeInteger(quantidade) && quantidade >= 100 && quantidade % 100 === 0
-    ? cotacao.preco * quantidade : null;
+  const precoUnitario = /^\d+(?:[.,]\d{1,2})?$/.test(precoTexto) ? Number(precoTexto.replace(",", ".")) : NaN;
+  const valorTotal = Number.isFinite(precoUnitario) && precoUnitario > 0 && Number.isSafeInteger(quantidade) && quantidade >= 100 && quantidade % 100 === 0
+    ? precoUnitario * quantidade : null;
+  // A limpeza ocorre na selecao, antes de buscar os novos dados externos.
+  function limparCotacao() { setCotacao(null); setPrecoTexto(""); setErroCotacao(""); }
+  function selecionarCarteira(valor: string) {
+    setCarteiraId(valor); setAtivos([]); setTicker(""); setTipo(null); setErro("");
+    setCarregandoAtivos(!!valor); setCarregandoCotacao(false); limparCotacao();
+  }
+  function selecionarAtivo(valor: string) {
+    setTicker(valor); setTipo(null); setErro(""); limparCotacao(); setCarregandoCotacao(!!valor);
+  }
   const setor = useMemo(() => catalogo.find(ativo => ativo.ticker === ticker)?.setor ?? "", [catalogo, ticker]);
 
   async function enviar(evento: FormEvent<HTMLFormElement>) {
@@ -85,10 +94,10 @@ export function TransacaoPage() {
     if (tipo === "venda" && quantidade > quantidadeAtual) {
       setErro(`Quantidade insuficiente: você possui ${quantidadeAtual} ações de ${ticker}`); return;
     }
-    if (!cotacao) { setErro(erroCotacao || "Aguarde a cotação do ativo antes de registrar."); return; }
+    if (!Number.isFinite(precoUnitario) || precoUnitario <= 0) { setErro("Informe o preço unitário pago, maior que zero e com até duas casas decimais."); return; }
     envioAtivo.current = true; setRegistrando(true);
     try {
-      await registrarTransacao({ id_carteira: Number(carteiraId), ticker, tipo, quantidade, preco_unitario: cotacao.preco });
+      await registrarTransacao({ id_carteira: Number(carteiraId), ticker, tipo, quantidade, preco_unitario: precoUnitario });
       navigate(`/carteiras-investidor/${carteiraId}/historico`, { replace: true, state: { mensagem: "Transação registrada e carteira atualizada." } });
     } catch (falha) {
       const mensagem = falha instanceof Error ? falha.message : "";
@@ -108,13 +117,14 @@ export function TransacaoPage() {
         {carregandoInicial ? <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="size-4 animate-spin" />Carregando carteiras...</p> : <form onSubmit={enviar} noValidate className="flex flex-col gap-6">
           {erro && <p role="alert" className="m-0 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-destructive">{erro}</p>}
           <div className="grid gap-5 sm:grid-cols-2">
-            <div className="flex flex-col gap-2"><label htmlFor="transacao-carteira" className="text-sm font-medium">Carteira</label><select id="transacao-carteira" className="h-10 rounded-md border border-input bg-background px-3 text-sm" value={carteiraId} onChange={evento => { setCarteiraId(evento.target.value); setTipo(null); setErro(""); }}><option value="">Selecione uma carteira</option>{carteiras.map(carteira => <option key={carteira.id_carteira} value={carteira.id_carteira}>{carteira.nome}</option>)}</select></div>
-            <div className="flex flex-col gap-2"><label htmlFor="transacao-ativo" className="text-sm font-medium">Ativo</label><select id="transacao-ativo" className="h-10 rounded-md border border-input bg-background px-3 text-sm" value={ticker} disabled={!carteiraId || carregandoAtivos} onChange={evento => { setTicker(evento.target.value); setTipo(null); setErro(""); }}><option value="">{carregandoAtivos ? "Carregando ativos..." : "Selecione um ativo"}</option>{ativos.map(ativo => <option key={ativo.ticker} value={ativo.ticker}>{ativo.ticker} · {catalogo.find(item => item.ticker === ativo.ticker)?.setor ?? ""} · possui {ativo.quantidade}</option>)}</select></div>
+            <div className="flex flex-col gap-2"><label htmlFor="transacao-carteira" className="text-sm font-medium">Carteira</label><select id="transacao-carteira" className="h-10 rounded-md border border-input bg-background px-3 text-sm" value={carteiraId} onChange={evento => { selecionarCarteira(evento.target.value); }}><option value="">Selecione uma carteira</option>{carteiras.map(carteira => <option key={carteira.id_carteira} value={carteira.id_carteira}>{carteira.nome}</option>)}</select></div>
+            <div className="flex flex-col gap-2"><label htmlFor="transacao-ativo" className="text-sm font-medium">Ativo</label><select id="transacao-ativo" className="h-10 rounded-md border border-input bg-background px-3 text-sm" value={ticker} disabled={!carteiraId || carregandoAtivos} onChange={evento => { selecionarAtivo(evento.target.value); }}><option value="">{carregandoAtivos ? "Carregando ativos..." : "Selecione um ativo"}</option>{ativos.map(ativo => <option key={ativo.ticker} value={ativo.ticker}>{ativo.ticker} · {catalogo.find(item => item.ticker === ativo.ticker)?.setor ?? ""} · possui {ativo.quantidade}</option>)}</select></div>
             <div className="flex flex-col gap-2"><label htmlFor="transacao-quantidade" className="text-sm font-medium">Quantidade (lotes de 100 ações)</label><Input id="transacao-quantidade" type="text" inputMode="numeric" autoComplete="off" placeholder="Ex.: 100" value={quantidadeTexto} onChange={evento => setQuantidadeTexto(evento.target.value)} /></div>
             <div className="flex flex-col gap-2"><span className="text-sm font-medium">Tipo da transação</span><div className="grid grid-cols-2 gap-2"><Button type="button" variant={tipo === "compra" ? "default" : "outline"} aria-pressed={tipo === "compra"} onClick={() => setTipo("compra")}>Compra</Button><Button type="button" variant={tipo === "venda" ? "destructive" : "outline"} aria-pressed={tipo === "venda"} onClick={() => setTipo("venda")}>Venda</Button></div></div>
           </div>
+          <div className="flex flex-col gap-2"><label htmlFor="transacao-preco">Preço unitário pago (R$)</label><Input id="transacao-preco" inputMode="decimal" value={precoTexto} onChange={e => setPrecoTexto(e.target.value)} placeholder="Ex.: 40,89" /><p className="text-sm text-muted-foreground">A cotação é uma sugestão. Informe o preço efetivo da compra ou venda.</p>{cotacao && <Button type="button" variant="outline" onClick={() => setPrecoTexto(String(cotacao.preco))}>Usar cotação atual</Button>}</div>
           {ticker && <div className="rounded-lg border bg-muted/30 p-4 text-sm"><p className="mb-2">Setor: <strong>{setor || "—"}</strong></p><p className="mb-2">Quantidade atual: <strong>{quantidadeAtual ?? 0} ações</strong></p><p className="mb-2">Cotação: <strong>{carregandoCotacao ? "Consultando..." : cotacao ? moeda(cotacao.preco) : "Indisponível"}</strong></p>{erroCotacao && <p role="alert" className="mb-2 text-destructive">{erroCotacao}</p>}<p className="mb-0 text-base">{tipo ? `Total da ${tipo === "compra" ? "compra" : "venda"}` : "Valor total"}: <strong>{valorTotal === null ? "—" : moeda(valorTotal)}</strong></p></div>}
-          <div className="flex justify-end"><Button type="submit" disabled={registrando || carregandoCotacao || carregandoAtivos}>{registrando && <LoaderCircle className="animate-spin" aria-hidden="true" />}{registrando ? "Registrando..." : "Registrar transação"}</Button></div>
+          <div className="flex justify-end"><Button type="submit" disabled={registrando || carregandoAtivos}>{registrando && <LoaderCircle className="animate-spin" aria-hidden="true" />}{registrando ? "Registrando..." : "Registrar transação"}</Button></div>
           {!carteiras.length && <p className="m-0 text-sm text-muted-foreground">Não há carteiras ativas disponíveis para transação.</p>}
         </form>}
       </CardContent>

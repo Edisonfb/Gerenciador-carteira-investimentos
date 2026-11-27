@@ -3,7 +3,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -50,6 +50,7 @@ class SimulacaoAporteEntrada(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     aporte: Annotated[Decimal, Field(gt=0, max_digits=14, decimal_places=2)]
+    distribuicao: Literal["balanceamento", "linear"] = "balanceamento"
 
 
 class AtivoSimulacaoAporteSaida(BaseModel):
@@ -69,6 +70,8 @@ class AtivoSimulacaoAporteSaida(BaseModel):
     valor_projetado: Decimal
     participacao_projetada: Decimal
     distancia_projetada: Decimal
+    custo_lote: Decimal
+    aporte_minimo_ativo: Decimal | None
 
 
 class SimulacaoAporteSaida(BaseModel):
@@ -81,3 +84,4 @@ class SimulacaoAporteSaida(BaseModel):
     saldo_restante: Decimal
     patrimonio_projetado: Decimal
     ativos: list[AtivoSimulacaoAporteSaida]
+    aporte_minimo: Decimal | None

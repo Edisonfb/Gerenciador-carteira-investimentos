@@ -9,7 +9,7 @@ from app.modules.auth.models import Usuario
 from app.modules.investors.repository import InvestidorRepository
 from app.modules.portfolios.repository import CarteiraRepository
 from app.modules.transactions.repository import TransacaoRepository
-from app.modules.transactions.schemas import TipoTransacao, TransacaoEntrada, TransacaoSaida
+from app.modules.transactions.schemas import TipoTransacao, TransacaoEntrada, TransacaoSaida, ComprasRecomendadasEntrada
 from app.modules.transactions.service import ErroTransacao, TransacaoService
 
 
@@ -42,6 +42,19 @@ def registrar_transacao(
     """Registra uma compra ou venda e atualiza a quantidade do ativo na carteira."""
     try:
         return service.registrar_transacao(dados, id_investidor)
+    except ErroTransacao as erro:
+        raise HTTPException(status_code=erro.status_code, detail=str(erro)) from erro
+
+
+@router.post("/recommended-purchases", response_model=list[TransacaoSaida], status_code=201)
+def registrar_compras_recomendadas(
+    dados: ComprasRecomendadasEntrada,
+    id_investidor: int = Depends(obter_id_investidor),
+    service: TransacaoService = Depends(obter_servico),
+):
+    """Confirma as compras da recomendacao e atualiza a carteira em conjunto."""
+    try:
+        return service.registrar_compras_recomendadas(dados.compras, id_investidor)
     except ErroTransacao as erro:
         raise HTTPException(status_code=erro.status_code, detail=str(erro)) from erro
 

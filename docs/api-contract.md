@@ -143,8 +143,13 @@ maximo duas casas decimais. A rota nao grava compras, vendas ou saldo financeiro
 
 Para cada ativo vinculado, o backend consulta a cotacao atual (ou a ultima salva,
 conforme a regra de `GET /quotes/{ticker}`), multiplica pela quantidade atual e
-calcula sua participacao no patrimonio. Com as metas percentuais da carteira,
-sugere compras em lotes de **100 acoes**, sem ultrapassar o aporte. O custo de um
+calcula sua participacao no patrimonio. A US 13.1 seleciona os dois maiores deficits
+percentuais (objetivo menos participacao atual), reparte o aporte proporcionalmente
+a esses deficits e arredonda cada quantidade para baixo em lotes de **100 acoes**.
+Nao redistribui sobras, nao recomenda vendas nem ativos acima da meta.
+O campo opcional `distribuicao` aceita `balanceamento` (padrao) ou `linear`;
+`linear` divide o aporte proporcionalmente as metas de todos os ativos, inclusive
+em carteiras balanceadas, com o mesmo arredondamento e preservacao do saldo. O custo de um
 lote e `100 * cotacao`, nao R$ 100. A sugestao pode deixar saldo se outro lote
 nao couber ou nao aproximar a carteira das metas.
 
@@ -189,6 +194,21 @@ e as sugestoes sao uma estimativa do momento da consulta; registrar a compra
 continua exigindo que o investidor informe o preco efetivamente pago.
 
 ## 6. Ativos financeiros
+
+### Referencias de custo antes do aporte
+
+`GET /portfolios/{id_carteira}/contribution-options?distribuicao=balanceamento`
+consulta as mesmas cotacoes e regras da simulacao com aporte interno zero, sem
+registrar compras. Exige investidor autenticado e carteira propria ativa.
+Aceita os modos `balanceamento` e `linear`. Retorna o formato da simulacao,
+com `aporte_minimo` (menor aporte que permite algum lote neste modo), e por ativo
+`custo_lote` (100 vezes a cotacao) e `aporte_minimo_ativo`. O minimo por ativo e
+`custo_lote * soma_dos_pesos / peso_do_ativo`, arredondado para cima em centavos.
+Ativos fora da recomendacao atual tem `aporte_minimo_ativo: null`.
+Sem ativos selecionados para compra (carteira balanceada), `aporte_minimo` e nulo.
+Os mesmos campos acompanham a resposta do POST de simulacao. Sao estimativas
+das cotacoes consultadas e podem mudar quando as cotacoes forem atualizadas.
+Essa consulta nao altera a regra de aporte positivo do POST.
 
 As rotas abaixo estao implementadas e exigem `Authorization: Bearer <token>` de um investidor ativo.
 
@@ -362,3 +382,36 @@ Codigos comuns:
 O frontend deve consumir endpoints definidos neste documento.
 
 Se uma tela precisar de um campo ou endpoint que ainda nao existe, registrar a necessidade aqui antes de implementar alteracoes fora do escopo do frontend.
+
+### 8.3. Compras recomendadas (US 13.2)
+
+`POST /transactions/recommended-purchases`, autenticado como investidor, recebe
+`{"compras": [...]}` com 1 a 100 entradas no formato de `POST /transactions`.
+Todas devem ser compras de tickers distintos na mesma carteira propria e ativa.
+Os precos sao os confirmados na simulacao. As regras de lote, ativo e quantidade
+sao as mesmas do registro individual. As compras e quantidades sao gravadas
+numa unica transacao: qualquer falha desfaz o conjunto. Retorna `201` com a lista
+de transacoes. A simulacao so consulta; este endpoint exige confirmacao explicita.
+
+A tela Transacao sugere a cotacao no campo de preco unitario, mas permite
+informar o preco real. A indisponibilidade da cotacao nao impede o registro manual.
+
+### Total efetivamente pago na confirmacao
+
+As entradas de transacao aceitam `valor_total_pago` opcional: decimal positivo,
+com ate 14 digitos e duas casas decimais. Quando informado, esse e o valor
+autoritativo de `valor_total` no historico. A media `preco_unitario` e derivada
+do total dividido pela quantidade e armazenada arredondada a duas casas,
+conforme a coluna existente. O total exato nunca e reconstruido por essa media:
+300 acoes por R$ 532 registram R$ 532,00, mesmo com media arredondada de R$ 1,77.
+Sem o campo novo, preserva-se a regra de quantidade vezes preco informado.
+Nao ha alteracao de estrutura do banco.
+
+No frontend de recomendacoes, `Conferir valores e registrar` abre uma etapa
+editavel com o total pago por ativo. Somente `Confirmar e registrar compras`
+envia as transacoes. A tela mostra o total confirmado separado da projecao
+original. Os totais podem exceder o aporte simulado (com aviso), pois descrevem
+uma compra efetiva; nao sao uma nova recomendacao. A quantidade continua a da
+simulacao. Para alterar quantidade, use o registro individual de transacao.
+Patrimonio e participacao atuais continuam calculados pelas cotacoes de mercado,
+independentemente do custo historico da compra.

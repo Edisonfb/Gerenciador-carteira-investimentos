@@ -1,6 +1,6 @@
 """Calculos financeiros reutilizaveis para posicoes de carteiras."""
 from dataclasses import dataclass
-from decimal import Decimal, ROUND_DOWN, ROUND_HALF_UP
+from decimal import Decimal, ROUND_DOWN, ROUND_HALF_UP, ROUND_UP
 
 
 CENTAVO = Decimal("0.01")
@@ -32,6 +32,8 @@ class ProjecaoAtivo:
     valor_projetado: Decimal
     participacao_projetada: Decimal
     distancia_projetada: Decimal
+    custo_lote: Decimal
+    aporte_minimo_ativo: Decimal | None
 
 
 @dataclass(frozen=True)
@@ -44,6 +46,7 @@ class SimulacaoRebalanceamento:
     saldo_restante: Decimal
     patrimonio_projetado: Decimal
     ativos: list[ProjecaoAtivo]
+    aporte_minimo: Decimal | None
 
 
 class CalculosCarteira:
@@ -109,7 +112,7 @@ class CalculosCarteira:
 
     @staticmethod
     def simular_rebalanceamento(
-        posicoes: list[PosicaoParaRebalanceamento], aporte: Decimal,
+        posicoes: list[PosicaoParaRebalanceamento], aporte: Decimal, distribuicao: str = "balanceamento",
     ) -> SimulacaoRebalanceamento:
         """Sugere lotes de compra que aproximam a carteira das metas sem alterar dados."""
         if not aporte.is_finite() or aporte < 0 or aporte != aporte.quantize(CENTAVO):
@@ -133,37 +136,34 @@ class CalculosCarteira:
 
         valores = {p.ticker: CalculosCarteira.valor_posicao(p.quantidade, p.cotacao) for p in posicoes}
         patrimonio_atual = CalculosCarteira.patrimonio_total(list(valores.values()))
-        patrimonio_planejado = patrimonio_atual + aporte
         sugestoes = {p.ticker: 0 for p in posicoes}
         saldo = aporte
 
-        # A cada rodada, escolhe o lote que representa o maior déficit (prioridade)
-        while True:
-            melhor_ticker = None
-            melhor_melhoria = Decimal(0)
-            melhor_custo = Decimal(0)
-            
-            for posicao in posicoes: 
-                custo = CalculosCarteira.valor_posicao(LOTE_COMPRA, posicao.cotacao)
-                if custo > saldo:
-                    continue
-                    
-                alvo = patrimonio_planejado * posicao.objetivo_percentual / 100
-                desvio = alvo - valores[posicao.ticker]
-                
-                # Força a compra de um lote se a carteira estiver zerada
-                if patrimonio_atual == 0 and sugestoes[posicao.ticker] == 0 and desvio > 0:
-                    desvio = max(desvio, custo)
-                
-                if desvio > melhor_melhoria:
-                    melhor_ticker, melhor_melhoria, melhor_custo = posicao.ticker, desvio, custo
-                    
-            if melhor_ticker is None:
-                break
-                
-            sugestoes[melhor_ticker] += LOTE_COMPRA
-            valores[melhor_ticker] += melhor_custo
-            saldo -= melhor_custo
+        if distribuicao not in ("balanceamento", "linear"):
+            raise ValueError("Distribuição inválida.")
+        if distribuicao == "linear":
+            pesos = {p.ticker: p.objetivo_percentual for p in posicoes if p.objetivo_percentual > 0}
+        else:
+            # US 13.1: os dois maiores deficits percentuais recebem o aporte.
+            deficits = {p.ticker: p.objetivo_percentual - CalculosCarteira.participacao(
+                valores[p.ticker], patrimonio_atual) for p in posicoes}
+            ordem = sorted((t for t in deficits if deficits[t] > 0), key=lambda t: (-deficits[t], t))
+            pesos = {t: deficits[t] for t in ordem[:2]}
+        total_pesos = sum(pesos.values(), Decimal(0))
+        # Arredonda para cima: um centavo abaixo pode nao pagar o lote na parcela.
+        minimos = {p.ticker: (CalculosCarteira.valor_posicao(LOTE_COMPRA, p.cotacao)
+            * total_pesos / pesos[p.ticker]).quantize(CENTAVO, rounding=ROUND_UP)
+            for p in posicoes if p.ticker in pesos}
+        for posicao in posicoes:
+            if posicao.ticker not in pesos or not total_pesos:
+                continue
+            custo_lote = CalculosCarteira.valor_posicao(LOTE_COMPRA, posicao.cotacao)
+            # Nao redistribui a sobra: cada ativo respeita sua parcela do aporte.
+            lotes = int((aporte * pesos[posicao.ticker] / total_pesos / custo_lote).to_integral_value(rounding=ROUND_DOWN))
+            sugestoes[posicao.ticker] = lotes * LOTE_COMPRA
+            custo = custo_lote * lotes
+            valores[posicao.ticker] += custo
+            saldo -= custo
 
         investido = aporte - saldo
         patrimonio_projetado = patrimonio_atual + investido
@@ -185,6 +185,8 @@ class CalculosCarteira:
                 valor_projetado=valores[posicao.ticker],
                 participacao_projetada=projetada,
                 distancia_projetada=projetada - posicao.objetivo_percentual,
+                custo_lote=CalculosCarteira.valor_posicao(LOTE_COMPRA, posicao.cotacao),
+                aporte_minimo_ativo=minimos.get(posicao.ticker),
             ))
             
         return SimulacaoRebalanceamento(
@@ -194,4 +196,5 @@ class CalculosCarteira:
             saldo_restante=saldo,
             patrimonio_projetado=patrimonio_projetado,
             ativos=ativos,
+            aporte_minimo=min(minimos.values()) if minimos else None,
         )
