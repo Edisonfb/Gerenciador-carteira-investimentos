@@ -9,6 +9,7 @@ import { AcaoCarteiraDialog } from "../components/AcaoCarteiraDialog";
 import { consultarConfiguracaoCarteira, consultarResumoFinanceiroCarteira } from "../services/configuracaoCarteiraService";
 import type { ConfiguracaoCarteira, ResumoFinanceiroCarteira } from "../services/configuracaoCarteiraService";
 import { distribuicaoObjetivos, filtrarAtivosCarteira } from "../lib/detalheCarteira";
+import { SimulacaoAporte } from "../components/SimulacaoAporte";
 
 const percentual = (valor: number) => `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 }).format(valor)}%`;
 const moeda = (valor: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor);
@@ -32,7 +33,6 @@ function DetalheCarteira({ id }: { id: number }) {
   const [excluindo, setExcluindo] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
-    setErroResumo("");
     Promise.allSettled([
       consultarConfiguracaoCarteira(id, controller.signal),
       consultarResumoFinanceiroCarteira(id, controller.signal),
@@ -45,7 +45,7 @@ function DetalheCarteira({ id }: { id: number }) {
     }).finally(() => { if (!controller.signal.aborted) setCarregando(false); });
     return () => controller.abort();
   }, [id, tentativa]);
-  function atualizar() { setCarregando(true); setTentativa(t => t + 1); }
+  function atualizar() { setCarregando(true); setErroResumo(""); setTentativa(t => t + 1); }
   const ativos = dados?.ativos ?? [];
   const setores = [...new Set(ativos.map(a => a.setor))].sort((a, b) => a.localeCompare(b, "pt-BR"));
   const filtrados = filtrarAtivosCarteira(ativos, busca, setor);
@@ -94,6 +94,7 @@ function DetalheCarteira({ id }: { id: number }) {
             <p role="status" className="mb-0 mt-4 text-xs text-muted-foreground">{filtrados.length} de {ativos.length} ativo(s). O gráfico e os totais representam a carteira completa.{resumo?.ativos.some(posicao => posicao.data_atualizacao) && <> Cotações atualizadas até {new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(Math.max(...resumo.ativos.flatMap(posicao => posicao.data_atualizacao ? [dataCotacao(posicao.data_atualizacao).getTime()] : []))))}.</>}</p>
           </CardContent></Card>
         </div>
+        <SimulacaoAporte key={tentativa} idCarteira={id} ativa={dados.carteira.ativa} />
         {excluindo && <AcaoCarteiraDialog carteira={dados.carteira} acao="excluir" onFechar={() => setExcluindo(false)} onConcluido={() => navigate("/carteiras-investidor", { replace: true })} />}
       </>}
   </section>;

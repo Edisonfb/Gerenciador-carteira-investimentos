@@ -1,6 +1,6 @@
 """Regras de negocio do modulo de transacoes."""
 from datetime import datetime, timezone
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import StaleDataError
@@ -52,7 +52,9 @@ class TransacaoService:
         if dados.tipo == "compra" and not ativo.ativo:
             raise ErroTransacao("O ativo está desativado.", 400)
 
-        valor_total = dados.preco_unitario * dados.quantidade
+        # O total confirmado e soberano: nao o reconstroi pela media arredondada.
+        valor_total = dados.valor_total_pago if dados.valor_total_pago is not None else dados.preco_unitario * dados.quantidade
+        preco_unitario = (valor_total / dados.quantidade).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP) if dados.valor_total_pago is not None else dados.preco_unitario
         if valor_total > VALOR_TOTAL_MAXIMO:
             raise ErroTransacao("Valor total acima do limite permitido.", 400)
         agora = datetime.now(timezone.utc)
@@ -86,7 +88,7 @@ class TransacaoService:
             ticker=dados.ticker,
             tipo=dados.tipo,
             quantidade=dados.quantidade,
-            preco_unitario=dados.preco_unitario,
+            preco_unitario=preco_unitario,
             valor_total=valor_total,
             data_transacao=data_transacao.astimezone(timezone.utc).replace(tzinfo=None),
         )
@@ -94,6 +96,24 @@ class TransacaoService:
             return self.repository.salvar(transacao, ativo_carteira)
         except (IntegrityError, StaleDataError) as erro:
             raise ErroTransacao("Conflito ao registrar a transação. Tente novamente.", 409) from erro
+
+    def registrar_compras_recomendadas(self, compras: list[TransacaoEntrada], id_investidor: int) -> list[Transacao]:
+        """Registra todas as compras ou desfaz o conjunto se qualquer uma falhar."""
+        if any(c.tipo != "compra" for c in compras) or len({c.id_carteira for c in compras}) != 1:
+            raise ErroTransacao("Informe somente compras de uma mesma carteira.", 400)
+        if len({c.ticker for c in compras}) != len(compras):
+            raise ErroTransacao("Não repita ativos nas compras recomendadas.", 400)
+        self.repository.iniciar_lote()
+        try:
+            transacoes = [self.registrar_transacao(c, id_investidor) for c in sorted(compras, key=lambda c: c.ticker)]
+            self.repository.concluir_lote()
+            return transacoes
+        except (IntegrityError, StaleDataError) as erro:
+            self.repository.desfazer_lote()
+            raise ErroTransacao("Conflito ao registrar as compras. Tente novamente.", 409) from erro
+        except Exception:
+            self.repository.desfazer_lote()
+            raise
 
     def listar_transacoes(
         self, id_investidor: int, id_carteira: int | None = None,

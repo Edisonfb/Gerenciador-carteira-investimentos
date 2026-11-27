@@ -20,6 +20,7 @@ class TransacaoEntrada(BaseModel):
     tipo: TipoTransacao
     quantidade: Annotated[int, Field(strict=True, gt=0, le=2147483647)]
     preco_unitario: Annotated[Decimal, Field(gt=0, max_digits=12, decimal_places=2)]
+    valor_total_pago: Annotated[Decimal, Field(gt=0, max_digits=14, decimal_places=2)] | None = None
     data_transacao: AwareDatetime | None = None
 
 
@@ -35,3 +36,9 @@ class TransacaoSaida(BaseModel):
     preco_unitario: Decimal
     valor_total: Decimal
     data_transacao: datetime
+
+
+class ComprasRecomendadasEntrada(BaseModel):
+    """Recebe compras confirmadas da simulacao para gravacao atomica."""
+    model_config = ConfigDict(extra="forbid")
+    compras: Annotated[list[TransacaoEntrada], Field(min_length=1, max_length=100)]

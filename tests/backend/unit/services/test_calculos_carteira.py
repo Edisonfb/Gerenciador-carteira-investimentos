@@ -76,17 +76,18 @@ class TestCalculosCarteira(unittest.TestCase):
             PosicaoParaRebalanceamento("C", 0, Decimal("0.61"), Decimal("25")),
         ]
 
-        resultado = CalculosCarteira.simular_rebalanceamento(posicoes, Decimal("245.37"))
+        # A parcela de A (122,685) nao cobre seu lote de 123; a sobra nao migra.
+        resultado = CalculosCarteira.simular_rebalanceamento(posicoes, Decimal("245.37"), "linear")
 
-        self.assertEqual(resultado.valor_investido, Decimal("245.00"))
-        self.assertEqual(resultado.saldo_restante, Decimal("0.37"))
-        self.assertEqual(resultado.patrimonio_projetado, Decimal("245.00"))
-        self.assertEqual([a.quantidade_sugerida for a in resultado.ativos], [100, 100, 100])
+        self.assertEqual(resultado.valor_investido, Decimal("122.00"))
+        self.assertEqual(resultado.saldo_restante, Decimal("123.37"))
+        self.assertEqual(resultado.patrimonio_projetado, Decimal("122.00"))
+        self.assertEqual([a.quantidade_sugerida for a in resultado.ativos], [0, 100, 100])
         self.assertEqual([a.participacao_projetada for a in resultado.ativos], [
-            Decimal("50.20"), Decimal("24.90"), Decimal("24.90"),
+            Decimal("0.00"), Decimal("50.00"), Decimal("50.00"),
         ])
         self.assertEqual([a.distancia_projetada for a in resultado.ativos], [
-            Decimal("0.20"), Decimal("-0.10"), Decimal("-0.10"),
+            Decimal("-50.00"), Decimal("25.00"), Decimal("25.00"),
         ])
         self.assertEqual([p.quantidade for p in posicoes], [0, 0, 0])
 
@@ -135,6 +136,32 @@ class TestCalculosCarteira(unittest.TestCase):
         self.assertEqual(resultado.valor_investido, Decimal("0.00"))
         self.assertEqual(resultado.saldo_restante, Decimal("100.99"))
         self.assertEqual(resultado.ativos[0].quantidade_sugerida, 0)
+
+    def test_minimo_considera_divisao_e_limite_exato_do_lote(self):
+        """Um lote barato pode exigir aporte maior pela parcela destinada ao ativo."""
+        posicoes = [
+            PosicaoParaRebalanceamento("A", 200, Decimal("10"), Decimal("40")),
+            PosicaoParaRebalanceamento("B", 600, Decimal("10"), Decimal("30")),
+            PosicaoParaRebalanceamento("C", 200, Decimal("10"), Decimal("30")),
+        ]
+        referencia = CalculosCarteira.simular_rebalanceamento(posicoes, Decimal(0))
+        self.assertEqual(referencia.aporte_minimo, Decimal("1500.00"))
+        self.assertEqual([a.aporte_minimo_ativo for a in referencia.ativos], [Decimal("1500"), None, Decimal("3000")])
+        self.assertTrue(all(a.custo_lote == Decimal("1000.00") for a in referencia.ativos))
+        abaixo = CalculosCarteira.simular_rebalanceamento(posicoes, Decimal("1499.99"))
+        self.assertEqual(abaixo.valor_investido, 0)
+        minimo = CalculosCarteira.simular_rebalanceamento(posicoes, referencia.aporte_minimo)
+        self.assertEqual(minimo.ativos[0].quantidade_sugerida, 100)
+
+    def test_minimo_linear_arredonda_centavo_para_cima(self):
+        """A referencia nao promete um lote quando falta uma fracao de centavo."""
+        posicoes = [PosicaoParaRebalanceamento("A", 700, Decimal(10), Decimal(70)),
+                    PosicaoParaRebalanceamento("B", 300, Decimal(10), Decimal(30))]
+        self.assertIsNone(CalculosCarteira.simular_rebalanceamento(posicoes, Decimal(0)).aporte_minimo)
+        referencia = CalculosCarteira.simular_rebalanceamento(posicoes, Decimal(0), "linear")
+        self.assertEqual(referencia.aporte_minimo, Decimal("1428.58"))
+        self.assertEqual(CalculosCarteira.simular_rebalanceamento(posicoes, Decimal("1428.57"), "linear").valor_investido, 0)
+        self.assertEqual(CalculosCarteira.simular_rebalanceamento(posicoes, Decimal("1428.58"), "linear").ativos[0].quantidade_sugerida, 100)
 
     def test_rejeita_meta_incompleta_e_cotacao_invalida(self):
         with self.assertRaises(ValueError):

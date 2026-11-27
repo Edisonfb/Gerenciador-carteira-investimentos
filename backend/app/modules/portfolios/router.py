@@ -1,6 +1,8 @@
 """Rotas HTTP do modulo de carteiras."""
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Literal
+from decimal import Decimal
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import exigir_investidor
@@ -96,6 +98,26 @@ def simular_aporte(
         return service.simular_aporte(
             id_carteira, id_investidor, dados.aporte,
             AtivoCarteiraRepository(db), ativos, cotacoes,
+            dados.distribuicao,
+        )
+    except ErroSimulacaoAporte as erro:
+        raise HTTPException(status_code=erro.status_code, detail=str(erro)) from erro
+
+
+@router.get("/{id_carteira}/contribution-options", response_model=SimulacaoAporteSaida)
+def consultar_minimos_aporte(
+    id_carteira: int,
+    distribuicao: Literal["balanceamento", "linear"] = "balanceamento",
+    usuario: Usuario = Depends(exigir_investidor),
+    db: Session = Depends(get_db),
+):
+    """Consulta lotes e aporte minimo antes da digitacao, sem registrar compras."""
+    id_investidor = obter_id_investidor_logado(usuario, db)
+    ativos = AtivoRepository(db)
+    try:
+        return CarteiraService(CarteiraRepository(db)).simular_aporte(
+            id_carteira, id_investidor, Decimal("0.00"), AtivoCarteiraRepository(db),
+            ativos, CotacaoService(CotacaoRepository(db), ativos), distribuicao,
         )
     except ErroSimulacaoAporte as erro:
         raise HTTPException(status_code=erro.status_code, detail=str(erro)) from erro

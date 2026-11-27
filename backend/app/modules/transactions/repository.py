@@ -10,6 +10,21 @@ class TransacaoRepository:
 
     def __init__(self, db: Session):
         self.db = db
+        self.em_lote = False
+
+    def iniciar_lote(self) -> None:
+        """Adia o commit ate todas as compras serem validadas e gravadas."""
+        self.em_lote = True
+
+    def concluir_lote(self) -> None:
+        """Confirma todas as compras em uma unica transacao do banco."""
+        self.db.commit()
+        self.em_lote = False
+
+    def desfazer_lote(self) -> None:
+        """Desfaz todas as compras caso qualquer item falhe."""
+        self.db.rollback()
+        self.em_lote = False
 
     def buscar_ativo_carteira_para_atualizacao(
         self, ticker: str, id_carteira: int,
@@ -26,7 +41,10 @@ class TransacaoRepository:
         try:
             self.db.add(transacao)
             self.db.add(ativo_carteira)
-            self.db.commit()
+            if self.em_lote:
+                self.db.flush()
+            else:
+                self.db.commit()
             self.db.refresh(transacao)
             return transacao
         except Exception:

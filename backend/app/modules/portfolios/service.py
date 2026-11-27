@@ -110,6 +110,7 @@ class CarteiraService:
         self, id_carteira: int, id_investidor: int, aporte: Decimal,
         vinculos: AtivoCarteiraRepository, ativos: AtivoRepository,
         cotacoes: CotacaoService,
+        distribuicao: str = "balanceamento",
     ) -> SimulacaoAporteSaida:
         """Sugere compras em lotes de 100 para aproximar a carteira das metas."""
         carteira = self.buscar_carteira(id_carteira, id_investidor)
@@ -152,7 +153,7 @@ class CarteiraService:
             ))
 
         try:
-            simulacao = CalculosCarteira.simular_rebalanceamento(posicoes, aporte)
+            simulacao = CalculosCarteira.simular_rebalanceamento(posicoes, aporte, distribuicao)
         except ValueError as erro:
             raise ErroSimulacaoAporte(str(erro), 400) from erro
 
@@ -164,6 +165,7 @@ class CarteiraService:
             valor_investido=simulacao.valor_investido,
             saldo_restante=simulacao.saldo_restante,
             patrimonio_projetado=simulacao.patrimonio_projetado,
+            aporte_minimo=simulacao.aporte_minimo,
             ativos=[
                 AtivoSimulacaoAporteSaida(
                     **vars(projecao),
